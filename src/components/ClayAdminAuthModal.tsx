@@ -138,6 +138,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                       const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetUptime: true }));
                       if (res) {
                         try { localStorage.setItem('tagmesh_cached_system_start_time', String(res.systemStartTime)); } catch {}
+                        window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
                         playChime();
                         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
                         setSuccessMsg(locale === 'zh' ? '⚡ 稳定运行时长已重置为从现在起重新计时！' : '⚡ Stable uptime counter reset to now!');
@@ -157,6 +158,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                       playPop();
                       const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetVisits: true }));
                       if (res) {
+                        window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
                         playChime();
                         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
                         setSuccessMsg(locale === 'zh' ? '👥 访客统计记录已全部清零！' : '👥 Visitor stats have been reset to 0!');
@@ -177,6 +179,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                       const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetStamps: true }));
                       if (res) {
                         try { localStorage.setItem('tagmesh_clay_stamp_count', '0'); } catch {}
+                        window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
                         playChime();
                         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
                         setSuccessMsg(locale === 'zh' ? '🐾 爪印手印计数已清零！' : '🐾 Stamp counts have been reset to 0!');
@@ -200,6 +203,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                           localStorage.setItem('tagmesh_cached_system_start_time', String(res.systemStartTime));
                           localStorage.setItem('tagmesh_clay_stamp_count', '0');
                         } catch {}
+                        window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
                         playChime();
                         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
                         setSuccessMsg(locale === 'zh' ? '✨ 全部运行时间、访客与爪印数据已一键全量清零重置！' : '✨ All uptime, visits and stamp data have been reset!');

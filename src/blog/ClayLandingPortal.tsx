@@ -173,13 +173,28 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       fetchSystemTelemetry().then((data) => {
         if (data) {
           if (data.systemStartTime) setSystemStartTime(data.systemStartTime);
-          if (data.totalVisits) setRealVisits({ total: data.totalVisits, today: data.todayVisits });
-          if (data.stampCount) setStampCount(data.stampCount);
+          if (data.totalVisits !== undefined) setRealVisits({ total: data.totalVisits, today: data.todayVisits });
+          if (data.stampCount !== undefined) setStampCount(data.stampCount);
         }
       });
     }, 8000);
 
-    return () => clearInterval(pollInterval);
+    const handleTelemetryResetEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const detail = customEvent?.detail;
+      if (detail) {
+        if (detail.systemStartTime) setSystemStartTime(detail.systemStartTime);
+        if (detail.totalVisits !== undefined) setRealVisits({ total: detail.totalVisits, today: detail.todayVisits || 0 });
+        if (detail.stampCount !== undefined) setStampCount(detail.stampCount);
+      }
+    };
+
+    window.addEventListener('tagmesh_telemetry_updated', handleTelemetryResetEvent);
+
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('tagmesh_telemetry_updated', handleTelemetryResetEvent);
+    };
   }, []);
 
   const [stamps, setStamps] = useState<Array<{ id: number; emoji: string; x: number; y: number }>>([]);

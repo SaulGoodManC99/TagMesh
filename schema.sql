@@ -36,3 +36,11 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
     tags_json,
     tokenize='porter unicode61'
 );
+
+-- 3. System Telemetry & Persistent Uptime Table
+CREATE TABLE IF NOT EXISTS system_telemetry (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
