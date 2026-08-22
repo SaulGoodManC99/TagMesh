@@ -66,9 +66,6 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               <span className="font-bubble font-bold text-lg sm:text-2xl tracking-tight text-neutral-800">
                 TagMesh
               </span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bubble font-bold border shadow-xs ${theme.badgeBg}`}>
-                {theme.emoji} {locale === 'zh' ? theme.nameZh : theme.nameEn}
-              </span>
             </div>
             <p className="text-[10px] sm:text-[11px] font-cute text-neutral-400 -mt-0.5 hidden md:block">
               {locale === 'zh' ? '🎈 纯标签驱动的趣味黏土知识乐园' : '🎈 A Playful Claymorphic Knowledge Paradise'}

@@ -208,24 +208,34 @@ export const App: React.FC = () => {
 
   // Delete specific note by ID
   const handleDeleteNoteById = useCallback(async (id: string) => {
-    if (isGuest) {
-      showToast(locale === 'zh' ? '⚠️ 游客模式不可删除笔记，仅支持新建手账！' : '⚠️ Guests cannot delete notes!');
+    const target = await db.notes.get(id);
+    if (!target) return;
+
+    if (isGuest && target.isOfficial) {
+      showToast(locale === 'zh' ? '⚠️ 官方示例手账仅馆长可删除，可点击右上角登录馆长！' : '⚠️ Official notes can only be deleted by Admin!');
       return;
     }
 
-    await db.notes.update(id, { isDeleted: true, isDirty: true });
-    showToast('🗑 Note Deleted');
+    await db.notes.update(id, { isDeleted: true, isDirty: true, updatedAt: Date.now() });
+    
+    // Sync remote deletion to Cloudflare D1
+    import('./services/api').then(({ deleteNoteRemote }) => {
+      deleteNoteRemote(id);
+    });
+
+    showToast(locale === 'zh' ? '🗑 手账已移入废纸篓' : '🗑 Note Moved to Trash');
+    
     if (activeNote?.id === id) {
-      const next = await getOrCreateActiveNote();
+      const next = await getOrCreateActiveNote({ author: isAdmin ? 'admin' : 'guest' });
       setActiveNote(next);
     }
-  }, [activeNote?.id, isGuest, locale, showToast]);
+  }, [activeNote?.id, isGuest, isAdmin, locale, showToast]);
 
   // Delete current active note
   const handleDeleteCurrentNote = useCallback(() => {
     if (!activeNote) return;
-    if (isGuest) {
-      showToast(locale === 'zh' ? '⚠️ 游客模式不可删除笔记，仅支持新建手账！' : '⚠️ Guests cannot delete notes!');
+    if (isGuest && activeNote.isOfficial) {
+      showToast(locale === 'zh' ? '⚠️ 官方示例手账仅馆长可删除，可点击右上角登录馆长！' : '⚠️ Official notes can only be deleted by Admin!');
       return;
     }
     setIsDeleteModalOpen(true);

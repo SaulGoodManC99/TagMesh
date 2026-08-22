@@ -167,10 +167,17 @@ export async function ensureNotesAuthorSeparation(): Promise<void> {
 /**
  * Get active non-deleted notes sorted by pinned and updatedAt
  */
-export async function getActiveNotes(): Promise<Note[]> {
+export async function getActiveNotes(filterRole?: 'admin' | 'guest'): Promise<Note[]> {
   const all = await db.notes.toArray();
   return all
-    .filter(n => !n.isDeleted)
+    .filter(n => {
+      if (n.isDeleted) return false;
+      if (filterRole) {
+        if (filterRole === 'admin') return n.author === 'admin' || n.isOfficial === true;
+        if (filterRole === 'guest') return n.author === 'guest' || (!n.isOfficial && n.author !== 'admin');
+      }
+      return true;
+    })
     .sort((a, b) => {
       if (a.isPinned !== b.isPinned) {
         return a.isPinned ? -1 : 1;
@@ -183,7 +190,8 @@ export async function getActiveNotes(): Promise<Note[]> {
  * Get the most recent active note or create a new one
  */
 export async function getOrCreateActiveNote(options?: { author?: string; isOfficial?: boolean }): Promise<Note> {
-  const activeNotes = await getActiveNotes();
+  const filterRole = options?.author === 'admin' ? 'admin' : (options?.author === 'guest' ? 'guest' : undefined);
+  const activeNotes = await getActiveNotes(filterRole);
   if (activeNotes.length > 0) {
     return activeNotes[0];
   }
@@ -193,8 +201,8 @@ export async function getOrCreateActiveNote(options?: { author?: string; isOffic
 /**
  * Search notes in local IndexedDB
  */
-export async function searchNotesLocal(query: string, tagFilter?: string): Promise<Note[]> {
-  const activeNotes = await getActiveNotes();
+export async function searchNotesLocal(query: string, tagFilter?: string, filterRole?: 'admin' | 'guest'): Promise<Note[]> {
+  const activeNotes = await getActiveNotes(filterRole);
   const q = query.trim().toLowerCase();
 
   return activeNotes.filter((note) => {
@@ -224,10 +232,10 @@ export async function searchNotesLocal(query: string, tagFilter?: string): Promi
 }
 
 /**
- * Aggregate all tags and their note counts
+ * Aggregate all tags and their note counts (with optional role isolation)
  */
-export async function getAllTagCounts(): Promise<TagCount[]> {
-  const notes = await getActiveNotes();
+export async function getAllTagCounts(filterRole?: 'admin' | 'guest'): Promise<TagCount[]> {
+  const notes = await getActiveNotes(filterRole);
   const map = new Map<string, number>();
 
   notes.forEach((note) => {
@@ -235,8 +243,10 @@ export async function getAllTagCounts(): Promise<TagCount[]> {
     const tags = Array.isArray(note.tags) ? note.tags : [];
     tags.forEach((tag) => {
       if (typeof tag === 'string') {
-        const lower = tag.toLowerCase();
-        map.set(lower, (map.get(lower) || 0) + 1);
+        const clean = tag.trim().toLowerCase();
+        if (clean) {
+          map.set(clean, (map.get(clean) || 0) + 1);
+        }
       }
     });
   });

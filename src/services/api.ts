@@ -56,6 +56,21 @@ export async function fetchRemoteNotes(limit = 100, offset = 0): Promise<Note[]>
 }
 
 /**
+ * Delete note remotely from Cloudflare D1
+ */
+export async function deleteNoteRemote(noteId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/notes/${noteId}`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn('[SyncEngine] deleteNoteRemote failed:', err);
+    return false;
+  }
+}
+
+/**
  * Upload image screenshot directly to Cloudflare R2
  */
 export async function uploadImageToR2(file: File | Blob): Promise<{ url: string; key: string }> {

@@ -36,7 +36,7 @@ import {
   Minus
 } from 'lucide-react';
 import { Note } from '../types/note';
-import { db, getAllTagCounts, getOrCreateActiveNote } from '../db/dexie';
+import { db, getAllTagCounts, getOrCreateActiveNote, extractTagsFromMarkdown } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { markdownToHtml, htmlToMarkdown, extractExcerptFromMarkdown, countWordsAndChars } from './utils/markdown';
@@ -58,11 +58,12 @@ export interface TagMeshEditorProps {
 
 const TAG_COLOR_PALETTES = [
   'bg-pink-100/90 text-pink-700 border-pink-200 hover:bg-pink-200',
+  'bg-purple-100/90 text-purple-700 border-purple-200 hover:bg-purple-200',
+  'bg-indigo-100/90 text-indigo-700 border-indigo-200 hover:bg-indigo-200',
+  'bg-teal-100/90 text-teal-700 border-teal-200 hover:bg-teal-200',
   'bg-amber-100/90 text-amber-800 border-amber-200 hover:bg-amber-200',
-  'bg-emerald-100/90 text-emerald-800 border-emerald-200 hover:bg-emerald-200',
-  'bg-cyan-100/90 text-cyan-800 border-cyan-200 hover:bg-cyan-200',
-  'bg-purple-100/90 text-purple-800 border-purple-200 hover:bg-purple-200',
-  'bg-rose-100/90 text-rose-800 border-rose-200 hover:bg-rose-200',
+  'bg-rose-100/90 text-rose-700 border-rose-200 hover:bg-rose-200',
+  'bg-emerald-100/90 text-emerald-700 border-emerald-200 hover:bg-emerald-200',
 ];
 
 function getTagColorClass(tag: string): string {
@@ -105,7 +106,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   // 100% Real-time dynamic live query for all tags in the database
-  const allDbTags = useLiveQuery(() => getAllTagCounts(), []) || [];
+  const allDbTags = useLiveQuery(() => getAllTagCounts(isAdmin ? undefined : 'guest'), [isAdmin]) || [];
 
   // Keep a ref to active note id to prevent stale closures
   const activeNoteIdRef = useRef<string | null>(null);
@@ -205,9 +206,24 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
       const excerpt = extractExcerptFromMarkdown(markdown, 'Untitled note');
       const { wordCount, charCount } = countWordsAndChars(markdown);
 
+      // Dynamically extract any typed inline tags and absorb into TAG dock
+      const inlineTags = extractTagsFromMarkdown(markdown);
+      const currentTags = activeNoteTagsRef.current || [];
+      const mergedTags = Array.from(new Set([...currentTags, ...inlineTags])).sort((a, b) =>
+        a.localeCompare(b, 'zh-CN', { numeric: true, sensitivity: 'base' })
+      );
+
+      const hasNewTags = mergedTags.length !== currentTags.length;
+      if (hasNewTags) {
+        activeNoteTagsRef.current = mergedTags;
+      }
+
+      const finalTags = hasNewTags ? mergedTags : currentTags;
+
       db.notes.update(activeNoteIdRef.current, {
         rawMarkdown: markdown,
         excerpt,
+        tags: finalTags,
         wordCount,
         charCount,
         isDirty: true,
@@ -218,6 +234,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
         ...note,
         rawMarkdown: markdown,
         excerpt,
+        tags: finalTags,
         wordCount,
         charCount,
         isDirty: true,

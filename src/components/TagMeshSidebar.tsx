@@ -22,7 +22,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Note, TagCount } from '../types/note';
-import { db, getAllTagCounts, searchNotesLocal, getOrCreateActiveNote } from '../db/dexie';
+import { db, getAllTagCounts, searchNotesLocal, getOrCreateActiveNote, getActiveNotes } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
@@ -62,10 +62,10 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
 
-  // Reactive live query for all active notes
+  // Reactive live query for all active notes (role-aware)
   const allActiveNotes = useLiveQuery(
-    () => db.notes.filter(n => !n.isDeleted).toArray(),
-    []
+    () => getActiveNotes(isAdmin ? undefined : 'guest'),
+    [isAdmin]
   ) || [];
 
   // Reactive live query for all trash / deleted notes
@@ -74,16 +74,16 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     []
   ) || [];
 
-  // Reactive live query for aggregated tags
+  // Reactive live query for aggregated tags (isolated by role)
   const tags = useLiveQuery(
-    () => getAllTagCounts(),
-    []
+    () => getAllTagCounts(isAdmin ? undefined : 'guest'),
+    [isAdmin]
   ) || [];
 
   // Reactive live query for filtered notes under selected tag
   const filteredNotes = useLiveQuery(
-    () => searchNotesLocal('', selectedTag),
-    [selectedTag]
+    () => searchNotesLocal('', selectedTag, isAdmin ? undefined : 'guest'),
+    [selectedTag, isAdmin]
   ) || [];
 
   const totalCount = allActiveNotes.length;
@@ -139,6 +139,11 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
       await db.notes.bulkDelete(ids);
     }
 
+    // Sync remote deletion to Cloudflare D1
+    import('../services/api').then(({ deleteNoteRemote }) => {
+      ids.forEach(id => deleteNoteRemote(id));
+    });
+
     // If active note was in the deleted list, switch to next available active note or clean blank note
     if (activeNote && ids.includes(activeNote.id)) {
       const next = await getOrCreateActiveNote({
@@ -155,8 +160,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
   };
 
   // Restore a single deleted note from trash
-  const handleRestoreNote = async (note: Note, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const handleRestoreNote = async (note: Note) => {
     playChime();
     triggerConfettiShower();
     await db.notes.update(note.id, { isDeleted: false, isDirty: true, updatedAt: Date.now() });
@@ -168,6 +172,9 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     if (e) e.stopPropagation();
     playPop();
     await db.notes.delete(noteId);
+    import('../services/api').then(({ deleteNoteRemote }) => {
+      deleteNoteRemote(noteId);
+    });
   };
 
   // Restore ALL notes from trash
@@ -189,6 +196,9 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     playPop();
     const ids = deletedNotes.map(n => n.id);
     await db.notes.bulkDelete(ids);
+    import('../services/api').then(({ deleteNoteRemote }) => {
+      ids.forEach(id => deleteNoteRemote(id));
+    });
   };
 
   const selectedNotesList = useMemo(() => {
@@ -646,7 +656,10 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={(e) => handleRestoreNote(note, e)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRestoreNote(note);
+                            }}
                             className="px-2.5 py-1 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bubble font-bold transition flex items-center gap-1 shadow-3xs cursor-pointer active:scale-95"
                             title="Restore Note"
                           >

@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PenTool, Layers, Compass, ArrowLeft } from 'lucide-react';
 import { Note } from '../types/note';
-import { db, getAllTagCounts } from '../db/dexie';
+import { db, getAllTagCounts, getActiveNotes } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
+import { useAuth } from '../hooks/useAuth';
+import { deleteNoteRemote } from '../services/api';
 
 import { ClayHeader } from './ClayHeader';
 import { ClayTagCloud } from './ClayTagCloud';
@@ -32,11 +34,33 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
+  const { isAdmin } = useAuth();
 
   const [selectedTag, setSelectedTag] = useState<string>('#all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [authorFilter, setAuthorFilter] = useState<'all' | 'admin' | 'guest'>('all');
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
+
+  const effectiveRole = authorFilter === 'all' ? (isAdmin ? undefined : 'guest') : authorFilter;
+
+  // Live Query all active notes (role-aware)
+  const rawNotes = useLiveQuery(
+    () => getActiveNotes(effectiveRole),
+    [effectiveRole]
+  );
+
+  const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
+
+  // Live Query all tag counts (role-aware)
+  const allTagCounts = useLiveQuery(
+    () => getAllTagCounts(effectiveRole),
+    [effectiveRole]
+  ) || [];
+
+  const handleDeleteNote = async (noteId: string) => {
+    await db.notes.update(noteId, { isDeleted: true, isDirty: true, updatedAt: Date.now() });
+    deleteNoteRemote(noteId);
+  };
 
   // Auto seed on mount ONLY IF never seeded before & ensure separation of admin vs guest notes
   useEffect(() => {
@@ -100,20 +124,6 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     window.addEventListener('hashchange', handleHashParams);
     return () => window.removeEventListener('hashchange', handleHashParams);
   }, []);
-
-  // Live Query all active notes
-  const rawNotes = useLiveQuery(
-    () => db.notes.filter((n) => !n.isDeleted).toArray(),
-    []
-  );
-
-  const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
-
-  // Live Query all tag counts
-  const allTagCounts = useLiveQuery(
-    () => getAllTagCounts(),
-    []
-  ) || [];
 
   // Filter out #draft or #private notes for public blog view
   const publicNotes = useMemo(() => {
@@ -433,6 +443,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           setSelectedTag(tg);
         }}
         onSelectNote={handleCardClick}
+        onDeleteNote={handleDeleteNote}
       />
 
       {/* Clean & Elegant Minimal Gallery Footer */}

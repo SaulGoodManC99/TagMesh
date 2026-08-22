@@ -10,10 +10,12 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
+import { useAuth } from '../hooks/useAuth';
 import { playSwoosh, playPop, playChime } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
 import { renderRichMarkdown, renderInlineContent } from './utils/markdownRenderer';
@@ -25,6 +27,7 @@ export interface ClayReadingModalProps {
   onGoToEditorWithNote: (note: Note) => void;
   onTagClick: (tag: string) => void;
   onSelectNote?: (note: Note) => void;
+  onDeleteNote?: (noteId: string) => void;
 }
 
 export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
@@ -34,10 +37,13 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
   onGoToEditorWithNote,
   onTagClick,
   onSelectNote,
+  onDeleteNote,
 }) => {
   const { locale } = useI18n();
+  const { isAdmin } = useAuth();
   const [copiedMd, setCopiedMd] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Local reactions
   const storageKey = note ? `reactions_${note.id}` : '';
@@ -191,6 +197,18 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
               <span className="hidden sm:inline">{copiedMd ? 'Copied!' : 'Copy'}</span>
             </button>
 
+            {isAdmin && onDeleteNote && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-cute font-bold clay-btn border border-rose-200 cursor-pointer shadow-3xs transition active:scale-95"
+                title={locale === 'zh' ? '馆长删除手账' : 'Admin Delete Note'}
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                <span className="hidden sm:inline">{locale === 'zh' ? '删除' : 'Delete'}</span>
+              </button>
+            )}
+
             {onGoToEditorWithNote && (
               <button
                 type="button"
@@ -208,6 +226,39 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             )}
           </div>
         </div>
+
+        {/* Delete Confirmation Alert Bar */}
+        {showDeleteConfirm && (
+          <div className="bg-rose-50 border-b border-rose-200 px-4 sm:px-8 py-3 flex items-center justify-between gap-3 text-xs font-cute text-rose-900 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🗑️</span>
+              <span className="font-bold">{locale === 'zh' ? '确定要删除这篇手账并同步至云端吗？' : 'Delete this note and sync to cloud?'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (note && onDeleteNote) {
+                    playPop();
+                    onDeleteNote(note.id);
+                    setShowDeleteConfirm(false);
+                    handleDirectClose();
+                  }
+                }}
+                className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bubble font-bold rounded-xl shadow-xs cursor-pointer active:scale-95"
+              >
+                {locale === 'zh' ? '确认删除' : 'Confirm'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 font-bubble font-bold rounded-xl border border-rose-300 shadow-3xs cursor-pointer"
+              >
+                {locale === 'zh' ? '取消' : 'Cancel'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Scrollable Article Body */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-12 py-5 sm:py-8 select-text">

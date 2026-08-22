@@ -11,9 +11,10 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Note } from '../types/note';
-import { db, getAllTagCounts } from '../db/dexie';
+import { db, getAllTagCounts, getActiveNotes } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
-import { fetchSystemTelemetry, recordVisitSession, submitGlobalStamp } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
+import { fetchSystemTelemetry, recordVisitSession, submitGlobalStamp, deleteNoteRemote } from '../services/api';
 import { ClayHeader } from './ClayHeader';
 import { ClayGachaModal } from './components/ClayGachaModal';
 import { ClayReadingModal } from './ClayReadingModal';
@@ -40,18 +41,27 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
+  const { isAdmin } = useAuth();
   const [isGachaOpen, setIsGachaOpen] = useState(false);
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
 
-  // Live Query notes from Dexie
+  // Live Query notes from Dexie (role-aware)
   const rawNotes = useLiveQuery(
-    () => db.notes.filter((n) => !n.isDeleted).toArray(),
-    []
+    () => getActiveNotes(isAdmin ? undefined : 'guest'),
+    [isAdmin]
   );
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
 
-  // Live Query tag counts
-  const allTagCounts = useLiveQuery(() => getAllTagCounts(), []) || [];
+  // Live Query tag counts (role-aware)
+  const allTagCounts = useLiveQuery(
+    () => getAllTagCounts(isAdmin ? undefined : 'guest'),
+    [isAdmin]
+  ) || [];
+
+  const handleDeleteNote = async (noteId: string) => {
+    await db.notes.update(noteId, { isDeleted: true, isDirty: true, updatedAt: Date.now() });
+    deleteNoteRemote(noteId);
+  };
 
   // Filter public notes (exclude #draft, #private, #草稿)
   const publicNotes = useMemo(() => {
@@ -362,6 +372,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         onGoToEditorWithNote={(n) => onGoToEditorWithNote(n)}
         onTagClick={(tg) => onGoToExplore('grid', tg)}
         onSelectNote={(n) => setActiveReadingNote(n)}
+        onDeleteNote={handleDeleteNote}
       />
     </div>
   );
