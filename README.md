@@ -18,7 +18,7 @@
 
 <br/>
 
-[📖 Design Origin & Philosophy](#-design-origin--philosophy) • [✨ Feature Matrix](#-core-feature-matrix) • [🎨 6 Mood Themes](#-6-dimensional-mood-themes) • [🧭 6 Galleries](#-6-multi-dimensional-knowledge-galleries) • [⚡ Shortcuts](#-keyboard-first-shortcuts) • [☁️ Cloudflare Deployment](#️-step-by-step-cloudflare-deployment-guide) • [🤖 MCP AI Server](#-model-context-protocol-mcp-server)
+[📖 Design Origin & Philosophy](#-design-origin--philosophy) • [✨ Feature Matrix](#-core-feature-matrix) • [🎨 6 Mood Themes](#-6-dimensional-mood-themes) • [🧭 6 Galleries](#-6-multi-dimensional-knowledge-galleries) • [⚡ Shortcuts](#-keyboard-first-shortcuts) • [☁️ Cloudflare Deployment](#️-complete-step-by-step-cloudflare-deployment-guide) • [🤖 MCP AI Server](#-model-context-protocol-mcp-server)
 
 <br/>
 
@@ -33,7 +33,7 @@
 > [!TIP]
 > **💡 Recommended GitHub Repository Settings**
 > - **About**: `🌸 Zero-folder, titleless, keyboard-driven Markdown journal with Claymorphic aesthetics & serverless edge. Features live Danmaku plaza, 6 dimensional galleries, and Model Context Protocol (MCP) server.`
-> - **Topics**: `markdown`, `claymorphism`, `local-first`, `tiptap`, `cloudflare-workers`, `cloudflare-d1`, `cloudflare-r2`, `mcp-server`, `react19`, `tailwindcss4`, `notes-app`, `danmaku`
+> - **Topics**: `markdown`, `claymorphism`, `local-first`, `tiptap`, `cloudflare-workers`, `cloudflare-d1`, `mcp-server`, `react19`, `tailwindcss4`, `notes-app`, `danmaku`
 
 ---
 
@@ -137,7 +137,7 @@ TagMesh is crafted for power keyboard users:
 | <kbd>Cmd</kbd> + <kbd>K</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd> | **Open Global Command Central** (FTS5 search & quick create) | Global |
 | <kbd>Cmd</kbd> + <kbd>\</kbd> / <kbd>Ctrl</kbd> + <kbd>\</kbd> | **Toggle Left TagMesh Slide-over Sidebar** | Global |
 | <kbd>Cmd</kbd> + <kbd>N</kbd> / <kbd>Ctrl</kbd> + <kbd>N</kbd> | **Instant Create Blank Note** (100ms ultra-fast response) | Global |
-| <kbd>Cmd</kbd> + <kbd>S</kbd> / <kbd>Ctrl</kbd> + <kbd>S</kbd> | **Manual Force Sync to Cloudflare D1/R2** | Global |
+| <kbd>Cmd</kbd> + <kbd>S</kbd> / <kbd>Ctrl</kbd> + <kbd>S</kbd> | **Manual Force Sync to Cloudflare D1** | Global |
 | <kbd>#</kbd> | **Trigger Hashtag Autocomplete Menu** | Editor |
 | <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> | **Toggle Bilingual UI** (English / 简体中文) | Global |
 | <kbd>Cmd</kbd> + <kbd>/</kbd> / <kbd>Ctrl</kbd> + <kbd>/</kbd> | **Open Keyboard Shortcuts Cheatsheet Modal** | Global |
@@ -145,69 +145,77 @@ TagMesh is crafted for power keyboard users:
 
 ---
 
-## ☁️ Step-by-Step Cloudflare Deployment Guide
+## ☁️ Complete Step-by-Step Cloudflare Deployment Guide
 
-TagMesh is optimized for Cloudflare's serverless edge ecosystem (**Workers + D1 SQLite Database + R2 0-Egress Object Storage**). Follow this complete zero-to-one tutorial:
+TagMesh is architected for Cloudflare's serverless edge ecosystem (**Workers + D1 SQLite Database**), offering zero maintenance and global sub-second latencies.
 
-### 🛠️ Step 1: Install Dependencies & Login to Cloudflare
-Ensure [Node.js (v18+)](https://nodejs.org/) and Git are installed:
-
-```bash
-# 1. Clone repository
-git clone https://github.com/SaulGoodManC99/TagMesh.git
-cd TagMesh
-
-# 2. Install all dependencies
-npm install
-
-# 3. Authenticate with Cloudflare via browser OAuth
-npx wrangler login
-```
+Choose between **two deployment routes**:
+- 🌟 **Route 1: Automated GitHub Actions CI/CD (Recommended, Zero Hassle)**
+- 💻 **Route 2: Local CLI Wrangler Deployment (For Developers)**
 
 ---
 
-### 🗄️ Step 2: Create Cloudflare D1 Database
-D1 is Cloudflare's serverless SQLite database at the edge:
+### 🌟 Route 1: Automated GitHub Actions CI/CD (Recommended)
+
+Whenever you `git push` to your repository, GitHub Actions automatically builds and deploys your updates to Cloudflare Edge in ~30 seconds!
+
+#### 1. Create D1 Database on Cloudflare
+1. Open [Cloudflare Dashboard](https://dash.cloudflare.com/);
+2. Navigate to **Storage & Databases** -> **D1 SQL Database**;
+3. Click **Create database**, enter `tagmesh-db`;
+4. Copy the generated **Database ID** (a UUID like `132a4651-9da7-4fb8-8e17-11ffb4354d10`);
+5. Open the database detail page -> **Console**, copy and paste the contents of [`schema.sql`](./schema.sql), and click **Execute**.
+
+#### 2. Obtain Cloudflare API Token & Account ID
+- **API Token**: Click your profile icon -> **My Profile** -> **API Tokens** -> **Create Token** -> Use **Edit Cloudflare Workers** template to create and copy your Token;
+- **Account ID**: Go to the Cloudflare dashboard homepage and copy your **Account ID** from the right sidebar.
+
+#### 3. Configure 3 GitHub Repository Secrets
+In your GitHub repo -> **Settings** -> **Secrets and variables** -> **Actions** -> Click **New repository secret**:
+
+| Secret Name | Value | Description |
+| :--- | :--- | :--- |
+| `CLOUDFLARE_API_TOKEN` | Generated API Token | Grants deployment permissions to GitHub Actions |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare Account ID | Your Cloudflare account identifier |
+| `CLOUDFLARE_D1_DATABASE_ID` | Your D1 Database ID (UUID) | Secretly binds your D1 Database without exposing it in public code |
+
+🎉 **Done!** Every `git push` to `main` now automatically triggers full build and deployment to Cloudflare Workers!
+
+---
+
+### 💻 Route 2: Local CLI Wrangler Deployment
+
+For developers who prefer terminal-driven deployment:
 
 ```bash
-# Create database named tagmesh-db
+# 1. Clone repo & install dependencies
+git clone https://github.com/SaulGoodManC99/TagMesh.git
+cd TagMesh
+npm install
+
+# 2. Login to Cloudflare CLI
+npx wrangler login
+
+# 3. Create remote D1 database
 npx wrangler d1 create tagmesh-db
-```
+# Paste the output database_id into wrangler.toml
 
-The terminal will print:
-```text
-✅ Successfully created DB 'tagmesh-db'!
-[[d1_databases]]
-binding = "DB"
-database_name = "tagmesh-db"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-```
-
-👉 **Update `wrangler.toml`**: Paste your `database_id` into line 14 of `wrangler.toml`.
-
-### 📜 Step 3: Run Database Schema & FTS5 Virtual Table Migrations
-Execute the included `schema.sql` to initialize tables, indexes, and full-text virtual tables:
-
-```bash
+# 4. Initialize remote database tables and FTS5 indexes
 npm run db:init:remote
-```
 
-### 🚀 Step 4: Build Frontend & Deploy to Cloudflare Edge
-
-```bash
-# 1. Build production bundle into dist/
+# 5. Build bundle and deploy worker
 npm run build
-
-# 2. Deploy edge worker and static assets
 npm run worker:deploy
 ```
 
-The terminal will output your production live URL:  
+Your live URL will be printed in the terminal:  
 `https://tagmesh-markdown.<your-subdomain>.workers.dev`
 
-### 🌐 Step 5: Custom Domain Binding (Optional)
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/);
-2. Navigate to **Workers & Pages** -> **tagmesh-markdown**;
+---
+
+### 🌐 Custom Domain Binding (Optional)
+1. In [Cloudflare Dashboard](https://dash.cloudflare.com/);
+2. Go to **Workers & Pages** -> **tagmesh-markdown**;
 3. Go to **Settings** -> **Domains & Routes** -> **Add Custom Domain** (e.g. `notes.yourdomain.com`).
 
 ---

@@ -18,7 +18,7 @@
 
 <br/>
 
-[📖 项目诞生背景](#-项目诞生背景与设计哲学) • [✨ 核心特性矩阵](#-核心特性矩阵) • [🎨 6大心境次元](#-6-大心境次元主题) • [🧭 6大多维展厅](#-6-大多维知识展厅) • [⚡ 快捷键速查](#-全键盘极速快捷键) • [☁️ Cloudflare部署指南](#️-cloudflare-零到一保姆级部署指南) • [🤖 MCP AI对接](#-model-context-protocol-mcp-服务端)
+[📖 诞生背景](#-项目诞生背景与设计哲学) • [✨ 核心特性](#-核心特性矩阵) • [🎨 6大次元主题](#-6-大心境次元主题) • [🧭 6大多维展厅](#-6-大多维知识展厅) • [⚡ 快捷键速查](#-全键盘极速快捷键) • [☁️ 完整Cloudflare部署教程](#️-完整-cloudflare-零到一部署教程) • [🤖 MCP AI对接](#-model-context-protocol-mcp-服务端)
 
 <br/>
 
@@ -33,7 +33,7 @@
 > [!TIP]
 > **💡 GitHub 仓库设置建议 (Repository Settings)**
 > - **About 简介**：`🌸 彻底摒弃标题与文件夹、依托 #标签 网状编织的粘土拟物风（Claymorphic）高性能 Markdown 灵感手账。集成跨端实时弹幕、6大次元展厅与 Serverless MCP 接口。`
-> - **Topics 标签**：`markdown`, `claymorphism`, `local-first`, `tiptap`, `cloudflare-workers`, `cloudflare-d1`, `cloudflare-r2`, `mcp-server`, `react19`, `tailwindcss4`, `notes-app`, `danmaku`
+> - **Topics 标签**：`markdown`, `claymorphism`, `local-first`, `tiptap`, `cloudflare-workers`, `cloudflare-d1`, `mcp-server`, `react19`, `tailwindcss4`, `notes-app`, `danmaku`
 
 ---
 
@@ -137,7 +137,7 @@ TagMesh 专为高阶键盘操作者打造，99% 的操作无需离开主键区�
 | <kbd>Cmd</kbd> + <kbd>K</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd> | **唤起全局命令中枢**（支持 FTS5 全文搜索 / 输入直接回车建笔记） | 全局 |
 | <kbd>Cmd</kbd> + <kbd>\</kbd> / <kbd>Ctrl</kbd> + <kbd>\</kbd> | **展开 / 收起左侧纯标签聚合侧边栏** | 全局 |
 | <kbd>Cmd</kbd> + <kbd>N</kbd> / <kbd>Ctrl</kbd> + <kbd>N</kbd> | **极速新建空白手账**（100ms 快速响应） | 全局 |
-| <kbd>Cmd</kbd> + <kbd>S</kbd> / <kbd>Ctrl</kbd> + <kbd>S</kbd> | **手动强制触发立即同步至 Cloudflare D1/R2** | 全局 |
+| <kbd>Cmd</kbd> + <kbd>S</kbd> / <kbd>Ctrl</kbd> + <kbd>S</kbd> | **手动强制触发立即同步至 Cloudflare D1** | 全局 |
 | <kbd>#</kbd> | **键入 `#` 自动唤起已有标签智能补全建议菜单** | 编辑器内 |
 | <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> | **一键切换中英文双语界面**（English / 简体中文） | 全局 |
 | <kbd>Cmd</kbd> + <kbd>/</kbd> / <kbd>Ctrl</kbd> + <kbd>/</kbd> | **打开全键盘快捷键速查面板** | 全局 |
@@ -145,74 +145,75 @@ TagMesh 专为高阶键盘操作者打造，99% 的操作无需离开主键区�
 
 ---
 
-## ☁️ Cloudflare 零到一保姆级部署指南
+## ☁️ 完整 Cloudflare 零到一部署教程
 
-TagMesh 完美适配 **Cloudflare 全套 Serverless 基础设施**（Workers + D1 SQLite 数据库 + R2 零出站费存储）。以下是完整的零到一部署教程：
+TagMesh 专为 **Cloudflare 全套 Serverless 边缘架构**（Workers + D1 SQLite 数据库）设计，零维护成本、全球毫秒级加速。
 
-### 🛠️ 步骤 1：安装依赖与登录 Cloudflare 账号
-确保本地已安装 [Node.js (v18+)](https://nodejs.org/) 与 Git，然后执行：
+我们提供 **两条部署路径**：
+- 🌟 **路径一：GitHub Actions 全自动 CI/CD 部署（推荐，省心全自动）**
+- 💻 **路径二：本地命令行直接部署（适合开发者快速上线）**
+
+---
+
+### 🌟 路径一：GitHub Actions 全自动 CI/CD 部署（推荐）
+
+通过 GitHub Actions，你只需在本地 `git push`，云端就会全自动编译并发布到 Cloudflare 边缘网络！
+
+#### 1. 登录 Cloudflare 创建 D1 数据库
+1. 访问 [Cloudflare 控制台](https://dash.cloudflare.com/)；
+2. 点击左侧栏 **Storage & Databases（存储与数据库）** -> **D1 SQL Database**；
+3. 点击 **Create database**，名字填写 `tagmesh-db`；
+4. 创建成功后，复制页面显示的 **Database ID**（一串 UUID，例如 `132a4651-9da7-4fb8-8e17-11ffb4354d10`）；
+5. 点击该数据库详情页中的 **Console（控制台）**，复制本项目根目录的 [`schema.sql`](./schema.sql) 全部内容粘贴进去，点击 **Execute** 执行建表。
+
+#### 2. 获取 Cloudflare API Token 与 Account ID
+- **API Token**：点击 Cloudflare 右上角头像 -> **My Profile（我的个人资料）** -> **API Tokens** -> 点击 **Create Token** -> 选用 **Edit Cloudflare Workers** 模板生成并复制 Token；
+- **Account ID**：返回 Cloudflare 仪表盘主页，在右侧侧边栏直接复制 **Account ID**。
+
+#### 3. 在 GitHub 仓库配置 3 个安全密钥 (Secrets)
+打开你的 GitHub 仓库 -> **Settings** -> **Secrets and variables** -> **Actions** -> 点击 **New repository secret** 添加以下 3 个密钥：
+
+| Secret 名称 | 填入内容 | 说明 |
+| :--- | :--- | :--- |
+| `CLOUDFLARE_API_TOKEN` | 步骤 2 生成的 API Token | 用于授权 GitHub 部署 Worker |
+| `CLOUDFLARE_ACCOUNT_ID` | 步骤 2 复制的 Account ID | 你的 Cloudflare 账户编号 |
+| `CLOUDFLARE_D1_DATABASE_ID` | 步骤 1 复制的 D1 Database ID | 真实的 D1 数据库 UUID（完全私密隔离） |
+
+🎉 **配置完成！** 以后只要向 GitHub `main` 分支提交推送代码，GitHub Actions 会在 30 秒内全自动构建上线！在 Actions 运行日志中即可获取你的专属线上网址。
+
+---
+
+### 💻 路径二：本地命令行直接部署
+
+适合喜欢在本地终端掌控全流程的开发者：
 
 ```bash
-# 1. 克隆代码仓库
+# 1. 克隆仓库并安装依赖
 git clone https://github.com/SaulGoodManC99/TagMesh.git
 cd TagMesh
-
-# 2. 安装项目全部依赖
 npm install
 
-# 3. 登录 Cloudflare 账号（会调起浏览器完成 OAuth 授权）
+# 2. 登录 Cloudflare 账号
 npx wrangler login
-```
 
----
-
-### 🗄️ 步骤 2：创建 Cloudflare D1 数据库
-D1 是 Cloudflare 提供的边缘 SQLite 数据库，具备极高的读写性能：
-
-```bash
-# 创建名为 tagmesh-db 的数据库
+# 3. 创建远程 D1 数据库
 npx wrangler d1 create tagmesh-db
-```
+# 将终端输出的 database_id 填入 wrangler.toml 的 database_id 字段中
 
-执行后终端会输出类似如下内容：
-```text
-✅ Successfully created DB 'tagmesh-db'!
-[[d1_databases]]
-binding = "DB"
-database_name = "tagmesh-db"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-```
-
-👉 **修改 `wrangler.toml` 文件**：将终端输出的 `database_id` 替换填入项目根目录 `wrangler.toml` 文件的第 14 行中。
-
----
-
-### 📜 步骤 3：初始化数据库表结构与 FTS5 虚拟表
-执行项目自带的 `schema.sql`，一键初始化笔记表、索引以及 FTS5 全文搜索虚拟表：
-
-```bash
-# 在远程 Cloudflare D1 数据库执行建表 SQL
+# 4. 执行远程建表与 FTS5 虚拟表初始化
 npm run db:init:remote
-```
 
----
-
-### 🚀 步骤 4：构建前端产物并一键部署至边缘网络
-
-```bash
-# 1. 编译前端生产包（产物自动输出至 dist/）
+# 5. 编译前端生产包并发布 Worker
 npm run build
-
-# 2. 一键发布部署到 Cloudflare Workers 边缘网络
 npm run worker:deploy
 ```
 
-部署成功后，终端将输出您的专属线上访问域名，例如：  
-`https://tagmesh-markdown.<你的子域名>.workers.dev`
+部署成功后，终端将输出你的线上域名：  
+`https://tagmesh-markdown.<你的子域>.workers.dev`
 
 ---
 
-### 🌐 步骤 5：绑定自定义域名（可选）
+### 🌐 自定义域名绑定（可选）
 1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)；
 2. 进入 **Workers & Pages** -> 选择 **tagmesh-markdown**；
 3. 点击 **Settings** -> **Domains & Routes** -> **Add Custom Domain**，输入你的自定义域名（如 `notes.yourdomain.com`）即可秒级生效！
@@ -249,7 +250,7 @@ TagMesh 在 `/mcp` 原生提供符合标准 **Model Context Protocol (JSON-RPC 2
       "args": [
         "-y",
         "@modelcontextprotocol/server-fetch",
-        "https://你的域名/mcp"
+        "https://你的线上域名/mcp"
       ]
     }
   }
@@ -262,7 +263,7 @@ TagMesh 在 `/mcp` 原生提供符合标准 **Model Context Protocol (JSON-RPC 2
 
 在 Cursor Settings -> Features -> MCP Servers 中添加：
 - **Type**: `sse` / `http`
-- **URL**: `https://你的域名/mcp`
+- **URL**: `https://你的线上域名/mcp`
 </details>
 
 ---
