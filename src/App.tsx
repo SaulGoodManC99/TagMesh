@@ -106,6 +106,24 @@ export const App: React.FC = () => {
           await seed10GuestSampleNotes();
         }
 
+        // Pull latest notes from D1 (including any created via MCP)
+        try {
+          const { fetchRemoteNotes } = await import('./services/api');
+          const remoteNotes = await fetchRemoteNotes();
+          if (remoteNotes.length > 0) {
+            const { db } = await import('./db/dexie');
+            for (const rNote of remoteNotes) {
+              await db.notes.put({
+                ...rNote,
+                isDirty: false,
+                syncedAt: rNote.syncedAt || Date.now(),
+              });
+            }
+          }
+        } catch {
+          // ignore offline
+        }
+
         const notes = await getActiveNotes();
         const hasSeededAdmin = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_sample_notes_v1') === 'true';
 

@@ -48,6 +48,24 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           await seed10GuestSampleNotes();
         }
 
+        // Pull latest notes from D1 (including any created via MCP)
+        try {
+          const { fetchRemoteNotes } = await import('../services/api');
+          const remoteNotes = await fetchRemoteNotes();
+          if (remoteNotes.length > 0) {
+            const { db } = await import('../db/dexie');
+            for (const rNote of remoteNotes) {
+              await db.notes.put({
+                ...rNote,
+                isDirty: false,
+                syncedAt: rNote.syncedAt || Date.now(),
+              });
+            }
+          }
+        } catch {
+          // ignore offline
+        }
+
         const hasSeeded = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_sample_notes_v1') === 'true';
         if (!hasSeeded) {
           const notes = await getActiveNotes();

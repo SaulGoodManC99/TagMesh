@@ -41,6 +41,21 @@ export async function syncNoteRemote(note: Note): Promise<SyncResponse> {
 }
 
 /**
+ * Pull remote notes from Cloudflare D1
+ */
+export async function fetchRemoteNotes(limit = 100, offset = 0): Promise<Note[]> {
+  try {
+    const res = await fetch(`${API_BASE}/notes?limit=${limit}&offset=${offset}`);
+    if (!res.ok) return [];
+    const data = await res.json() as { notes: Note[] };
+    return Array.isArray(data.notes) ? data.notes : [];
+  } catch (err) {
+    console.warn('[SyncEngine] fetchRemoteNotes failed:', err);
+    return [];
+  }
+}
+
+/**
  * Upload image screenshot directly to Cloudflare R2
  */
 export async function uploadImageToR2(file: File | Blob): Promise<{ url: string; key: string }> {
