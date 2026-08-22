@@ -1,71 +1,199 @@
-# TagMesh Markdown 🚀
+# TagMesh 🌸
 
-> **彻底摒弃“标题”与“文件夹”、全键盘驱动、仅依靠正文随处穿插的 `#标签` 组织的高性能 Markdown 笔记系统**  
-> 纯粹书写体验 + 纯净 Serverless MCP 知识检索接口。
+<div align="center">
 
----
+<img src="./public/fonts/ChaoXiaoSheZhongYuan.ttf" alt="TagMesh Banner" width="0" height="0" />
 
-## 🌟 核心设计理念 (Architecture Philosophy)
+[![React 19](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Tailwind CSS v4](https://img.shields.io/badge/TailwindCSS-v4.0.9-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
+[![R2 Storage](https://img.shields.io/badge/R2-Object_Storage-FF6C37?style=for-the-badge&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
+[![Local-First](https://img.shields.io/badge/Architecture-Local--First_Dexie-10B981?style=for-the-badge)](https://dexie.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-1. **无标题 & 无文件夹设计 (Zero Titles & Folders)**：
-   - 彻底取消独立的 Title 实体与层级目录树。笔记即纯粹的 Markdown 文本流。
-   - 分类全靠正文中任意位置键入的 `#标签`（如 `#cloudflare`、`#架构`、`#todo`）。
-   - 列表展示自动截取首行非空文字作为预览摘要。
-2. **行内 HashTag 实时 Badge 渲染与自动补全**：
-   - Tiptap 实时将 `#tag` 渲染为精致的 Badge 徽章，点击徽章即可直接过滤该标签下的所有笔记。
-   - 键入 `#` 字符自动唤起已有标签的智能补全下拉列表。
-3. **纯标签聚合侧边栏 (Tag Mesh Slide-over)**：
-   - 按 `Cmd + \` 呼出侧边栏，按实时频次聚合全库所有标签（如 `#all (42)`、`#untagged (3)`、`#cloudflare (12)`）。
-4. **全局命令中枢 (Cmd + K)**：
-   - 基于 `cmdk` 打造，支持全文 FTS5 搜索、按 `#` 搜标签，输入文字直接回车创建新笔记。
-5. **剪贴板直传 Cloudflare R2**：
-   - 截图直接 `Ctrl+V` / `Cmd+V` 粘贴，静默上传至 Cloudflare R2 对象存储（0 出站流量费），即时渲染为 Markdown 语法。
-6. **纯净 Serverless MCP 接口（无端内 AI）**：
-   - 边缘端提供 `/mcp/call` 接口及 Bearer 认证，供外部 Claude Desktop 或 Cursor 调用（`search_by_tag`, `search_fulltext`, `read_note`, `create_or_update_note`）。
-   - 无任何端内 AI 生成或冗余提词功能，回归极致纯粹。
+**A keyboard-driven, folderless & titleless Markdown journal system with Claymorphic aesthetics, multi-device sync, dynamic Danmaku plaza, and Model Context Protocol (MCP) serverless interface.**
+
+[English](./README.md) • [简体中文](./README_CN.md)
+
+</div>
 
 ---
 
-## ⚡ 全键盘极速快捷键 (Keyboard-First)
+## 🌟 Highlights & Philosophy
 
-| 快捷键 | 作用 | 场景 |
+TagMesh reimagines personal note-taking and digital gardening through a **fluid, tag-woven network**, moving beyond hierarchical folder fatigue and rigid title structures.
+
+```
+       #travel                     #ideas
+          \                         /
+           \------- [ Note ] ------/
+          /         /      \       \
+   #photography    /        \     #cloudflare
+                  /          \
+             #journal       #todo
+```
+
+### 1. 🏷️ Zero Titles & Zero Folders (Tag-Woven Mesh)
+- **Titleless & Folderless**: Notes are pure Markdown streams. Categorization happens organically anywhere in your text via `#hashtags` (e.g. `#cloudflare`, `#ideas`, `#todo`).
+- **Inline Badge Rendering**: Tiptap automatically renders `#tag` into clickable interactive clay badges.
+- **Smart `#` Autocomplete**: Typing `#` opens an intelligent autocomplete suggestion dropdown for instant reuse of existing tags.
+
+### 2. 🎨 Claymorphism Aesthetic & Dimensional Mood Themes
+- **Claymorphic UI**: Ultra-smooth tactile feedback, rounded clay pills, playful micro-interactions, and spatial shadows.
+- **Mood Themes**: Switch seamlessly between 6 dimensional themes:
+  - 🌸 **Sakura Snow** (*Cherry blossoms & soft blush light*)
+  - 🌊 **Deep Ocean** (*Cyan abyssal waves*)
+  - 🍵 **Zen Matcha** (*Quiet tea gardens & organic earth*)
+  - 🌌 **Cosmic Nebula** (*Stardust & deep space violet*)
+  - 👑 **Gilded Palace** (*Imperial amber & velvet elegance*)
+  - 🍦 **Vanilla Paper** (*Warm cream & tactile handmade stationery*)
+
+### 3. 💬 Cross-Device Real-Time Danmaku Plaza
+- **Atmospheric Floating Barrage**: Experience community thoughts, inspirations, and ambient note excerpts floating across dynamic tracks.
+- **Multi-Device Unified Sync**: Barrages launched from mobile appear instantly on desktop screens, with real-time reaction hearts and celebration particles.
+- **Anti-Collision Safe Tracks**: Intelligent multi-lane cruise collision avoidance, responsive track scaling (4 lanes on mobile, 6 on desktop), and instant curator moderation.
+
+### 4. 🧭 6 Dimension Gallery Views
+Explore your knowledge garden across 6 distinct perspectives:
+- **🗂️ Bento Grid**: Responsive modern bento layout with tag filters and word density tags.
+- **🎡 3D Carousel**: Spatial 3D cylinder rotating card deck with sound feedback.
+- **🌌 Galaxy Mesh**: Dynamic force-directed graph visualizing relationships between tags and interconnected notes.
+- **🖼️ Polaroid Board**: Casual vintage pinned cards with rotation offsets and paper clips.
+- **📅 Timeline Stream**: Chronological river tracking your thinking evolution.
+- **🎨 Floating Canvas**: Draggable free-form spatial canvas.
+
+### 5. ⚡ Keyboard-First & Command Palette (`Cmd + K`)
+- **Global Command Central (`Cmd + K`)**: Instant FTS5 full-text search, tag switching, or type text and hit `Enter` to create notes in 100ms.
+- **Rich Shortcut Engine**: `Cmd + \` to toggle sidebar, `Cmd + N` for new note, `Cmd + S` for instant sync, `Cmd + Shift + L` for bilingual switch.
+
+### 6. 🔌 Pure Serverless MCP Knowledge Interface
+- Integrated **Model Context Protocol (MCP)** endpoint at `/mcp` with Bearer Token authentication.
+- Seamlessly query and create notes from **Claude Desktop**, **Cursor**, or any external AI agent without clunky embedded chat UIs.
+
+---
+
+## ⚡ Keyboard Shortcuts Cheat Sheet
+
+| Shortcut | Description | Scope |
 | :--- | :--- | :--- |
-| **`Cmd + K` / `Ctrl + K`** | 唤起全局命令中枢 (全文搜索 / 输入直接回车建笔记) | 全局 |
-| **`Cmd + \` / `Ctrl + \`** | 展开/收起左侧纯标签聚合侧边栏 | 全局 |
-| **`Cmd + N` / `Ctrl + N`** | 极速新建空白笔记 | 全局 |
-| **`Cmd + S` / `Ctrl + S`** | 强制触发立即同步 | 全局 |
-| **`#`** | 唤起已有标签智能补全建议 | 编辑器内 |
-| **`Cmd + Shift + L`** | 一键切换中英文双语界面 (EN / 中文) | 全局 |
-| **`Cmd + /` / `Ctrl + /`** | 打开快捷键说明面板 | 全局 |
-| **`Esc`** | 关闭当前弹窗 / 侧边栏 | 全局 |
+| **`Cmd + K` / `Ctrl + K`** | Open Global Command Palette (Fulltext Search & Quick Create) | Global |
+| **`Cmd + \` / `Ctrl + \`** | Toggle Left TagMesh Slide-over Sidebar | Global |
+| **`Cmd + N` / `Ctrl + N`** | Instant Create Blank Note | Global |
+| **`Cmd + S` / `Ctrl + S`** | Trigger Manual Zero-Sync to Cloudflare D1/R2 | Global |
+| **`#`** | Trigger Hashtag Autocomplete Menu | Editor |
+| **`Cmd + Shift + L`** | Toggle Bilingual UI (English / 简体中文) | Global |
+| **`Cmd + /` / `Ctrl + /`** | Open Keyboard Shortcuts Cheatsheet Modal | Global |
+| **`Esc`** | Close Modals, Command Palette or Sidebars | Global |
 
 ---
 
-## 🛠️ 全栈技术架构
+## 🏗️ Architecture & Tech Stack
 
-- **前端**：React 19 + Tailwind CSS v4 + Dexie.js (IndexedDB 离线优先) + Tiptap v2 + `cmdk` + Lucide 图标。
-- **后端**：Cloudflare Workers + Hono.js。
-- **数据库**：Cloudflare D1 (SQLite + FTS5 全文索引虚拟表)。
-- **存储**：Cloudflare R2 (Markdown 源文件与图片存储，0 出站流量费)。
-- **协议**：Serverless Model Context Protocol (MCP) JSON-RPC 2.0。
+```mermaid
+graph TD
+    subgraph Client["🖥️ Frontend (React 19 + Vite + Tailwind CSS v4)"]
+        UI["Clay UI & 6-Dimension Gallery"]
+        Editor["Tiptap v2 Editor (Hashtag & R2 Paste)"]
+        LocalDB["Dexie.js (IndexedDB Local-First Engine)"]
+    end
+
+    subgraph Edge["⚡ Cloudflare Serverless Edge"]
+        Worker["Cloudflare Worker (Hono.js)"]
+        D1["Cloudflare D1 (SQLite + FTS5 Fulltext)"]
+        R2["Cloudflare R2 (Markdown Snapshots & Images)"]
+        MCP["MCP JSON-RPC 2.0 Endpoint"]
+    end
+
+    Editor -->|Instant write| LocalDB
+    LocalDB -->|1.5s Debounced Sync /api/notes/sync| Worker
+    Worker -->|Write records| D1
+    Worker -->|Stream Markdown & Images| R2
+    Worker -->|Expose knowledge tools| MCP
+```
+
+- **Frontend**: React 19, Vite, Tailwind CSS v4, Dexie.js (IndexedDB), Tiptap v2, `cmdk`, Lucide React, Canvas Confetti.
+- **Backend / Edge**: Cloudflare Workers, Hono.js.
+- **Database**: Cloudflare D1 (SQLite + FTS5 fulltext search virtual tables).
+- **Object Storage**: Cloudflare R2 (0 Egress Fees image hosting and `.md` storage).
+- **AI Protocol**: Model Context Protocol (MCP) JSON-RPC 2.0.
 
 ---
 
-## 🚀 启动与开发
+## 🚀 Quick Start
 
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (installed automatically via devDependencies)
+
+### 2. Installation
 ```bash
-# 安装依赖
-npm install
+# Clone the repository
+git clone https://github.com/SaulGoodManC99/TagMesh.git
+cd TagMesh
 
-# 启动开发服务器 (http://localhost:5173)
+# Install dependencies
+npm install
+```
+
+### 3. Development
+```bash
+# Start frontend development server (supports LAN access at 0.0.0.0:5173)
 npm run dev
 
-# 编译生产版本
-npm run build
+# Start Cloudflare Worker backend locally
+npm run worker:dev
+```
 
-# 初始化本地 D1 SQLite 数据库与 FTS5 虚拟表
+### 4. Build for Production
+```bash
+# Type check and build Vite bundle
+npm run build
+```
+
+### 5. Cloudflare D1 & Worker Deployment
+```bash
+# Initialize local D1 database schema
 npm run db:init
 
-# 部署至 Cloudflare Workers
+# Deploy Worker to Cloudflare Edge
 npm run worker:deploy
 ```
+
+---
+
+## 🤖 MCP (Model Context Protocol) Setup
+
+TagMesh exposes standard MCP tools at `/mcp` for external AI clients:
+
+1. In **Claude Desktop** (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "tagmesh": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch",
+        "http://127.0.0.1:8787/mcp"
+      ]
+    }
+  }
+}
+```
+
+2. Available Tools:
+- `search_by_tag`: Search notes by specific hashtags.
+- `search_fulltext`: FTS5 full-text query across all notes.
+- `read_note`: Retrieve note markdown and metadata by ID.
+- `create_or_update_note`: Create or update note streams remotely.
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See `LICENSE` for more information.
+
+<div align="center">
+Crafted with 💖 and clay magic by <b>SaulGoodManC99</b>
+</div>
