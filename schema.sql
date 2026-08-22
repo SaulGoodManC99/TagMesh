@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS notes (
     is_deleted INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,          -- Epoch ms
     updated_at INTEGER NOT NULL,          -- Epoch ms
-    synced_at INTEGER NOT NULL            -- Epoch ms
+    synced_at INTEGER NOT NULL,           -- Epoch ms
+    author TEXT NOT NULL DEFAULT 'guest', -- 'admin' or 'guest'
+    is_official INTEGER NOT NULL DEFAULT 0 -- 1 if official note, 0 otherwise
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at DESC);

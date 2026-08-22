@@ -42,7 +42,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
-  const { isAdmin } = useAuth();
+  const { isAdmin, openAuthModal } = useAuth();
   const [isGachaOpen, setIsGachaOpen] = useState(false);
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
 
@@ -372,6 +372,20 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         <div className="flex items-center gap-1.5 text-neutral-400">
           <span>⚡ Cloudflare Workers + D1 Edge</span>
         </div>
+
+        <span className="text-neutral-300 hidden sm:inline">•</span>
+
+        <button
+          type="button"
+          onClick={() => {
+            playPop();
+            openAuthModal();
+          }}
+          className="px-3 py-1 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 font-bubble font-bold text-xs shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1"
+        >
+          <span>👑</span>
+          <span>{isAdmin ? (locale === 'zh' ? '馆长数据控制台' : 'Admin Console') : (locale === 'zh' ? '馆长入口' : 'Admin Portal')}</span>
+        </button>
       </footer>
 
       {/* Lucky Gacha Modal */}

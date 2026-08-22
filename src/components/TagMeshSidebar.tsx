@@ -22,7 +22,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Note, TagCount } from '../types/note';
-import { db, getAllTagCounts, searchNotesLocal, getOrCreateActiveNote, getActiveNotes } from '../db/dexie';
+import { db, getAllTagCounts, searchNotesLocal, getOrCreateActiveNote, getActiveNotes, createNewNote } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
@@ -52,7 +52,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
   onDeleteNoteById,
 }) => {
   const { locale } = useI18n();
-  const { isAdmin } = useAuth();
+  const { isAdmin, openAuthModal } = useAuth();
   const [sidebarTab, setSidebarTab] = useState<'notes' | 'trash'>('notes');
   const [tagSearch, setTagSearch] = useState('');
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
@@ -144,13 +144,18 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
       ids.forEach(id => deleteNoteRemote(id));
     });
 
-    // If active note was in the deleted list, switch to next available active note or clean blank note
+    // If active note was in the deleted list, switch to next available active note
     if (activeNote && ids.includes(activeNote.id)) {
-      const next = await getOrCreateActiveNote({
-        author: isAdmin ? 'admin' : 'guest',
-        isOfficial: Boolean(isAdmin)
-      });
-      onSelectNote(next);
+      const remaining = await getActiveNotes(isAdmin ? undefined : 'guest');
+      if (remaining.length > 0) {
+        onSelectNote(remaining[0]);
+      } else {
+        const next = await createNewNote('', [], {
+          author: isAdmin ? 'admin' : 'guest',
+          isOfficial: Boolean(isAdmin)
+        });
+        onSelectNote(next);
+      }
     }
 
     setSelectedIds(new Set());
@@ -684,6 +689,25 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
               )}
             </>
           )}
+        </div>
+
+        {/* 7. Bottom Sidebar Action Footer: 👑 馆长后台控制台 / 🌱 游客 */}
+        <div className="p-2.5 border-t border-amber-900/10 bg-white/80 backdrop-blur-xs flex items-center justify-between gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              playPop();
+              openAuthModal();
+            }}
+            className={`w-full py-2 px-3 rounded-2xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border shadow-3xs hover:scale-[1.02] active:scale-95 ${
+              isAdmin
+                ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-neutral-900 border-amber-300 shadow-sm'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+            }`}
+          >
+            <span>{isAdmin ? '👑' : '🌱'}</span>
+            <span>{isAdmin ? (locale === 'zh' ? '👑 馆长后台控制台' : '👑 Admin Console') : (locale === 'zh' ? '🔐 登录馆长' : '🔐 Login Admin')}</span>
+          </button>
         </div>
         </div>
       </aside>

@@ -141,8 +141,8 @@ export async function ensureNotesAuthorSeparation(): Promise<void> {
       let changed = false;
       const updates: Partial<Note> = {};
 
-      // If it's one of sample notes or has no author, classify by official status
-      if (note.id.startsWith('sample_') || note.isOfficial === true) {
+      // If it's one of sample notes, official note, or admin-authored note
+      if (note.id.startsWith('sample_') || note.isOfficial === true || note.author === 'admin') {
         if (note.author !== 'admin' || note.isOfficial !== true) {
           updates.isOfficial = true;
           updates.author = 'admin';

@@ -35,7 +35,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
-  const { isAdmin } = useAuth();
+  const { isAdmin, openAuthModal } = useAuth();
 
   const [selectedTag, setSelectedTag] = useState<string>('#all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -480,6 +480,17 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
               className="hover:text-pink-600 transition cursor-pointer font-bold"
             >
               {locale === 'zh' ? '🏰 返回乐园首页' : '🏰 Home Portal'}
+            </button>
+
+            <button
+              onClick={() => {
+                playPop();
+                openAuthModal();
+              }}
+              className="px-3 py-1 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 font-bubble font-bold text-xs shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1"
+            >
+              <span>👑</span>
+              <span>{isAdmin ? (locale === 'zh' ? '馆长数据控制台' : 'Admin Console') : (locale === 'zh' ? '馆长入口' : 'Admin Portal')}</span>
             </button>
 
             <button

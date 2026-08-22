@@ -226,8 +226,13 @@ export const App: React.FC = () => {
     showToast(locale === 'zh' ? '🗑 手账已移入废纸篓' : '🗑 Note Moved to Trash');
     
     if (activeNote?.id === id) {
-      const next = await getOrCreateActiveNote({ author: isAdmin ? 'admin' : 'guest' });
-      setActiveNote(next);
+      const remaining = await getActiveNotes(isAdmin ? undefined : 'guest');
+      if (remaining.length > 0) {
+        setActiveNote(remaining[0]);
+      } else {
+        const next = await createNewNote('', [], { author: isAdmin ? 'admin' : 'guest', isOfficial: Boolean(isAdmin) });
+        setActiveNote(next);
+      }
     }
   }, [activeNote?.id, isGuest, isAdmin, locale, showToast]);
 

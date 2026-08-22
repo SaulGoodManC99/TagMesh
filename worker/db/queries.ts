@@ -13,6 +13,8 @@ export interface DbNoteRow {
   created_at: number;
   updated_at: number;
   synced_at: number;
+  author?: string;
+  is_official?: number;
 }
 
 export function rowToNote(row: DbNoteRow): Note {
@@ -22,6 +24,9 @@ export function rowToNote(row: DbNoteRow): Note {
   } catch {
     tags = [];
   }
+
+  const isOfficial = Boolean(row.is_official || (row.author === 'admin'));
+  const author = (row.author || (isOfficial ? 'admin' : 'guest')) as 'admin' | 'guest';
 
   return {
     id: row.id,
@@ -36,6 +41,8 @@ export function rowToNote(row: DbNoteRow): Note {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     syncedAt: row.synced_at,
+    isOfficial,
+    author,
   };
 }
 
@@ -68,6 +75,8 @@ export async function syncNote(
   const now = Date.now();
   const nextVersion = existing ? existing.version + 1 : 1;
   const tagsJson = JSON.stringify(note.tags || []);
+  const author = note.author || (note.isOfficial ? 'admin' : 'guest');
+  const isOfficial = note.isOfficial ? 1 : 0;
 
   if (existing) {
     await db
@@ -82,7 +91,9 @@ export async function syncNote(
             is_pinned = ?,
             is_deleted = ?,
             updated_at = ?,
-            synced_at = ?
+            synced_at = ?,
+            author = ?,
+            is_official = ?
         WHERE id = ?
       `)
       .bind(
@@ -96,6 +107,8 @@ export async function syncNote(
         note.isDeleted ? 1 : 0,
         note.updatedAt,
         now,
+        author,
+        isOfficial,
         note.id
       )
       .run();
@@ -104,8 +117,9 @@ export async function syncNote(
       .prepare(`
         INSERT INTO notes (
           id, raw_markdown, excerpt, tags_json, word_count, char_count,
-          version, is_pinned, is_deleted, created_at, updated_at, synced_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          version, is_pinned, is_deleted, created_at, updated_at, synced_at,
+          author, is_official
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
         note.id,
@@ -119,7 +133,9 @@ export async function syncNote(
         note.isDeleted ? 1 : 0,
         note.createdAt || now,
         note.updatedAt || now,
-        now
+        now,
+        author,
+        isOfficial
       )
       .run();
   }
