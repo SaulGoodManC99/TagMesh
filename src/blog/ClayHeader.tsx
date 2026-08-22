@@ -19,6 +19,7 @@ import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { isSoundEnabled, toggleSound, playPop, playSoftTick } from './utils/soundEffects';
 import { useClayTheme } from './utils/clayThemes';
+import { APP_VERSION } from '../constants/version';
 
 export interface ClayHeaderProps {
   onGoToEditor: () => void;
@@ -62,13 +63,16 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="font-bubble font-bold text-lg sm:text-2xl tracking-tight text-neutral-800">
                 TagMesh
               </span>
+              <span className="px-2 py-0.5 rounded-full bg-rose-500/90 text-white font-mono text-[10px] sm:text-xs font-extrabold shadow-3xs">
+                {APP_VERSION}
+              </span>
             </div>
             <p className="text-[10px] sm:text-[11px] font-cute text-neutral-400 -mt-0.5 hidden md:block">
-              {locale === 'zh' ? '🎈 趣味黏土手账与思维织网乐园' : '🎈 A Playful Claymorphic Inspiration Journal & Thought Mesh'}
+              {locale === 'zh' ? '🎈 趣味黏土笔记与思维织网乐园' : '🎈 A Playful Claymorphic Inspiration Notes & Thought Mesh'}
             </p>
           </div>
         </div>
@@ -320,7 +324,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               >
                 <div className="flex items-center gap-2.5">
                   <PenTool className="w-4 h-4 shrink-0" />
-                  <span>{locale === 'zh' ? '进入手账工作台' : 'Open Workspace'}</span>
+                  <span>{locale === 'zh' ? '进入笔记工作台' : 'Open Workspace'}</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-white/80" />
               </button>

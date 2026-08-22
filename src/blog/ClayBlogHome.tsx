@@ -257,7 +257,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             </div>
             <p className="text-[11px] sm:text-xs font-cute text-neutral-400 -mt-0.5 line-clamp-1">
               {locale === 'zh'
-                ? `共展出 ${totalNotes} 篇手账 • 5 大视界交互漫游`
+                ? `共展出 ${totalNotes} 篇笔记 • 5 大视界交互漫游`
                 : `${totalNotes} notes exhibited • 5 Exhibition Universes`}
             </p>
           </div>
@@ -309,7 +309,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
                   : 'text-emerald-700 hover:bg-emerald-50'
               }`}
             >
-              <span>🌱 {locale === 'zh' ? '旅人手账' : 'Guests'} ({guestNotesCount})</span>
+              <span>🌱 {locale === 'zh' ? '旅人笔记' : 'Guests'} ({guestNotesCount})</span>
             </button>
           </div>
 
@@ -354,16 +354,16 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             </div>
             <h3 className="font-bubble text-xl font-bold text-neutral-800 mb-1.5">
               {authorFilter === 'admin'
-                ? (locale === 'zh' ? '暂无馆长官方手账' : 'No curator notes')
+                ? (locale === 'zh' ? '暂无馆长官方笔记' : 'No curator notes')
                 : authorFilter === 'guest'
-                ? (locale === 'zh' ? '暂无旅人随笔手账' : 'No guest notes')
+                ? (locale === 'zh' ? '暂无旅人随笔笔记' : 'No guest notes')
                 : (locale === 'zh' ? '当前分类暂无笔记' : 'No notes under this tag')}
             </h3>
             <p className="font-cute text-xs text-neutral-500 mb-6 max-w-xs mx-auto leading-relaxed">
               {authorFilter === 'admin'
-                ? (locale === 'zh' ? '馆长尚未在当前标签下创作官方手账，可在工作台以馆长身份新建。' : 'No curator notes under this tag.')
+                ? (locale === 'zh' ? '馆长尚未在当前标签下创作官方笔记，可在工作台以馆长身份新建。' : 'No curator notes under this tag.')
                 : authorFilter === 'guest'
-                ? (locale === 'zh' ? '还没有旅人在此分类下留下手账，快去工作台写下第一篇灵感吧！' : 'No guest notes yet. Create your first note in workspace!')
+                ? (locale === 'zh' ? '还没有旅人在当前分类下留下笔记，快去工作台写下第一篇灵感吧！' : 'No guest notes yet. Create your first note in workspace!')
                 : (locale === 'zh' ? '可以尝试切换其他标签，或前往工作台记录新的想法！' : 'Try switching tags or create a note in workspace!')}
             </p>
             <div className="flex items-center justify-center gap-3">

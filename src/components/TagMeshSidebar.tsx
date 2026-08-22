@@ -30,6 +30,7 @@ import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
 import { triggerConfettiShower } from '../blog/utils/confetti';
 import { ClayDeleteModal } from './ClayDeleteModal';
 import { ClayBatchDeleteModal } from './ClayBatchDeleteModal';
+import { format24HourDateTime } from '../blog/utils/dateFormatter';
 
 export interface TagMeshSidebarProps {
   isOpen: boolean;
@@ -234,19 +235,19 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                 {sidebarTab === 'trash' ? <Trash2 className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
               </div>
               <div className="min-w-0 flex-1">
-                <span className="font-bubble font-bold text-sm sm:text-base text-neutral-800 tracking-tight block truncate">
+                <span className="font-bubble font-bold text-base text-neutral-900 block">
                   {sidebarTab === 'trash'
-                    ? (locale === 'zh' ? '🗑️ 废纸篓' : 'Recycle Bin')
+                    ? (locale === 'zh' ? '🗑 废纸篓' : 'Recycle Bin')
                     : isBatchMode
                     ? (locale === 'zh' ? '👑 批量管理' : 'Batch Manage')
-                    : (locale === 'zh' ? '灵感手账本' : 'My Journal')}
+                    : (locale === 'zh' ? '灵感笔记库' : 'My Notes')}
                 </span>
                 <span className="text-[11px] font-cute text-neutral-400 -mt-0.5 block truncate">
                   {sidebarTab === 'trash'
-                    ? (locale === 'zh' ? `共 ${deletedCount} 篇已删手账` : `${deletedCount} in trash`)
+                    ? (locale === 'zh' ? `共 ${deletedCount} 篇已删笔记` : `${deletedCount} in trash`)
                     : isBatchMode 
                     ? (locale === 'zh' ? `已勾选 ${selectedIds.size} 篇` : `${selectedIds.size} selected`)
-                    : `${totalCount} ${locale === 'zh' ? '篇手账' : 'notes'}`}
+                    : `${totalCount} ${locale === 'zh' ? '篇笔记' : 'notes'}`}
                 </span>
               </div>
             </div>
@@ -394,7 +395,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>
-                  {locale === 'zh' ? `立即批量删除已选 (${selectedIds.size}) 篇手账` : `Delete Selected (${selectedIds.size}) Notes`}
+                  {locale === 'zh' ? `立即批量删除已选 (${selectedIds.size}) 篇笔记` : `Delete Selected (${selectedIds.size}) Notes`}
                 </span>
               </button>
             </div>
@@ -404,7 +405,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
         {sidebarTab === 'trash' && (
           <div className="px-3 py-2.5 bg-stone-100 border-b border-stone-200 flex items-center justify-between text-xs font-bubble">
             <span className="text-stone-600 font-bold">
-              {deletedCount === 0 ? (locale === 'zh' ? '废纸篓空空如也' : 'Trash is empty') : `共 ${deletedCount} 篇已删手账`}
+              {deletedCount === 0 ? (locale === 'zh' ? '废纸篓空空如也' : 'Trash is empty') : `共 ${deletedCount} 篇已删笔记`}
             </span>
             {deletedCount > 0 && (
               <div className="flex items-center gap-1.5">
@@ -504,17 +505,14 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
           {sidebarTab === 'notes' ? (
             <>
               <div className="px-1.5 py-1 text-xs font-bubble font-bold text-neutral-500 uppercase tracking-wider flex items-center justify-between">
-                <span>{selectedTag === '#all' ? (locale === 'zh' ? '手账清单' : 'Notes List') : `${selectedTag}`}</span>
+                <span>{selectedTag === '#all' ? (locale === 'zh' ? '笔记清单' : 'Notes List') : `${selectedTag}`}</span>
                 <span>{filteredNotes.length} 篇</span>
               </div>
 
               {filteredNotes.map((note) => {
                 const isActive = activeNote?.id === note.id;
                 const isChecked = selectedIds.has(note.id);
-                const d = new Date(note.createdAt || Date.now());
-                const formattedDate = locale === 'zh'
-                  ? `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`
-                  : d.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
+                const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
 
                 const noteTags = (note.tags || []).slice(0, 2);
 
@@ -622,14 +620,11 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                 <div className="p-10 text-center text-neutral-400 font-cute flex flex-col items-center gap-2">
                   <span className="text-4xl">🍃</span>
                   <p className="text-sm font-bold">{locale === 'zh' ? '废纸篓是空的' : 'Recycle Bin is Empty'}</p>
-                  <p className="text-xs text-neutral-400">{locale === 'zh' ? '删除的手账会暂存在这里，可随时恢复' : 'Deleted notes will appear here.'}</p>
+                  <p className="text-xs text-neutral-400">{locale === 'zh' ? '删除的笔记会暂存在这里，可随时恢复' : 'Deleted notes will appear here.'}</p>
                 </div>
               ) : (
                 deletedNotes.map((note) => {
-                  const d = new Date(note.updatedAt || Date.now());
-                  const formattedDate = locale === 'zh'
-                    ? `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-                    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+                  const formattedDate = format24HourDateTime(note.updatedAt || Date.now(), locale);
 
                   return (
                     <div
@@ -639,7 +634,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                     >
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <h4 className="font-bubble text-base font-bold text-stone-700 line-clamp-1 group-hover:text-stone-900">
-                          {note.excerpt || (locale === 'zh' ? '已删手账' : 'Deleted Note')}
+                          {note.excerpt || (locale === 'zh' ? '已删笔记' : 'Deleted Note')}
                         </h4>
                         <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 text-[10px] font-bold shrink-0">
                           {locale === 'zh' ? '已删除' : 'Trash'}

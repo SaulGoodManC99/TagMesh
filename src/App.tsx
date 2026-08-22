@@ -158,7 +158,7 @@ export const App: React.FC = () => {
       if (route !== 'editor') {
         window.location.hash = '#/editor';
       }
-      showToast(locale === 'zh' ? '✨ 当前已在空白手账中' : '✨ Already in blank note');
+      showToast(locale === 'zh' ? '✨ 当前已在空白笔记中' : '✨ Already in blank note');
       return;
     }
 
@@ -171,7 +171,7 @@ export const App: React.FC = () => {
     if (route !== 'editor') {
       window.location.hash = '#/editor';
     }
-    showToast(locale === 'zh' ? '✨ 已新建空白手账' : '✨ Created new note');
+    showToast(locale === 'zh' ? '✨ 已新建空白笔记' : '✨ Created new note');
   }, [activeNote, isAdmin, locale, route, showToast]);
 
   // Select note (auto dismiss sidebar drawer on mobile)
@@ -203,7 +203,7 @@ export const App: React.FC = () => {
     if (!target) return;
 
     if (isGuest && target.isOfficial) {
-      showToast(locale === 'zh' ? '⚠️ 官方示例手账仅馆长可删除，可点击右上角登录馆长！' : '⚠️ Official notes can only be deleted by Admin!');
+      showToast(locale === 'zh' ? '⚠️ 官方示例笔记仅馆长可删除，可点击右上角登录馆长！' : '⚠️ Official notes can only be deleted by Admin!');
       return;
     }
 
@@ -212,7 +212,7 @@ export const App: React.FC = () => {
     // Sync remote deletion to Cloudflare D1
     deleteNoteRemote(id);
 
-    showToast(locale === 'zh' ? '🗑 手账已移入废纸篓' : '🗑 Note Moved to Trash');
+    showToast(locale === 'zh' ? '🗑 笔记已移入废纸篓' : '🗑 Note Moved to Trash');
     
     if (activeNote?.id === id) {
       const remaining = await getActiveNotes(isAdmin ? undefined : 'guest');
@@ -229,7 +229,7 @@ export const App: React.FC = () => {
   const handleDeleteCurrentNote = useCallback(() => {
     if (!activeNote) return;
     if (isGuest && activeNote.isOfficial) {
-      showToast(locale === 'zh' ? '⚠️ 官方示例手账仅馆长可删除，可点击右上角登录馆长！' : '⚠️ Official notes can only be deleted by Admin!');
+      showToast(locale === 'zh' ? '⚠️ 官方示例笔记仅馆长可删除，可点击右上角登录馆长！' : '⚠️ Official notes can only be deleted by Admin!');
       return;
     }
     setIsDeleteModalOpen(true);
@@ -530,7 +530,7 @@ export const App: React.FC = () => {
             title="Toggle Sidebar Drawer (⌘\)"
           >
             <PanelLeft className="w-3.5 h-3.5 text-rose-500" />
-            <span className="hidden sm:inline">{locale === 'zh' ? '手账本' : 'Journal'}</span>
+            <span className="hidden sm:inline">{locale === 'zh' ? '笔记列表' : 'Notes'}</span>
           </button>
 
           {/* Active Note Excerpt on Desktop */}
@@ -654,7 +654,7 @@ export const App: React.FC = () => {
                     className="flex items-center gap-2 px-3 py-2 rounded-2xl hover:bg-neutral-100 transition text-left cursor-pointer"
                   >
                     <Search className="w-4 h-4 text-cyan-500" />
-                    <span>{locale === 'zh' ? '搜索手账 (⌘K)' : 'Search (⌘K)'}</span>
+                    <span>{locale === 'zh' ? '搜索笔记 (⌘K)' : 'Search (⌘K)'}</span>
                   </button>
 
                   {/* Pin */}
@@ -667,7 +667,7 @@ export const App: React.FC = () => {
                       className="flex items-center gap-2 px-3 py-2 rounded-2xl hover:bg-amber-50 transition text-left cursor-pointer"
                     >
                       <Pin className="w-4 h-4 text-amber-500" />
-                      <span>{activeNote.isPinned ? (locale === 'zh' ? '取消置顶' : 'Unpin') : (locale === 'zh' ? '置顶手账' : 'Pin Note')}</span>
+                      <span>{activeNote.isPinned ? (locale === 'zh' ? '取消置顶' : 'Unpin') : (locale === 'zh' ? '置顶笔记' : 'Pin Note')}</span>
                     </button>
                   )}
 

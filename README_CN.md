@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🌸 TagMesh 灵感手账
+# 🌸 TagMesh 灵感笔记系统
 
-### **无文件夹 · 无标题 · 依托 `#标签` 网状编织的粘土拟物风 Markdown 灵感手账**
+### **无文件夹 · 无标题 · 依托 `#标签` 网状编织的粘土拟物风 Markdown 灵感笔记系统**
 
 *Ditch folders and titles. Weave thoughts organically through `#hashtags` at the edge.*
 
@@ -39,7 +39,7 @@
 | :--- | :--- | :--- |
 | <kbd>Cmd</kbd> + <kbd>K</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd> | **唤起全局命令中枢**（全文检索 / 输入直接回车建笔记） | 全局 |
 | <kbd>Cmd</kbd> + <kbd>\</kbd> / <kbd>Ctrl</kbd> + <kbd>\</kbd> | **展开 / 收起左侧纯标签聚合侧边栏** | 全局 |
-| <kbd>Cmd</kbd> + <kbd>N</kbd> / <kbd>Ctrl</kbd> + <kbd>N</kbd> | **极速新建空白手账**（100ms 快速响应） | 全局 |
+| <kbd>Cmd</kbd> + <kbd>N</kbd> / <kbd>Ctrl</kbd> + <kbd>N</kbd> | **极速新建空白笔记**（100ms 快速响应） | 全局 |
 | <kbd>#</kbd> | **键入 `#` 自动唤起已有标签智能补全菜单** | 编辑器内 |
 | <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> | **一键切换中英文双语界面**（English / 简体中文） | 全局 |
 

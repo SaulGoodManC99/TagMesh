@@ -26,6 +26,8 @@ export interface ClayPlaygroundFooterProps {
 
 const STAMP_EMOJIS = ['🐾', '🌸', '✨', '🍡', '🍮', '💖', '🍭', '🧸'];
 
+import { APP_VERSION, getFormattedBuildTime } from '../../constants/version';
+
 export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
   totalNotes,
   totalTags,
@@ -156,7 +158,7 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
 
             <div>
               <h4 className="font-bubble text-base font-bold text-neutral-900 group-hover:text-cyan-700 transition-colors">
-                {locale === 'zh' ? '全量手账数据备份 💾' : 'Export Full Backup 💾'}
+                {locale === 'zh' ? '全量笔记数据备份 💾' : 'Export Full Backup 💾'}
               </h4>
               <p className="text-xs font-cute text-neutral-400">
                 {locale === 'zh' ? '100% 本地优先，随时一键导出全库' : '100% Local-First data ownership'}
@@ -199,11 +201,16 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
           </div>
         </div>
 
-        {/* Bottom Signature */}
-        <div className="text-center space-y-1">
-          <p className="font-bubble font-extrabold text-sm text-neutral-800">
-            TagMesh • 纯标签驱动的 3D 黏土趣味知识乐园
-          </p>
+        {/* Bottom Signature with Version & Build Time */}
+        <div className="text-center space-y-1.5">
+          <div className="flex items-center justify-center gap-2">
+            <p className="font-bubble font-extrabold text-sm text-neutral-800">
+              TagMesh • 纯标签驱动的 3D 黏土趣味知识笔记系统
+            </p>
+            <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white font-mono text-[10px] font-bold shadow-3xs">
+              {APP_VERSION}
+            </span>
+          </div>
           <p className="font-cute text-xs text-neutral-400">
             Handcrafted with 💖, Claymorphism & Local-First IndexedDB Architecture
           </p>

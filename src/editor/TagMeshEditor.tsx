@@ -48,6 +48,7 @@ import { ClayEmojiPickerModal } from './components/ClayEmojiPickerModal';
 import { EmojiItem } from './data/emojiMemeData';
 import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
 import { triggerParticleBurst } from '../blog/utils/confetti';
+import { format24HourDateTime } from '../blog/utils/dateFormatter';
 import { useClayTheme } from '../blog/utils/clayThemes';
 
 export interface TagMeshEditorProps {
@@ -297,12 +298,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
 
   const readMinutes = Math.max(1, Math.ceil((note?.wordCount || 50) / 200));
 
-  const formattedDate = note
-    ? new Date(note.createdAt || Date.now()).toLocaleDateString(
-        locale === 'zh' ? 'zh-CN' : 'en-US',
-        { year: 'numeric', month: 'long', day: 'numeric' }
-      )
-    : '';
+  const formattedDate = note ? format24HourDateTime(note.createdAt || Date.now(), locale) : '';
 
   // Synchronize read-only protection state to TipTap editor
   useEffect(() => {
@@ -328,7 +324,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
               <span className="text-3xl select-none">🗑️</span>
               <div>
                 <div className="font-bubble font-bold text-sm sm:text-base text-stone-900 flex items-center gap-1.5">
-                  <span>{locale === 'zh' ? '废纸篓预览 • 该手账已被删除（只读预览中）' : 'Trash Preview • Note is in Recycle Bin'}</span>
+                  <span>{locale === 'zh' ? '废纸篓预览 • 该笔记已被删除（只读预览中）' : 'Trash Preview • Note is in Recycle Bin'}</span>
                 </div>
                 <p className="text-xs text-stone-600 mt-0.5">
                   {locale === 'zh'
@@ -363,13 +359,13 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                 <div className="font-bubble font-bold text-sm sm:text-base text-neutral-900 flex items-center gap-1.5">
                   <span>
                     {note?.isOfficial || note?.author === 'admin'
-                      ? (locale === 'zh' ? '👑 馆长官方精选手账 • 只读保护生效中' : '👑 Curator Card • Read-Only Active')
-                      : (locale === 'zh' ? '🔒 他人手账 • 游客只读保护生效中' : '🔒 Protected Note • Read-Only Active')}
+                      ? (locale === 'zh' ? '👑 馆长官方精选笔记 • 只读保护生效中' : '👑 Curator Card • Read-Only Active')
+                      : (locale === 'zh' ? '🔒 他人笔记 • 游客只读保护生效中' : '🔒 Protected Note • Read-Only Active')}
                   </span>
                 </div>
                 <p className="text-xs text-amber-800 mt-0.5">
                   {locale === 'zh'
-                    ? '当前为游客模式，不可修改他人手账。请点击右上角「新建」创建属于你的专属灵感手账！'
+                    ? '当前为游客模式，不可修改他人笔记。请点击右上角「新建」创建属于你的专属灵感笔记！'
                     : 'Other notes are protected from editing in guest mode. Click "New" to start your own note!'}
                 </p>
               </div>
@@ -397,7 +393,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
               </span>
             ) : (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs">
-                🌱 旅人手账
+                🌱 旅人笔记
               </span>
             )}
           </div>

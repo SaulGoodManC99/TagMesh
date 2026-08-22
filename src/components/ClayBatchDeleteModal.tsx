@@ -56,7 +56,7 @@ export const ClayBatchDeleteModal: React.FC<ClayBatchDeleteModalProps> = ({
               </h3>
               <p className="font-cute text-xs text-neutral-500">
                 {locale === 'zh' 
-                  ? `已选中 ${count} 篇灵感手账` 
+                  ? `已选中 ${count} 篇灵感笔记` 
                   : `${count} notes selected for batch deletion`}
               </p>
             </div>
@@ -82,7 +82,7 @@ export const ClayBatchDeleteModal: React.FC<ClayBatchDeleteModalProps> = ({
                   {n.excerpt || (locale === 'zh' ? '空白笔记' : 'Untitled Note')}
                 </span>
                 <span className="text-[10px] text-neutral-400 font-cute">
-                  {n.author === 'admin' ? '👑 馆长手账' : '🌱 旅人手账'} • {n.wordCount || 0} 字
+                  {n.author === 'admin' ? '👑 馆长笔记' : '🌱 旅人笔记'} • {n.wordCount || 0} 字
                 </span>
               </div>
               <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[10px] font-bold shrink-0 border border-rose-100">

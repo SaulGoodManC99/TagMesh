@@ -4,10 +4,13 @@ import {
   Hash, 
   ArrowUpRight,
   Pin,
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
+import { format24HourDateTime } from './utils/dateFormatter';
 import { playPop, playChime } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
 import { renderCardMarkdownSnippet, renderInlineContent } from './utils/markdownRenderer';
@@ -34,6 +37,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Local interactive reactions
   const storageKey = `reactions_${note.id}`;
@@ -100,14 +104,12 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
     onClick();
   };
 
-  const d = new Date(note.createdAt || Date.now());
-  const formattedDate = locale === 'zh'
-    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
 
   // Dynamic excerpt length driven purely by the note's real content (organic height scaling)
   const rawLength = (note.rawMarkdown || '').length;
   const excerptMaxChars = rawLength > 300 ? 220 : rawLength > 150 ? 140 : 80;
+  const canExpand = rawLength > 100;
 
   return (
     <article
@@ -144,27 +146,27 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
       <div className="relative z-10">
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform inline-block">
+            <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform inline-flex items-center leading-none">
               {cardTheme.emoji}
             </span>
             {note.isOfficial || note.author === 'admin' ? (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs">
-                <span>👑</span>
-                <span>{locale === 'zh' ? '馆长精选' : 'Curator'}</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs leading-none">
+                <span className="leading-none text-xs">👑</span>
+                <span className="leading-none">{locale === 'zh' ? '馆长精选' : 'Curator'}</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs">
-                <span>🌱</span>
-                <span>{locale === 'zh' ? '旅人手账' : 'Guest'}</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs leading-none">
+                <span className="leading-none text-xs">🌱</span>
+                <span className="leading-none">{locale === 'zh' ? '旅人笔记' : 'Guest Note'}</span>
               </span>
             )}
             {note.isPinned && (
-              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-300 text-amber-900 text-xs font-bubble font-bold shadow-xs">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-300 text-amber-900 text-xs font-bubble font-bold shadow-xs leading-none">
                 <Pin className="w-3 h-3" />
-                <span>Pinned</span>
+                <span className="leading-none">Pinned</span>
               </span>
             )}
-            <span className="text-xs font-cute font-semibold opacity-70">
+            <span className="text-[11px] sm:text-xs font-mono font-bold opacity-75 leading-none">
               {formattedDate}
             </span>
           </div>
@@ -177,13 +179,46 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
         {/* Note Title with Natural Unconstrained Flow */}
         <h3 className="font-bubble font-extrabold text-base sm:text-lg text-neutral-900 leading-snug mb-2 group-hover:text-rose-600 transition-colors">
-          {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题灵感' : 'Untitled Note'))}
+          {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题笔记' : 'Untitled Note'))}
         </h3>
 
-        {/* Note Markdown Excerpt with Organic Natural Height Driven by Content */}
-        <div className="font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed opacity-90 mb-3.5">
-          {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
+        {/* Note Markdown Excerpt with Dynamic Organic Full Expansion Toggle */}
+        <div className="font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed opacity-90 mb-2">
+          {isExpanded ? (
+            <div className="whitespace-pre-wrap break-words leading-relaxed text-neutral-800">
+              {note.rawMarkdown}
+            </div>
+          ) : (
+            renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)
+          )}
         </div>
+
+        {/* Dynamic Expand/Collapse Full Content Pill Button */}
+        {canExpand && (
+          <div className="mb-3">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                playPop();
+                setIsExpanded(!isExpanded);
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/70 hover:bg-white text-neutral-700 font-bubble text-[11px] font-bold border border-black/5 shadow-3xs hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="w-3 h-3 text-neutral-500" />
+                  <span>{locale === 'zh' ? '收起全文' : 'Collapse'}</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3 text-neutral-500" />
+                  <span>{locale === 'zh' ? '展开全文' : 'Expand Full'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Bottom Footer: Enlarged Hashtag Pills & Emoji Reactions */}

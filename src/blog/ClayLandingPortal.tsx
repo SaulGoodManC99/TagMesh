@@ -249,10 +249,13 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       {/* 2. Dead-Center Immersive Center Stage Gateway */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-5xl mx-auto w-full select-none py-10 sm:py-16">
         
-        {/* Cute Studio Badge */}
+        {/* Cute Studio Badge with Prominent Version Tag */}
         <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/95 border border-rose-200/90 text-rose-700 font-bubble text-sm sm:text-base font-bold mb-6 shadow-sm hover:scale-102 transition-transform">
           <span className="text-xl">🎈</span>
-          <span>{locale === 'zh' ? 'TagMesh 黏土工坊 • 灵感手账' : 'TagMesh Studio • Thought Mesh'}</span>
+          <span>{locale === 'zh' ? 'TagMesh 黏土工坊 • 灵感笔记系统' : 'TagMesh Studio • Thought Mesh System'}</span>
+          <span className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-xs font-mono font-extrabold shadow-3xs">
+            {APP_VERSION}
+          </span>
         </div>
 
         {/* Giant Borderless Typewriter Headline */}
@@ -301,8 +304,9 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
           </button>
         </div>
 
-        {/* Responsive Live Telemetry Strip (Rounded Card on Mobile, Pill on Desktop) */}
-        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 p-3 sm:p-3.5 px-4 sm:px-8 rounded-3xl sm:rounded-full bg-white/95 backdrop-blur-md border-2 border-white shadow-xl text-xs sm:text-sm font-cute text-neutral-700 max-w-full">
+        {/* Responsive Live Telemetry Strip (Separated Total Visits & Today Visits) */}
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-3.5 p-3 sm:p-3.5 px-4 sm:px-7 rounded-3xl sm:rounded-full bg-white/95 backdrop-blur-md border-2 border-white shadow-xl text-xs sm:text-sm font-cute text-neutral-700 max-w-full">
+          {/* 1. Stable Uptime */}
           <div className="flex items-center gap-1.5 font-cute">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             <span className="font-bold text-neutral-600">{locale === 'zh' ? '稳定运行' : 'Stable Uptime'}:</span>
@@ -316,22 +320,32 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
 
           <span className="text-neutral-300 hidden sm:inline">•</span>
 
+          {/* 2. Total Visitors (总访客记录) */}
           <div className="flex items-center gap-1.5 font-cute">
-            <Eye className="w-4 h-4 text-pink-500 shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '访客' : 'Visits'}:</span>
+            <Eye className="w-4 h-4 text-indigo-500 shrink-0" />
+            <span className="font-bold text-neutral-600">{locale === 'zh' ? '总访客记录' : 'Total Visits'}:</span>
             <span className="font-bubble font-bold text-neutral-900">
-              {realVisits.total} {locale === 'zh' ? '次' : ''}
-            </span>
-            <span className="text-pink-600 font-bubble font-bold text-xs">
-              (+{realVisits.today})
+              {realVisits.total} {locale === 'zh' ? '人次' : ''}
             </span>
           </div>
 
           <span className="text-neutral-300 hidden sm:inline">•</span>
 
+          {/* 3. Today's Visitors (今日访客记录) */}
+          <div className="flex items-center gap-1.5 font-cute">
+            <Sparkles className="w-4 h-4 text-pink-500 shrink-0" />
+            <span className="font-bold text-neutral-600">{locale === 'zh' ? '今日访客' : 'Today Visits'}:</span>
+            <span className="px-2 py-0.2 rounded-full bg-pink-100 text-pink-700 font-bubble font-bold text-xs shadow-3xs">
+              +{realVisits.today} {locale === 'zh' ? '人次' : ''}
+            </span>
+          </div>
+
+          <span className="text-neutral-300 hidden sm:inline">•</span>
+
+          {/* 4. Notes & Word Count */}
           <div className="flex items-center gap-1.5 font-cute">
             <Coffee className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '灵感沉淀' : 'Stack'}:</span>
+            <span className="font-bold text-neutral-600">{locale === 'zh' ? '笔记沉淀' : 'Notes'}:</span>
             <span className="font-bubble font-bold text-neutral-900">
               {totalNotes} {locale === 'zh' ? '篇' : 'notes'}
             </span>
@@ -342,7 +356,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
 
           <span className="text-neutral-300 hidden sm:inline">•</span>
 
-          {/* Inline Interactive Paw Stamp Button */}
+          {/* 5. Paw Stamp Interactive Button */}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
@@ -359,7 +373,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
               </span>
             ))}
             <span>🐾</span>
-            <span>{locale === 'zh' ? '盖手印' : 'Stamp'}</span>
+            <span>{locale === 'zh' ? '盖爪印' : 'Stamp'}</span>
             <span className="px-1.5 py-0.2 rounded-full bg-white/90 text-rose-600 font-bubble font-bold text-[11px] shadow-3xs">
               {stampCount}
             </span>

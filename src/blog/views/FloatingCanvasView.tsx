@@ -4,6 +4,7 @@ import { Note } from '../../types/note';
 import { useI18n } from '../../hooks/useI18n';
 import { playPop, playSwoosh } from '../utils/soundEffects';
 import { renderCardMarkdownSnippet } from '../utils/markdownRenderer';
+import { format24HourDateTime } from '../utils/dateFormatter';
 
 export interface FloatingCanvasViewProps {
   notes: Note[];
@@ -438,8 +439,8 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
 
                   {/* Bottom Action */}
                   <div className="pt-2 border-t border-black/5 flex items-center justify-between">
-                    <span className="text-[11px] font-cute text-neutral-400">
-                      {new Date(node.note.createdAt || Date.now()).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })}
+                    <span className="text-[11px] font-mono font-bold text-neutral-500">
+                      {format24HourDateTime(node.note.createdAt || Date.now(), locale)}
                     </span>
 
                     <button

@@ -109,7 +109,7 @@ export const ClayContextMenu: React.FC<ClayContextMenuProps> = ({
       <div className="flex items-center justify-between px-3 py-1.5 mb-1 border-b border-amber-900/10 text-[11px] font-bubble font-bold text-neutral-400">
         <span className="flex items-center gap-1">
           <Sparkles className="w-3 h-3 text-pink-500" />
-          <span>手账排版助手</span>
+          <span>笔记排版助手</span>
         </span>
         <span className="text-[10px] font-mono text-neutral-400">Esc 退出</span>
       </div>

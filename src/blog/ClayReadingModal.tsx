@@ -19,6 +19,7 @@ import { useAuth } from '../hooks/useAuth';
 import { playSwoosh, playPop, playChime } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
 import { renderRichMarkdown, renderInlineContent } from './utils/markdownRenderer';
+import { format24HourDateTime } from './utils/dateFormatter';
 
 export interface ClayReadingModalProps {
   note: Note | null;
@@ -131,10 +132,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const d = new Date(note.createdAt || Date.now());
-  const formattedDate = locale === 'zh'
-    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
 
   return (
     <div
@@ -144,7 +142,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
       {/* Background Soft Mesh Glow */}
       <div className="absolute w-[600px] h-[600px] rounded-full bg-pink-400/20 blur-3xl pointer-events-none hidden sm:block" />
 
-      {/* Main Journal Modal Card (Full Height on Mobile, Rounded Card on Desktop) */}
+      {/* Main Note Modal Card (Full Height on Mobile, Rounded Card on Desktop) */}
       <div
         className="relative w-full h-full sm:h-auto sm:max-h-[92vh] max-w-4xl bg-[#fdfbf7] rounded-none sm:rounded-[40px] sm:border-4 border-white shadow-2xl clay-card flex flex-col overflow-hidden modal-card-enter"
         onClick={(e) => e.stopPropagation()}
@@ -175,11 +173,11 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             ) : (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bubble font-bold text-[11px] border border-emerald-200 shadow-xs flex items-center gap-1 shrink-0">
                 <span>🌱</span>
-                <span>{locale === 'zh' ? '旅人手账' : 'Guest'}</span>
+                <span>{locale === 'zh' ? '旅人笔记' : 'Guest Note'}</span>
               </span>
             )}
 
-            <span className="text-[11px] sm:text-xs font-cute text-neutral-400 hidden xs:inline">
+            <span className="text-[11px] sm:text-xs font-mono font-bold text-neutral-500 hidden xs:inline">
               {formattedDate} • {note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}
             </span>
           </div>
@@ -200,7 +198,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
                 className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-cute font-bold clay-btn border border-rose-200 cursor-pointer shadow-3xs transition active:scale-95"
-                title={locale === 'zh' ? '馆长删除手账' : 'Admin Delete Note'}
+                title={locale === 'zh' ? '馆长删除笔记' : 'Admin Delete Note'}
               >
                 <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                 <span className="hidden sm:inline">{locale === 'zh' ? '删除' : 'Delete'}</span>
@@ -230,7 +228,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
           <div className="bg-rose-50 border-b border-rose-200 px-4 sm:px-8 py-3 flex items-center justify-between gap-3 text-xs font-cute text-rose-900 animate-in fade-in">
             <div className="flex items-center gap-2">
               <span className="text-base">🗑️</span>
-              <span className="font-bold">{locale === 'zh' ? '确定要删除这篇手账并同步至云端吗？' : 'Delete this note and sync to cloud?'}</span>
+              <span className="font-bold">{locale === 'zh' ? '确定要删除这篇笔记并同步至云端吗？' : 'Delete this note and sync to cloud?'}</span>
             </div>
             <div className="flex items-center gap-2">
               <button

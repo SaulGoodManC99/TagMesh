@@ -6,6 +6,8 @@ import { Clock, Hash, Pin } from 'lucide-react';
 import { renderCardMarkdownSnippet, renderInlineContent } from '../utils/markdownRenderer';
 import { useClayTheme } from '../utils/clayThemes';
 
+import { format24HourDateTime } from '../utils/dateFormatter';
+
 export interface PolaroidBoardViewProps {
   notes: Note[];
   onNoteClick: (note: Note) => void;
@@ -28,10 +30,7 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
           if (!note) return null;
 
           const cardTheme = theme.noteCardThemes[idx % theme.noteCardThemes.length];
-          const formattedDate = new Date(note.createdAt || Date.now()).toLocaleDateString(
-            locale === 'zh' ? 'zh-CN' : 'en-US',
-            { year: 'numeric', month: 'short', day: 'numeric' }
-          );
+          const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
 
           return (
             <div

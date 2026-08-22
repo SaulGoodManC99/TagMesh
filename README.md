@@ -2,7 +2,7 @@
 
 # 🌸 TagMesh
 
-### **Zero-Folder · Titleless · Tag-Woven Markdown Journal with Claymorphic Aesthetics & Serverless Edge**
+### **Zero-Folder · Titleless · Tag-Woven Markdown Notes System with Claymorphic Aesthetics & Serverless Edge**
 
 *Ditch folders and titles. Weave thoughts organically through `#hashtags` at the edge.*
 

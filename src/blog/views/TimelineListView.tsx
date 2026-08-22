@@ -14,6 +14,7 @@ import { useI18n } from '../../hooks/useI18n';
 import { playPop } from '../utils/soundEffects';
 import { renderCardMarkdownSnippet, renderInlineContent } from '../utils/markdownRenderer';
 import { useClayTheme } from '../utils/clayThemes';
+import { format24HourDateTime } from '../utils/dateFormatter';
 
 export interface TimelineListViewProps {
   notes: Note[];
@@ -170,14 +171,7 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
             {/* Note Cards in this Month */}
             {milestone.items.map((note, idx) => {
               const cardTheme = theme.noteCardThemes[idx % theme.noteCardThemes.length];
-              const d = new Date(note.createdAt);
-              const formattedDate = locale === 'zh'
-                ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-                : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-              const formattedTime = d.toLocaleTimeString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-              });
+              const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
 
               return (
                 <div
@@ -211,13 +205,13 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
                         </span>
                       )}
                       <h3 className="font-bubble text-base sm:text-lg font-extrabold text-neutral-900 group-hover:text-rose-600 transition-colors line-clamp-1">
-                        {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题灵感' : 'Untitled Note'))}
+                        {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题笔记' : 'Untitled Note'))}
                       </h3>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs font-cute text-neutral-500 shrink-0">
-                      <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 backdrop-blur-xs font-bubble font-bold text-xs text-neutral-700 shadow-3xs">
-                        {formattedDate} {formattedTime}
+                      <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 backdrop-blur-xs font-mono font-bold text-xs text-neutral-700 shadow-3xs">
+                        {formattedDate}
                       </span>
                       <span>•</span>
                       <span className="font-bubble font-bold text-neutral-600">

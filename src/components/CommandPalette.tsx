@@ -117,8 +117,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     },
     {
       id: 'cmd-editor',
-      title: locale === 'zh' ? '🍮 打开黏土手账台' : '🍮 Open Clay Journal Workspace',
-      keywords: ['editor', 'write', 'journal', '手账', '写作', '工作台'],
+      title: locale === 'zh' ? '🍮 打开灵感笔记工作台' : '🍮 Open Notes Workspace',
+      keywords: ['editor', 'write', 'notes', '笔记', '写作', '工作台'],
       icon: <PenTool className="w-4.5 h-4.5 text-rose-500" />,
       action: () => {
         window.location.hash = '#/editor';
@@ -127,7 +127,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     },
     {
       id: 'cmd-new',
-      title: locale === 'zh' ? '🌸 贴新手账笔记 (⌘N)' : '🌸 New Journal (⌘N)',
+      title: locale === 'zh' ? '🌸 新建灵感笔记 (⌘N)' : '🌸 New Note (⌘N)',
       keywords: ['new', 'create', 'note', 'add', '新建', '创建', '笔记', '灵感', '随手记'],
       shortcut: '⌘N',
       icon: <Plus className="w-4.5 h-4.5 text-rose-500" />,
@@ -264,7 +264,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             <Command.Input
               value={search}
               onValueChange={setSearch}
-              placeholder={locale === 'zh' ? '搜索手账、标签或输入指令...' : t.commandPalette.placeholder}
+              placeholder={locale === 'zh' ? '搜索笔记、标签或输入指令...' : t.commandPalette.placeholder}
               className="w-full bg-transparent text-neutral-800 placeholder:text-neutral-400 text-base sm:text-lg font-cute font-medium focus:outline-none"
               autoFocus
             />
@@ -313,7 +313,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               }`}
             >
               <FileText className="w-3.5 h-3.5 text-amber-500" />
-              <span>手账 ({searchedNotes.length})</span>
+              <span>笔记 ({searchedNotes.length})</span>
             </button>
             <button
               onClick={() => {
@@ -354,10 +354,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     </div>
                     <div>
                       <span className="font-bubble font-bold text-neutral-900">
-                        {locale === 'zh' ? `以 “${search}” 为标题新建手账` : `Create note "${search}"`}
+                        {locale === 'zh' ? `以 “${search}” 为标题新建笔记` : `Create note "${search}"`}
                       </span>
                       <span className="text-xs text-neutral-400 block -mt-0.5">
-                        {locale === 'zh' ? '立即新建空白并以此作为手账标题' : 'Create a fresh note with this title'}
+                        {locale === 'zh' ? '立即新建空白并以此作为笔记标题' : 'Create a fresh note with this title'}
                       </span>
                     </div>
                   </div>
@@ -379,7 +379,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     </div>
                     <div>
                       <span className="font-bubble font-bold text-neutral-900">
-                        {locale === 'zh' ? `在手账库中筛选 #${searchWithoutHash} 标签` : `Filter by #${searchWithoutHash}`}
+                        {locale === 'zh' ? `在笔记库中筛选 #${searchWithoutHash} 标签` : `Filter by #${searchWithoutHash}`}
                       </span>
                       <span className="text-xs text-neutral-400 block -mt-0.5">
                         {locale === 'zh' ? '在左侧边栏高亮定位该标签' : 'Locate this tag in sidebar'}
@@ -429,7 +429,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               <Command.Group heading={
                 <div className="px-3 py-2 text-xs font-bubble font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5 text-amber-500" />
-                  <span>{locale === 'zh' ? '📑 匹配手账清单' : 'Notes Found'}</span>
+                  <span>{locale === 'zh' ? '📑 匹配笔记清单' : 'Notes Found'}</span>
                 </div>
               }>
                 {searchedNotes.map((note) => (
@@ -448,7 +448,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       </div>
                       <div className="min-w-0">
                         <p className="font-bubble font-bold text-sm sm:text-base text-neutral-800 truncate group-hover:text-rose-600">
-                          {note.excerpt || '空白手账'}
+                          {note.excerpt || '空白笔记'}
                         </p>
                         <p className="text-xs text-neutral-400 truncate">
                           {(note.tags || []).length > 0 ? note.tags.join(' ') : '无标签'} • {note.wordCount || 0} 字

@@ -126,7 +126,7 @@ export async function createNewNote(
   options?: { author?: string; isOfficial?: boolean; persistIfEmpty?: boolean }
 ): Promise<Note> {
   const now = Date.now();
-  const excerpt = extractExcerptFromMarkdown(initialMarkdown, options?.author === 'admin' ? '馆长手账' : '手账笔记');
+  const excerpt = extractExcerptFromMarkdown(initialMarkdown, options?.author === 'admin' ? '馆长笔记' : '灵感笔记');
   const extractedTags = Array.from(new Set([...tags, ...extractTagsFromMarkdown(initialMarkdown)]));
   const { wordCount, charCount } = countWordsAndChars(initialMarkdown);
 
@@ -326,7 +326,7 @@ export async function seedStarterNotesIfEmpty(sampleText?: string): Promise<Note
 - **🍱 便当瀑布流 (Bento Grid)**：错落有致的 3D 黏土卡片。
 - **🌌 漂浮重力宇宙 (Floating Universe)**：失重漂浮、互动碰撞的灵感气泡。
 - **🪐 星系引力拓扑网 (Galaxy Force Mesh)**：恒星与轨道行星力导向星图。
-- **🃏 拍立得手账便签墙 (Polaroid Board)**：日系手账和纸胶带与微倾斜便签。
+- **🃏 拍立得相框便签墙 (Polaroid Board)**：日系和纸胶带与艺术相框便签。
 - **🎴 3D 轮播穿梭 (3D Carousel Deck)**：沉浸式 3D Coverflow 翻转卡片。
 - **📜 紧凑时光卷轴 (Timeline Stream)**：高效按时间线排布的清单。
 

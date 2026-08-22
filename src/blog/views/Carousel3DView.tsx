@@ -18,6 +18,7 @@ import { playPop, playChime } from '../utils/soundEffects';
 import { triggerParticleBurst } from '../utils/confetti';
 import { renderRichMarkdown, renderCardMarkdownSnippet, renderInlineContent } from '../utils/markdownRenderer';
 import { useClayTheme } from '../utils/clayThemes';
+import { format24HourDateTime } from '../utils/dateFormatter';
 
 export interface Carousel3DViewProps {
   notes: Note[];
@@ -131,10 +132,7 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
 
   if (total === 0) return null;
 
-  const d = activeNote ? new Date(activeNote.createdAt || Date.now()) : new Date();
-  const formattedDate = locale === 'zh'
-    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formattedDate = activeNote ? format24HourDateTime(activeNote.createdAt || Date.now(), locale) : '';
 
   const progressPercent = total > 0 ? Math.min(100, Math.max(0, ((currentIndex + 1) / total) * 100)) : 0;
 
