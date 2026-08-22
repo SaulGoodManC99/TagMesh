@@ -1,0 +1,680 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'ChaoXiaoSheZhongYuan';
+  src: url('/fonts/ChaoXiaoSheZhongYuan.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", "SF Mono", monospace;
+  --font-cute: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
+  --font-bubble: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "Baloo 2", "YouYuan", "幼圆", cursive, sans-serif;
+}
+
+@layer base {
+  :root {
+    --font-sans: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
+    --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+    --font-cute: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
+    --font-bubble: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "Baloo 2", "YouYuan", "幼圆", cursive, sans-serif;
+
+    /* Physics Springs & Apple Easing Curves (Smooth, No Jarring Overshoot) */
+    --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1);
+    --ease-spring-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-fluid: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  *, ::before, ::after {
+    font-family: var(--font-cute);
+  }
+
+  body {
+    font-family: var(--font-cute);
+    margin: 0;
+    padding: 0;
+    color: #262626;
+    background-color: #f8f5ee;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-bubble);
+  }
+
+  code, pre, kbd, samp {
+    font-family: var(--font-mono);
+  }
+
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(140, 140, 160, 0.3);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(140, 140, 160, 0.5);
+  }
+}
+
+/* ==========================================================================
+   CROSS-BROWSER SCROLLBAR SUPPRESSION
+   ========================================================================== */
+.no-scrollbar {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari and Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* ==========================================================================
+   144Hz / 240Hz HIGH REFRESH RATE & CRISP TEXT RENDERING PRIMITIVES
+   ========================================================================== */
+.danmaku-gpu-track {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  will-change: transform;
+}
+
+/* ==========================================================================
+   UI PRO MAX: CLAYMORPHISM 3D STYLING & PHYSICS ANIMATIONS
+   ========================================================================== */
+
+.font-cute {
+  font-family: var(--font-cute) !important;
+}
+
+.font-bubble {
+  font-family: var(--font-bubble) !important;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+/* ==========================================================================
+   CLAYMORPHISM 3D CARD THEMES & CRISP BORDERS
+   ========================================================================== */
+
+.clay-card {
+  border-radius: 32px;
+  border: 3.5px solid #ffffff;
+  box-shadow: 
+    0 12px 28px -6px rgba(0, 0, 0, 0.08),
+    0 6px 12px -3px rgba(0, 0, 0, 0.04),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+  transition: box-shadow 0.3s var(--ease-smooth), border-color 0.3s ease;
+}
+
+/* Only interactive showcase cards/widgets lift on hover, modals and editor canvas stay rock-solid */
+.clay-card-interactive {
+  border-radius: 32px;
+  border: 3.5px solid #ffffff;
+  box-shadow: 
+    0 12px 28px -6px rgba(0, 0, 0, 0.08),
+    0 6px 12px -3px rgba(0, 0, 0, 0.04),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+  transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-smooth), border-color 0.2s ease;
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+}
+
+.clay-card-interactive:hover {
+  transform: translateY(-3px) scale(1.008);
+  box-shadow: 
+    0 18px 32px -8px rgba(0, 0, 0, 0.1),
+    0 8px 16px -4px rgba(0, 0, 0, 0.05),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+}
+
+.clay-card-interactive:active {
+  transform: translateY(0) scale(0.992);
+  transition-duration: 0.12s;
+}
+
+.clay-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.clay-sheen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%);
+  border-radius: 28px 28px 0 0;
+  pointer-events: none;
+}
+
+/* 6 Distinct Candy Clay Themes with Colorful Ambient Glow Light */
+.clay-theme-pink {
+  background: linear-gradient(145deg, #fff1f2 0%, #ffe4e6 100%) !important;
+  border-color: #ffffff !important;
+}
+.clay-theme-pink:hover {
+  box-shadow: 0 22px 42px -10px rgba(244, 114, 182, 0.38), 0 8px 18px -4px rgba(244, 114, 182, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+.clay-theme-cyan {
+  background: linear-gradient(145deg, #ecfeff 0%, #cffafe 100%) !important;
+  border-color: #ffffff !important;
+}
+.clay-theme-cyan:hover {
+  box-shadow: 0 22px 42px -10px rgba(6, 182, 212, 0.38), 0 8px 18px -4px rgba(6, 182, 212, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+.clay-theme-amber {
+  background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border-color: #ffffff !important;
+}
+.clay-theme-amber:hover {
+  box-shadow: 0 22px 42px -10px rgba(245, 158, 11, 0.38), 0 8px 18px -4px rgba(245, 158, 11, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+.clay-theme-emerald {
+  background: linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  border-color: #ffffff !important;
+}
+.clay-theme-emerald:hover {
+  box-shadow: 0 22px 42px -10px rgba(16, 185, 129, 0.38), 0 8px 18px -4px rgba(16, 185, 129, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+.clay-theme-purple {
+  background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 100%) !important;
+  border-color: #ffffff !important;
+}
+.clay-theme-purple:hover {
+  box-shadow: 0 22px 42px -10px rgba(168, 85, 247, 0.38), 0 8px 18px -4px rgba(168, 85, 247, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+.clay-theme-orange {
+  background: linear-gradient(145deg, #fff7ed 0%, #ffedd5 100%) !important;
+  border-color: #ffffff !important;
+}
+.clay-theme-orange:hover {
+  box-shadow: 0 22px 42px -10px rgba(249, 115, 22, 0.38), 0 8px 18px -4px rgba(249, 115, 22, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+.clay-btn {
+  transition: transform 0.25s var(--ease-spring), box-shadow 0.25s var(--ease-smooth), background-color 0.2s ease;
+  will-change: transform;
+}
+
+.clay-btn:hover {
+  transform: translateY(-1.5px) scale(1.015);
+}
+
+.clay-btn:active {
+  transform: translateY(0.5px) scale(0.985);
+  transition-duration: 0.1s;
+}
+
+.clay-tag {
+  transition: transform 0.25s var(--ease-spring), background-color 0.2s ease, color 0.2s ease, box-shadow 0.25s var(--ease-smooth);
+  will-change: transform;
+}
+
+.clay-tag:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.clay-tag:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Smooth Card Entrance Animation */
+@keyframes clay-card-flip-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================================================
+   APPLE-GRADE SILKY MODAL & DRAWER OPEN/CLOSE ANIMATIONS
+   ========================================================================== */
+
+/* 1. Modal Blur Backdrop Fade In */
+.modal-backdrop-enter {
+  animation: modal-backdrop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, backdrop-filter;
+}
+
+@keyframes modal-backdrop-in {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* 2. Modal Card Smooth Elastic Scale-In */
+.modal-card-enter {
+  animation: modal-card-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+@keyframes modal-card-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 3. Popover / Dropdown Menu Smooth Float-In */
+.popover-enter {
+  animation: popover-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+@keyframes popover-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================================================
+   DUAL-LAYER BORDER BEAM & SWORD BLADE LIGHT GLEAM / 边框跑光与剑影流光
+   ========================================================================== */
+
+/* 1. Glowing Border Beam / 环绕立体边框流光 */
+.clay-border-beam {
+  position: absolute;
+  inset: -3.5px;
+  border-radius: 34px;
+  padding: 3.5px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 260deg,
+    rgba(255, 255, 255, 0.4) 300deg,
+    rgba(255, 255, 255, 1) 330deg,
+    rgba(254, 205, 211, 0.9) 350deg,
+    rgba(255, 255, 255, 0.4) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  transition: opacity 0.5s ease;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+}
+
+article:hover .clay-border-beam,
+.clay-card:hover .clay-border-beam {
+  opacity: 1;
+  animation: border-beam-spin 3s linear infinite;
+}
+
+@keyframes border-beam-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 2. Card Surface Sword Slash Gleam / 卡面 1.8s 优雅慢速斩光 */
+.clay-sword-gleam {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 30px;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.clay-sword-gleam::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -150%;
+  width: 85%;
+  height: 220%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 15%,
+    rgba(255, 255, 255, 0.4) 42%,
+    rgba(255, 255, 255, 0.98) 50%,
+    rgba(255, 255, 255, 0.4) 58%,
+    rgba(255, 255, 255, 0.05) 85%,
+    transparent 100%
+  );
+  transform: rotate(30deg);
+  opacity: 0;
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 35px rgba(255, 220, 240, 0.8));
+}
+
+article:hover .clay-sword-gleam::before,
+.clay-card:hover .clay-sword-gleam::before {
+  opacity: 1;
+  animation: sword-slash-gleam 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes sword-slash-gleam {
+  0% {
+    left: -150%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    left: 230%;
+    opacity: 0;
+  }
+}
+
+@keyframes clay-washi-flutter {
+  0% {
+    transform: rotate(-6deg) scale(0.85);
+    opacity: 0.6;
+  }
+  50% {
+    transform: rotate(3deg) scale(1.08);
+    opacity: 0.95;
+  }
+  100% {
+    transform: rotate(-1deg) scale(1);
+    opacity: 0.85;
+  }
+}
+
+@keyframes clay-sheen-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(250%) skewX(-25deg);
+    opacity: 0;
+  }
+}
+
+@keyframes clay-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 10px 25px -5px rgba(244, 114, 182, 0.15), 0 8px 10px -6px rgba(244, 114, 182, 0.1);
+  }
+  50% {
+    box-shadow: 0 20px 35px -5px rgba(244, 114, 182, 0.3), 0 12px 15px -6px rgba(244, 114, 182, 0.2);
+  }
+}
+
+@keyframes progress-countdown {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-clay-flip {
+  animation: clay-card-flip-enter 0.7s var(--ease-spring) forwards;
+}
+
+.animate-washi-flutter {
+  animation: clay-washi-flutter 0.6s var(--ease-spring) forwards;
+}
+
+.animate-sheen-sweep {
+  animation: clay-sheen-sweep 1.2s var(--ease-smooth) forwards;
+}
+
+.animate-clay-glow {
+  animation: clay-pulse-glow 3s ease-in-out infinite;
+}
+
+/* Modern Markdown Bold Emphasis */
+.md-bold {
+  font-weight: 700;
+  color: #171717;
+}
+
+/* Pink Candy Inline Code Pill */
+.candy-inline-code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.45rem;
+  background-color: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  font-weight: 600;
+  vertical-align: baseline;
+}
+
+/* TipTap ProseMirror Typography & Large Clean Reading */
+.ProseMirror {
+  font-family: var(--font-cute) !important;
+  font-size: 1.25rem;
+  line-height: 2.1;
+  color: #262626;
+  outline: none;
+  min-height: 400px;
+}
+
+.ProseMirror p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #171717;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.ProseMirror h2 {
+  font-size: 1.75rem;
+  font-weight: 750;
+  color: #262626;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.35;
+}
+
+.ProseMirror h3 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #404040;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid #f472b6;
+  padding-left: 1.25rem;
+  margin: 1.5rem 0;
+  color: #525252;
+  font-style: italic;
+  background: rgba(253, 242, 248, 0.6);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 1rem 1rem 0;
+}
+
+.ProseMirror pre {
+  background-color: #1e1e2e !important;
+  color: #cdd6f4 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.92rem !important;
+  padding: 1.25rem !important;
+  border-radius: 1.25rem !important;
+  margin: 1.5rem 0 !important;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.ProseMirror code {
+  font-family: var(--font-mono) !important;
+  background-color: #fce7f3;
+  color: #be185d;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.4rem;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.ProseMirror pre code {
+  background-color: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+  font-weight: 400 !important;
+  font-size: inherit !important;
+}
+
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none !important;
+  padding-left: 0.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li input[type="checkbox"] {
+  appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #f472b6;
+  border-radius: 0.45rem;
+  background-color: white;
+  cursor: pointer;
+  margin-top: 0.3rem;
+  display: grid;
+  place-content: center;
+  transition: all 0.2s var(--ease-spring);
+}
+
+.ProseMirror ul[data-type="taskList"] li input[type="checkbox"]:checked {
+  background-color: #10b981;
+  border-color: #10b981;
+  transform: scale(1.05);
+}
+
+.ProseMirror ul[data-type="taskList"] li input[type="checkbox"]:checked::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  background-color: white;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.ProseMirror ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 0.75rem 0 !important;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 0.75rem 0 !important;
+}
+
+.ProseMirror li {
+  margin: 0.35rem 0 !important;
+  color: #262626 !important;
+  font-family: var(--font-cute) !important;
+  font-weight: 500 !important;
+}
+
+.ProseMirror hr {
+  border: none !important;
+  border-top: 2px dashed rgba(0, 0, 0, 0.1) !important;
+  margin: 2rem 0 !important;
+}
+
+.ProseMirror .is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af !important;
+  pointer-events: none;
+  height: 0;
+  font-family: var(--font-cute) !important;
+  font-weight: 500 !important;
+}
+
+/* Inline Hashtag Live Badge Decoration */
+.inline-hashtag-badge {
+  background-color: #ecfeff !important;
+  color: #0e7490 !important;
+  border: 1px solid #cffafe !important;
+  border-radius: 9999px !important;
+  padding: 0.12rem 0.5rem !important;
+  font-family: var(--font-mono) !important;
+  font-weight: 600 !important;
+  font-size: 0.85em !important;
+  margin-left: 0.15rem;
+  margin-right: 0.15rem;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-spring);
+  user-select: text;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.inline-hashtag-badge:hover {
+  background-color: #cffafe !important;
+  transform: translateY(-2px) scale(1.05);
+}
