@@ -20,7 +20,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { Note } from './types/note';
-import { db, getActiveNotes, createNewNote, getOrCreateActiveNote, ensureNotesAuthorSeparation } from './db/dexie';
+import { db, getActiveNotes, createNewNote, getOrCreateActiveNote, ensureNotesAuthorSeparation, isNoteEmpty } from './db/dexie';
 import { fetchRemoteNotes, deleteNoteRemote } from './services/api';
 import { useZeroSync } from './hooks/useZeroSync';
 import { useI18n } from './hooks/useI18n';
@@ -143,28 +143,22 @@ export const App: React.FC = () => {
   // Handle Note Change from Editor
   const handleNoteChange = useCallback((updatedNote: Note) => {
     setActiveNote(updatedNote);
+    if (!isNoteEmpty(updatedNote)) {
+      db.notes.put(updatedNote);
+    } else {
+      // If note content and tags are completely empty, remove from persistent db
+      db.notes.delete(updatedNote.id);
+    }
   }, []);
 
   // Create new note with smart empty note reuse
   const handleCreateNote = useCallback(async (initialText = '') => {
     // 1. If currently on an unedited empty note, reuse it directly!
-    if (activeNote && !activeNote.rawMarkdown?.trim() && !activeNote.isDeleted && !initialText) {
+    if (activeNote && isNoteEmpty(activeNote) && !activeNote.isDeleted && !initialText) {
       if (route !== 'editor') {
         window.location.hash = '#/editor';
       }
-      showToast(locale === 'zh' ? '✨ 当前已在空白笔记中' : '✨ Already in blank note');
-      return;
-    }
-
-    // 2. Check if any empty note already exists in active notes
-    const activeList = await getActiveNotes();
-    const existingEmpty = activeList.find(n => !n.rawMarkdown?.trim());
-    if (existingEmpty && !initialText) {
-      setActiveNote(existingEmpty);
-      if (route !== 'editor') {
-        window.location.hash = '#/editor';
-      }
-      showToast(locale === 'zh' ? '✨ 已为你切换至空白笔记' : '✨ Switched to blank note');
+      showToast(locale === 'zh' ? '✨ 当前已在空白手账中' : '✨ Already in blank note');
       return;
     }
 
@@ -177,7 +171,7 @@ export const App: React.FC = () => {
     if (route !== 'editor') {
       window.location.hash = '#/editor';
     }
-    showToast(locale === 'zh' ? '✨ 已新建空白笔记' : '✨ Created new note');
+    showToast(locale === 'zh' ? '✨ 已新建空白手账' : '✨ Created new note');
   }, [activeNote, isAdmin, locale, route, showToast]);
 
   // Select note (auto dismiss sidebar drawer on mobile)
@@ -366,7 +360,6 @@ export const App: React.FC = () => {
           isOpen={isShortcutsOpen}
           onClose={() => setIsShortcutsOpen(false)}
         />
-        <ClayAdminAuthModal />
       </>
     );
   }

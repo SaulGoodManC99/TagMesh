@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Note, SyncState } from '../types/note';
-import { db } from '../db/dexie';
+import { db, isNoteEmpty } from '../db/dexie';
 import { syncNoteRemote } from '../services/api';
 
 export interface UseZeroSyncResult {
@@ -27,7 +27,7 @@ export function useZeroSync(activeNote: Note | null): UseZeroSyncResult {
   // Online / offline listeners
   useEffect(() => {
     const handleOnline = () => {
-      if (activeNoteRef.current?.isDirty) {
+      if (activeNoteRef.current?.isDirty && !isNoteEmpty(activeNoteRef.current)) {
         triggerSync();
       } else {
         setSyncState('synced');
@@ -50,6 +50,12 @@ export function useZeroSync(activeNote: Note | null): UseZeroSyncResult {
   const performSync = useCallback(async (noteToSync: Note) => {
     if (!navigator.onLine) {
       setSyncState('offline');
+      return;
+    }
+
+    // Never sync empty note with no text and no tags to D1
+    if (isNoteEmpty(noteToSync)) {
+      setSyncState('synced');
       return;
     }
 

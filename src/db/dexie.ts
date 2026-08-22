@@ -93,15 +93,40 @@ export function countWordsAndChars(text: string): { wordCount: number; charCount
 }
 
 /**
- * Create a new note with zero friction
+ * Check if a note has no prose content and no tags
+ */
+export function isNoteEmpty(note: Partial<Note> | null | undefined): boolean {
+  if (!note) return true;
+  const hasMarkdown = Boolean(note.rawMarkdown && note.rawMarkdown.trim().length > 0);
+  const hasTags = Boolean(Array.isArray(note.tags) && note.tags.length > 0);
+  return !hasMarkdown && !hasTags;
+}
+
+/**
+ * Prune all empty phantom notes from local database
+ */
+export async function pruneEmptyNotes(): Promise<void> {
+  try {
+    const all = await db.notes.toArray();
+    const emptyIds = all.filter(n => isNoteEmpty(n)).map(n => n.id);
+    if (emptyIds.length > 0) {
+      await db.notes.bulkDelete(emptyIds);
+    }
+  } catch (e) {
+    console.warn('pruneEmptyNotes warning:', e);
+  }
+}
+
+/**
+ * Create a new note with zero friction (ephemeral in memory until user types)
  */
 export async function createNewNote(
   initialMarkdown: string = '',
   tags: string[] = [],
-  options?: { author?: string; isOfficial?: boolean }
+  options?: { author?: string; isOfficial?: boolean; persistIfEmpty?: boolean }
 ): Promise<Note> {
   const now = Date.now();
-  const excerpt = extractExcerptFromMarkdown(initialMarkdown, 'Empty note');
+  const excerpt = extractExcerptFromMarkdown(initialMarkdown, options?.author === 'admin' ? '馆长手账' : '手账笔记');
   const extractedTags = Array.from(new Set([...tags, ...extractTagsFromMarkdown(initialMarkdown)]));
   const { wordCount, charCount } = countWordsAndChars(initialMarkdown);
 
@@ -120,12 +145,15 @@ export async function createNewNote(
     isDeleted: false,
     createdAt: now,
     updatedAt: now,
-    isDirty: true,
+    isDirty: false,
     isOfficial,
     author,
   };
 
-  await db.notes.put(note);
+  // Only persist to Dexie if it actually contains text/tags, or if explicitly requested
+  if (!isNoteEmpty(note) || options?.persistIfEmpty) {
+    await db.notes.put(note);
+  }
   return note;
 }
 
@@ -134,6 +162,9 @@ export async function createNewNote(
  */
 export async function ensureNotesAuthorSeparation(): Promise<void> {
   try {
+    // Also clean up any empty phantom notes
+    await pruneEmptyNotes();
+
     const all = await db.notes.toArray();
     if (all.length === 0) return;
 
@@ -182,13 +213,14 @@ export async function ensureNotesAuthorSeparation(): Promise<void> {
 }
 
 /**
- * Get active non-deleted notes sorted by pinned and updatedAt
+ * Get active non-deleted notes sorted by pinned and updatedAt (filters out empty phantom notes)
  */
 export async function getActiveNotes(filterRole?: 'admin' | 'guest'): Promise<Note[]> {
   const all = await db.notes.toArray();
   return all
     .filter(n => {
       if (n.isDeleted) return false;
+      if (isNoteEmpty(n)) return false; // Ignore empty notes from note list
       if (filterRole) {
         if (filterRole === 'admin') return n.author === 'admin' || n.isOfficial === true;
         if (filterRole === 'guest') return n.author === 'guest' || (!n.isOfficial && n.author !== 'admin');
