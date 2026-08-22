@@ -11,7 +11,7 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "tagmesh-db"
-database_id = "D1_DATABASE_ID_PLACEHOLDER"
+database_id = "132a4651-9da7-4fb8-8e17-11ffb4354d10"
 migrations_dir = "./migrations"
 
 [vars]
