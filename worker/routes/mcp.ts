@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, Context } from 'hono';
 import { Env } from '../env';
 import { McpToolCallRequest, McpToolCallResponse } from '../../src/types/mcp';
 import { searchNotesFts, getNoteById, syncNote } from '../db/queries';
@@ -91,7 +91,7 @@ const MCP_TOOLS = [
   },
   {
     name: 'create_or_update_note',
-    description: 'Create a new Markdown note or append knowledge to TagMesh repository.',
+    description: 'Create a new Markdown note or overwrite a note stream in TagMesh repository.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -106,19 +106,71 @@ const MCP_TOOLS = [
         tags: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Array of hashtags (e.g. ["#linear", "#docs"])',
+          description: 'Array of hashtags (e.g. ["#ideas", "#ai"])',
         },
       },
       required: ['markdown'],
     },
   },
+  {
+    name: 'append_to_note',
+    description: 'Append content, paragraphs, or extra tags to an existing Markdown note seamlessly.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          description: 'Target Note ID to append to',
+        },
+        contentToAppend: {
+          type: 'string',
+          description: 'New Markdown content or bullet points to append',
+        },
+        additionalTags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional additional hashtags to attach',
+        },
+      },
+      required: ['id', 'contentToAppend'],
+    },
+  },
+  {
+    name: 'list_tags',
+    description: 'Retrieve all unique tags across the knowledge base with their note counts.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'delete_note',
+    description: 'Soft-delete or move a note into the recycle bin.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          description: 'Target Note ID to delete',
+        },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'get_workspace_stats',
+    description: 'Get total notes, word counts, active tags, and repository health metrics.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];
 
 /**
- * POST /mcp/call
- * Edge Model Context Protocol Serverless RPC Endpoint
+ * Handle MCP RPC Calls
  */
-mcpRouter.post('/call', async (c) => {
+async function handleMcpRpc(c: Context<{ Bindings: Env }>) {
   const body = await c.req.json<McpToolCallRequest>();
   const id = body?.id ?? 1;
 
@@ -139,6 +191,14 @@ mcpRouter.post('/call', async (c) => {
       jsonrpc: '2.0',
       id,
       result: {
+        protocolVersion: '2024-11-05',
+        serverInfo: {
+          name: 'tagmesh-markdown-mcp',
+          version: '1.0.0',
+        },
+        capabilities: {
+          tools: {},
+        },
         tools: MCP_TOOLS,
       },
     });
@@ -254,7 +314,6 @@ mcpRouter.post('/call', async (c) => {
         const now = Date.now();
         const noteId = args.id ? String(args.id) : `tm_mcp_${now.toString(36)}`;
         
-        // Extract excerpt & tags
         const lines = markdown.split('\n').map(l => l.trim()).filter(Boolean);
         const excerpt = lines[0] ? lines[0].replace(/^[#>*`\-\d.]+\s*/, '').substring(0, 80) : 'MCP note';
         
@@ -291,6 +350,131 @@ mcpRouter.post('/call', async (c) => {
         });
       }
 
+      if (toolName === 'append_to_note') {
+        const noteId = String(args.id || '');
+        const contentToAppend = String(args.contentToAppend || '');
+        const existing = await getNoteById(db, noteId);
+        if (!existing) {
+          return c.json<McpToolCallResponse>({
+            jsonrpc: '2.0',
+            id,
+            result: {
+              isError: true,
+              content: [{ type: 'text', text: `Target note ${noteId} not found` }],
+            },
+          });
+        }
+
+        const now = Date.now();
+        const mergedMarkdown = `${existing.rawMarkdown.trim()}\n\n${contentToAppend.trim()}`;
+        const newTags = Array.isArray(args.additionalTags) ? args.additionalTags : [];
+        const mergedTags = Array.from(new Set([...existing.tags, ...newTags]));
+
+        const updatedNote = {
+          ...existing,
+          rawMarkdown: mergedMarkdown,
+          tags: mergedTags,
+          wordCount: mergedMarkdown.split(/\s+/).length,
+          charCount: mergedMarkdown.length,
+          updatedAt: now,
+        };
+
+        const result = await syncNote(db, updatedNote, existing.version);
+        return c.json<McpToolCallResponse>({
+          jsonrpc: '2.0',
+          id,
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({ success: true, note: result.note }, null, 2),
+              },
+            ],
+          },
+        });
+      }
+
+      if (toolName === 'delete_note') {
+        const noteId = String(args.id || '');
+        const now = Date.now();
+        await db
+          .prepare('UPDATE notes SET is_deleted = 1, updated_at = ?, synced_at = ? WHERE id = ?')
+          .bind(now, now, noteId)
+          .run();
+
+        return c.json<McpToolCallResponse>({
+          jsonrpc: '2.0',
+          id,
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({ success: true, deletedId: noteId }),
+              },
+            ],
+          },
+        });
+      }
+
+      if (toolName === 'list_tags') {
+        const { results } = await db
+          .prepare('SELECT tags_json FROM notes WHERE is_deleted = 0')
+          .all<{ tags_json: string }>();
+
+        const counts: Record<string, number> = {};
+        for (const row of results || []) {
+          try {
+            const tags = JSON.parse(row.tags_json || '[]');
+            for (const t of tags) {
+              if (t) counts[t] = (counts[t] || 0) + 1;
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        const tagList = Object.entries(counts)
+          .map(([tag, count]) => ({ tag, count }))
+          .sort((a, b) => b.count - a.count);
+
+        return c.json<McpToolCallResponse>({
+          jsonrpc: '2.0',
+          id,
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({ totalTags: tagList.length, tags: tagList }, null, 2),
+              },
+            ],
+          },
+        });
+      }
+
+      if (toolName === 'get_workspace_stats') {
+        const countRow = await db
+          .prepare('SELECT COUNT(*) as totalNotes, SUM(word_count) as totalWords FROM notes WHERE is_deleted = 0')
+          .first<{ totalNotes: number; totalWords: number }>();
+
+        return c.json<McpToolCallResponse>({
+          jsonrpc: '2.0',
+          id,
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({
+                  totalNotes: countRow?.totalNotes || 0,
+                  totalWords: countRow?.totalWords || 0,
+                  service: 'TagMesh Markdown Edge MCP',
+                  timestamp: Date.now(),
+                }, null, 2),
+              },
+            ],
+          },
+        });
+      }
+
       return c.json<McpToolCallResponse>({
         jsonrpc: '2.0',
         id,
@@ -309,5 +493,18 @@ mcpRouter.post('/call', async (c) => {
     jsonrpc: '2.0',
     id,
     error: { code: -32601, message: `Method not supported: ${body.method}` },
+  });
+}
+
+mcpRouter.post('/call', handleMcpRpc);
+mcpRouter.post('/', handleMcpRpc);
+
+mcpRouter.get('/', (c) => {
+  return c.json({
+    service: 'TagMesh Model Context Protocol (MCP) Serverless Endpoint',
+    version: '1.0.0',
+    protocol: 'JSON-RPC 2.0',
+    toolsCount: MCP_TOOLS.length,
+    tools: MCP_TOOLS.map(t => ({ name: t.name, description: t.description })),
   });
 });

@@ -12,6 +12,12 @@ export interface McpToolCallResponse {
   jsonrpc: '2.0';
   id: string | number;
   result?: {
+    protocolVersion?: string;
+    serverInfo?: {
+      name: string;
+      version: string;
+    };
+    capabilities?: Record<string, unknown>;
     content?: Array<{
       type: 'text' | 'image' | 'resource';
       text?: string;
