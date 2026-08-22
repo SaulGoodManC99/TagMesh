@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { PenTool, Layers, Compass, ArrowLeft } from 'lucide-react';
+import { PenTool, Layers, Compass, ArrowLeft, RefreshCw } from 'lucide-react';
 import { Note } from '../types/note';
 import { db, getAllTagCounts, getActiveNotes, ensureNotesAuthorSeparation } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
@@ -19,7 +19,7 @@ import { TimelineListView } from './views/TimelineListView';
 import { ClayReadingModal } from './ClayReadingModal';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
 import { ClayFloatingActions } from './components/ClayFloatingActions';
-import { playPop } from './utils/soundEffects';
+import { playPop, playChime } from './utils/soundEffects';
 import { useClayTheme } from './utils/clayThemes';
 
 export interface ClayBlogHomeProps {
@@ -41,13 +41,16 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [authorFilter, setAuthorFilter] = useState<'all' | 'admin' | 'guest'>('all');
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const effectiveRole = authorFilter === 'all' ? (isAdmin ? undefined : 'guest') : authorFilter;
+  // When 'all' is selected, retrieve ALL notes regardless of role
+  const effectiveRole = authorFilter === 'all' ? undefined : authorFilter;
 
-  // Live Query all active notes (role-aware)
+  // Dynamic Live Query with refreshTick dependency
   const rawNotes = useLiveQuery(
     () => getActiveNotes(effectiveRole),
-    [effectiveRole]
+    [effectiveRole, refreshTick]
   );
 
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
@@ -55,8 +58,31 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   // Live Query all tag counts (role-aware)
   const allTagCounts = useLiveQuery(
     () => getAllTagCounts(effectiveRole),
-    [effectiveRole]
+    [effectiveRole, refreshTick]
   ) || [];
+
+  // Dynamic Manual & Auto Refresh Handler
+  const handleDynamicRefresh = useCallback(async () => {
+    playPop();
+    setIsRefreshing(true);
+    setRefreshTick((t) => t + 1);
+    try {
+      const remoteNotes = await fetchRemoteNotes();
+      if (remoteNotes && remoteNotes.length > 0) {
+        for (const rNote of remoteNotes) {
+          await db.notes.put({
+            ...rNote,
+            isDirty: false,
+            syncedAt: rNote.syncedAt || Date.now(),
+          });
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  }, []);
 
   const handleDeleteNote = async (noteId: string) => {
     await db.notes.update(noteId, { isDeleted: true, isDirty: true, updatedAt: Date.now() });
@@ -97,6 +123,21 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         }
       }
     });
+  }, []);
+
+  // Auto-refresh notes whenever window focuses, tab activates or hash route switches
+  useEffect(() => {
+    const onRefreshNeeded = () => {
+      setRefreshTick((t) => t + 1);
+    };
+    window.addEventListener('focus', onRefreshNeeded);
+    window.addEventListener('hashchange', onRefreshNeeded);
+    document.addEventListener('visibilitychange', onRefreshNeeded);
+    return () => {
+      window.removeEventListener('focus', onRefreshNeeded);
+      window.removeEventListener('hashchange', onRefreshNeeded);
+      document.removeEventListener('visibilitychange', onRefreshNeeded);
+    };
   }, []);
 
   // Parse mode and tag query params from URL hash (e.g. #/gallery?mode=timeline&tag=react)
@@ -263,8 +304,19 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           </div>
         </div>
 
-        {/* Author Dimension Filter Pills + Active Tag Status */}
+        {/* Author Dimension Filter Pills + Refresh Button + Active Tag Status */}
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end overflow-x-auto no-scrollbar">
+          {/* Dynamic Sync / Refresh Button */}
+          <button
+            type="button"
+            onClick={handleDynamicRefresh}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white/95 hover:bg-pink-50 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold text-neutral-700 hover:text-rose-600 transition cursor-pointer active:scale-90 shrink-0"
+            title={locale === 'zh' ? '动态实时刷新笔记列表' : 'Dynamic Refresh Notes'}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-rose-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{locale === 'zh' ? '动态刷新' : 'Refresh'}</span>
+          </button>
+
           {/* Author Switcher */}
           <div className="inline-flex p-1 rounded-2xl bg-white/95 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold shrink-0">
             <button

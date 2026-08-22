@@ -313,8 +313,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
           </button>
         </div>
 
-        {/* Responsive Live Telemetry Strip (Clean Harmonious 4-Pill Design) */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 p-3 sm:p-3.5 px-5 sm:px-8 rounded-3xl sm:rounded-full bg-white/95 backdrop-blur-md border-2 border-white shadow-xl text-xs sm:text-sm font-cute text-neutral-700 max-w-full">
+        {/* Responsive Live Telemetry Strip */}
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 p-3 sm:p-3.5 px-4 sm:px-7 rounded-3xl sm:rounded-full bg-white/95 backdrop-blur-md border-2 border-white shadow-xl text-xs sm:text-sm font-cute text-neutral-700 max-w-full">
           {/* 1. Stable Uptime */}
           <div className="flex items-center gap-1.5 font-cute">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
@@ -329,21 +329,29 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
 
           <span className="text-neutral-300 hidden sm:inline">•</span>
 
-          {/* 2. Visitors (Total + Today in one balanced harmonious item) */}
+          {/* 2. Total Visitors */}
           <div className="flex items-center gap-1.5 font-cute">
-            <Eye className="w-4 h-4 text-pink-500 shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '访客' : 'Visits'}:</span>
+            <Eye className="w-4 h-4 text-indigo-500 shrink-0" />
+            <span className="font-bold text-neutral-600">{locale === 'zh' ? '总访客' : 'Total Visits'}:</span>
             <span className="font-bubble font-bold text-neutral-900">
               {realVisits.total} {locale === 'zh' ? '人次' : ''}
-            </span>
-            <span className="text-pink-600 font-bubble font-bold text-xs">
-              (+{realVisits.today})
             </span>
           </div>
 
           <span className="text-neutral-300 hidden sm:inline">•</span>
 
-          {/* 3. Notes & Word Count */}
+          {/* 3. Today's Visitors */}
+          <div className="flex items-center gap-1.5 font-cute">
+            <Sparkles className="w-4 h-4 text-pink-500 shrink-0" />
+            <span className="font-bold text-neutral-600">{locale === 'zh' ? '今日访客' : 'Today Visits'}:</span>
+            <span className="text-pink-600 font-bubble font-bold">
+              +{realVisits.today} {locale === 'zh' ? '人次' : ''}
+            </span>
+          </div>
+
+          <span className="text-neutral-300 hidden sm:inline">•</span>
+
+          {/* 4. Notes & Word Count */}
           <div className="flex items-center gap-1.5 font-cute">
             <Coffee className="w-4 h-4 text-amber-600 shrink-0" />
             <span className="font-bold text-neutral-600">{locale === 'zh' ? '笔记沉淀' : 'Notes'}:</span>
@@ -357,7 +365,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
 
           <span className="text-neutral-300 hidden sm:inline">•</span>
 
-          {/* 4. Paw Stamp Interactive Button */}
+          {/* 5. Paw Stamp Interactive Button */}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
