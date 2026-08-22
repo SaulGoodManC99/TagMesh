@@ -63,12 +63,9 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <span className="font-bubble font-bold text-lg sm:text-2xl tracking-tight text-neutral-800">
                 TagMesh
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-rose-500/90 text-white font-mono text-[10px] sm:text-xs font-extrabold shadow-3xs">
-                {APP_VERSION}
               </span>
             </div>
             <p className="text-[10px] sm:text-[11px] font-cute text-neutral-400 -mt-0.5 hidden md:block">

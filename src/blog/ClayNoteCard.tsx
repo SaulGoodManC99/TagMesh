@@ -140,7 +140,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
       {/* Top Meta Bar */}
       <div className="relative z-10">
-        {/* Single Row Clean Header: Emoji + Author Badge (+ Pinned) + Word Count */}
+        {/* Single Row Clean Header: Emoji + Author Badge (+ Pinned) + 24h Date */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform inline-flex items-center leading-none select-none">
@@ -165,9 +165,11 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-1 opacity-75 text-xs font-cute shrink-0">
-            <FileText className="w-3.5 h-3.5 text-neutral-500" />
-            <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
+          {/* 24h Date in Top Right - Always Visible with Font-Cute */}
+          <div className="flex items-center gap-1 text-xs font-cute text-neutral-500 shrink-0">
+            <span className="text-[11px] sm:text-xs font-cute font-bold text-neutral-500 opacity-85 select-none">
+              {formattedDate}
+            </span>
           </div>
         </div>
 
@@ -182,7 +184,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
         </div>
       </div>
 
-      {/* Bottom Footer: Enlarged Hashtag Pills & Date & Emoji Reactions */}
+      {/* Bottom Footer: Enlarged Hashtag Pills & Emoji Reactions & Word Count */}
       <div className="relative z-10 pt-3 border-t border-black/5 flex flex-col gap-2.5 mt-auto">
         {/* Enlarged Hashtags (Crisp Bold Font for English/Chinese) */}
         {note.tags && note.tags.length > 0 && (
@@ -215,7 +217,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
           </div>
         )}
 
-        {/* Bottom Reaction Bar, 24h Formatted Date & Open Link Icon */}
+        {/* Bottom Reaction Bar, Word Count & Open Link Icon */}
         <div className="flex items-center justify-between text-xs pt-1 gap-2">
           {/* Reaction Buttons */}
           <div className="flex items-center gap-1.5 shrink-0">
@@ -245,11 +247,12 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             </button>
           </div>
 
-          {/* Date Formatted in User's Cute Round Clay Font + Direct Arrow */}
+          {/* Word Count & Direct Arrow */}
           <div className="flex items-center gap-2 min-w-0 justify-end">
-            <span className="text-[11px] sm:text-xs font-cute text-neutral-500 font-bold opacity-85 truncate">
-              {formattedDate}
-            </span>
+            <div className="flex items-center gap-1 opacity-75 text-xs font-cute shrink-0">
+              <FileText className="w-3.5 h-3.5 text-neutral-500" />
+              <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
+            </div>
             <div className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs shrink-0">
               <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </div>
