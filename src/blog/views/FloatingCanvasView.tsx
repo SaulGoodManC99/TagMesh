@@ -439,7 +439,7 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
 
                   {/* Bottom Action */}
                   <div className="pt-2 border-t border-black/5 flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-bold text-neutral-500">
+                    <span className="text-[11px] font-cute font-bold text-neutral-500">
                       {format24HourDateTime(node.note.createdAt || Date.now(), locale)}
                     </span>
 

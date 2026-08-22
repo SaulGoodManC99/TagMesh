@@ -177,7 +177,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
               </span>
             )}
 
-            <span className="text-[11px] sm:text-xs font-mono font-bold text-neutral-500 hidden xs:inline">
+            <span className="text-[11px] sm:text-xs font-cute font-bold text-neutral-500 hidden xs:inline">
               {formattedDate} • {note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}
             </span>
           </div>

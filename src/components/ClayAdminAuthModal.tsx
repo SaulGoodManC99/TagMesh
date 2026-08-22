@@ -283,8 +283,8 @@ export const ClayAdminAuthModal: React.FC = () => {
               <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-900 text-[11px] leading-relaxed">
                 <span className="font-bold block mb-1">🌱 游客模式说明：</span>
                 {locale === 'zh'
-                  ? '游客可自由阅读展厅笔记并创建临时笔记。馆长官方卡片受防篡改保护，MCP 云端密钥已隐匿。'
-                  : 'Guests can read gallery notes & write local memos. Admin official cards and MCP keys are protected.'}
+                  ? '游客可自由阅读公开笔记并创建临时笔记。馆长官方卡片受防篡改保护，MCP 云端密钥已隐匿。'
+                  : 'Guests can read public notes & write local memos. Admin official cards and MCP keys are protected.'}
               </div>
 
               <div>

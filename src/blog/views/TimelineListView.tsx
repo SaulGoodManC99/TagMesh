@@ -210,7 +210,7 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 text-xs font-cute text-neutral-500 shrink-0">
-                      <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 backdrop-blur-xs font-mono font-bold text-xs text-neutral-700 shadow-3xs">
+                      <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 backdrop-blur-xs font-cute font-bold text-xs text-neutral-700 shadow-3xs">
                         {formattedDate}
                       </span>
                       <span>•</span>

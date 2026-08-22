@@ -93,7 +93,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             <span>{locale === 'zh' ? '首页' : 'Home'}</span>
           </button>
 
-          {/* 2. Notes Gallery */}
+          {/* 2. Notes List / Showcase */}
           <button
             type="button"
             onClick={() => {
@@ -101,10 +101,10 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               window.location.hash = '#/gallery';
             }}
             className={currentRoute === 'gallery' ? activePillClass : basePillClass}
-            title={locale === 'zh' ? '进入笔记展厅' : 'Enter Notes Gallery'}
+            title={locale === 'zh' ? '进入笔记' : 'Enter Notes'}
           >
             <Layers className={`w-3.5 h-3.5 ${currentRoute === 'gallery' ? 'text-rose-500' : 'text-amber-500'}`} />
-            <span>{locale === 'zh' ? '展厅' : 'Gallery'}</span>
+            <span>{locale === 'zh' ? '笔记' : 'Notes'}</span>
           </button>
 
           {/* 3. Danmaku Plaza */}
@@ -290,7 +290,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               >
                 <div className="flex items-center gap-2.5">
                   <Layers className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span>{locale === 'zh' ? '笔记展厅' : 'Notes Gallery'}</span>
+                  <span>{locale === 'zh' ? '笔记' : 'Notes'}</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-neutral-400" />
               </button>

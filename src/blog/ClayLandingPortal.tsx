@@ -289,7 +289,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-white/95 hover:bg-pink-50 text-neutral-800 hover:text-pink-600 font-bubble text-base sm:text-lg font-bold border-2 border-neutral-200/90 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
           >
             <Layers className="w-5 h-5 text-rose-500" />
-            <span>{locale === 'zh' ? '🏛️ 漫步展厅' : '🏛️ Explore Gallery'}</span>
+            <span>{locale === 'zh' ? '📚 漫游笔记' : '📚 Explore Notes'}</span>
           </button>
 
           <button

@@ -517,7 +517,7 @@ export const App: React.FC = () => {
             title="Return to Notes Gallery"
           >
             <Layers className="w-3.5 h-3.5 text-rose-500" />
-            <span className="hidden sm:inline">{locale === 'zh' ? '展厅' : 'Gallery'}</span>
+            <span className="hidden sm:inline">{locale === 'zh' ? '笔记' : 'Gallery'}</span>
           </button>
 
           {/* Sidebar Drawer Toggle */}

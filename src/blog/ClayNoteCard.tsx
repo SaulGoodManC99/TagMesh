@@ -4,9 +4,7 @@ import {
   Hash, 
   ArrowUpRight,
   Pin,
-  Sparkles,
-  ChevronDown,
-  ChevronUp
+  Sparkles
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
@@ -37,7 +35,6 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // Local interactive reactions
   const storageKey = `reactions_${note.id}`;
@@ -109,7 +106,6 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   // Dynamic excerpt length driven purely by the note's real content (organic height scaling)
   const rawLength = (note.rawMarkdown || '').length;
   const excerptMaxChars = rawLength > 300 ? 220 : rawLength > 150 ? 140 : 80;
-  const canExpand = rawLength > 100;
 
   return (
     <article
@@ -144,35 +140,33 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
       {/* Top Meta Bar */}
       <div className="relative z-10">
+        {/* Single Row Clean Header: Emoji + Author Badge (+ Pinned) + Word Count */}
         <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform inline-flex items-center leading-none">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform inline-flex items-center leading-none select-none">
               {cardTheme.emoji}
             </span>
             {note.isOfficial || note.author === 'admin' ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs leading-none">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs leading-none shrink-0">
                 <span className="leading-none text-xs">👑</span>
                 <span className="leading-none">{locale === 'zh' ? '馆长精选' : 'Curator'}</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs leading-none">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs leading-none shrink-0">
                 <span className="leading-none text-xs">🌱</span>
                 <span className="leading-none">{locale === 'zh' ? '旅人笔记' : 'Guest Note'}</span>
               </span>
             )}
             {note.isPinned && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-300 text-amber-900 text-xs font-bubble font-bold shadow-xs leading-none">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 text-amber-900 text-[11px] font-bubble font-bold shadow-xs leading-none shrink-0">
                 <Pin className="w-3 h-3" />
                 <span className="leading-none">Pinned</span>
               </span>
             )}
-            <span className="text-[11px] sm:text-xs font-mono font-bold opacity-75 leading-none">
-              {formattedDate}
-            </span>
           </div>
 
-          <div className="flex items-center gap-1 opacity-80 text-xs font-cute shrink-0">
-            <FileText className="w-3 h-3 text-neutral-400" />
+          <div className="flex items-center gap-1 opacity-75 text-xs font-cute shrink-0">
+            <FileText className="w-3.5 h-3.5 text-neutral-500" />
             <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
           </div>
         </div>
@@ -182,46 +176,13 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
           {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题笔记' : 'Untitled Note'))}
         </h3>
 
-        {/* Note Markdown Excerpt with Dynamic Organic Full Expansion Toggle */}
-        <div className="font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed opacity-90 mb-2">
-          {isExpanded ? (
-            <div className="whitespace-pre-wrap break-words leading-relaxed text-neutral-800">
-              {note.rawMarkdown}
-            </div>
-          ) : (
-            renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)
-          )}
+        {/* Note Markdown Excerpt */}
+        <div className="font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed opacity-90 mb-3">
+          {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
         </div>
-
-        {/* Dynamic Expand/Collapse Full Content Pill Button */}
-        {canExpand && (
-          <div className="mb-3">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                playPop();
-                setIsExpanded(!isExpanded);
-              }}
-              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/70 hover:bg-white text-neutral-700 font-bubble text-[11px] font-bold border border-black/5 shadow-3xs hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            >
-              {isExpanded ? (
-                <>
-                  <ChevronUp className="w-3 h-3 text-neutral-500" />
-                  <span>{locale === 'zh' ? '收起全文' : 'Collapse'}</span>
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-3 h-3 text-neutral-500" />
-                  <span>{locale === 'zh' ? '展开全文' : 'Expand Full'}</span>
-                </>
-              )}
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Bottom Footer: Enlarged Hashtag Pills & Emoji Reactions */}
+      {/* Bottom Footer: Enlarged Hashtag Pills & Date & Emoji Reactions */}
       <div className="relative z-10 pt-3 border-t border-black/5 flex flex-col gap-2.5 mt-auto">
         {/* Enlarged Hashtags (Crisp Bold Font for English/Chinese) */}
         {note.tags && note.tags.length > 0 && (
@@ -254,37 +215,44 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
           </div>
         )}
 
-        {/* Bottom Reaction Bar & Open Link Icon */}
-        <div className="flex items-center justify-between text-xs pt-1">
-          <div className="flex items-center gap-1.5">
+        {/* Bottom Reaction Bar, 24h Formatted Date & Open Link Icon */}
+        <div className="flex items-center justify-between text-xs pt-1 gap-2">
+          {/* Reaction Buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={(e) => handleReactionClick(e, 'heart')}
-              className="px-2.5 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
+              className="px-2 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
               title="Love"
             >
               <span>💖</span>
-              <span className="text-xs font-mono font-bold">{reactions.heart}</span>
+              <span className="text-xs font-cute font-bold">{reactions.heart}</span>
             </button>
             <button
               onClick={(e) => handleReactionClick(e, 'cake')}
-              className="px-2.5 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
+              className="px-2 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
               title="Yummy"
             >
               <span>🍮</span>
-              <span className="text-xs font-mono font-bold">{reactions.cake}</span>
+              <span className="text-xs font-cute font-bold">{reactions.cake}</span>
             </button>
             <button
               onClick={(e) => handleReactionClick(e, 'star')}
-              className="px-2.5 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
+              className="px-2 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
               title="Sparkle"
             >
               <span>✨</span>
-              <span className="text-xs font-mono font-bold">{reactions.star}</span>
+              <span className="text-xs font-cute font-bold">{reactions.star}</span>
             </button>
           </div>
 
-          <div className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs">
-            <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          {/* Date Formatted in User's Cute Round Clay Font + Direct Arrow */}
+          <div className="flex items-center gap-2 min-w-0 justify-end">
+            <span className="text-[11px] sm:text-xs font-cute text-neutral-500 font-bold opacity-85 truncate">
+              {formattedDate}
+            </span>
+            <div className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs shrink-0">
+              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </div>
           </div>
         </div>
       </div>

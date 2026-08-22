@@ -250,15 +250,15 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl">🏛️</span>
+              <span className="text-xl sm:text-2xl">📚</span>
               <h2 className="font-bubble font-extrabold text-lg sm:text-2xl text-neutral-900 tracking-tight">
-                {locale === 'zh' ? '笔记专属展厅' : 'Notes Exhibition Gallery'}
+                {locale === 'zh' ? '灵感笔记空间' : 'Notes Space'}
               </h2>
             </div>
             <p className="text-[11px] sm:text-xs font-cute text-neutral-400 -mt-0.5 line-clamp-1">
               {locale === 'zh'
-                ? `共展出 ${totalNotes} 篇笔记 • 5 大视界交互漫游`
-                : `${totalNotes} notes exhibited • 5 Exhibition Universes`}
+                ? `共收录 ${totalNotes} 篇笔记 • 5 大视界交互漫游`
+                : `${totalNotes} notes exhibited • 5 Interactive Universes`}
             </p>
           </div>
         </div>
@@ -344,7 +344,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           <div className="text-center py-24 flex flex-col items-center justify-center">
             <span className="text-5xl select-none">🎈</span>
             <p className="font-bubble font-bold text-sm text-neutral-600 mt-4">
-              {locale === 'zh' ? '正在连接笔记展厅...' : 'Loading Gallery...'}
+              {locale === 'zh' ? '正在连接笔记空间...' : 'Loading Notes...'}
             </p>
           </div>
         ) : filteredNotes.length === 0 ? (
