@@ -77,10 +77,10 @@ export const ClayRecentNotesCarousel: React.FC<ClayRecentNotesCarouselProps> = (
     );
   }
 
-  const formattedDate = new Date(currentNote.createdAt || Date.now()).toLocaleDateString(
-    locale === 'zh' ? 'zh-CN' : 'en-US',
-    { month: 'short', day: 'numeric' }
-  );
+  const d = new Date(currentNote.createdAt || Date.now());
+  const formattedDate = locale === 'zh'
+    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
     <div
@@ -166,13 +166,8 @@ export const ClayRecentNotesCarousel: React.FC<ClayRecentNotesCarouselProps> = (
             <span className="font-bold text-neutral-800">{formattedDate}</span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-neutral-400" />
-              <span>{Math.max(1, Math.ceil((currentNote.wordCount || 0) / 200))} {locale === 'zh' ? '分钟阅读' : 'min read'}</span>
-            </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
               <FileText className="w-3.5 h-3.5 text-amber-500" />
-              <span>{currentNote.wordCount || 0} 字</span>
+              <span>{currentNote.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
             </span>
           </div>
         </div>

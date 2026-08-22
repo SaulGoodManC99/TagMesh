@@ -87,13 +87,14 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
   const [systemStartTime, setSystemStartTime] = useState<number>(() => {
     try {
       const cached = localStorage.getItem('tagmesh_cached_system_start_time');
-      return cached ? parseInt(cached, 10) : Date.now() - 7200000; // default 2h baseline
+      return cached ? parseInt(cached, 10) : 1787356800000;
     } catch {
-      return Date.now() - 7200000;
+      return 1787356800000;
     }
   });
 
   const [sessionUptime, setSessionUptime] = useState({
+    days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
@@ -103,10 +104,11 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
   useEffect(() => {
     const updateElapsed = () => {
       const elapsed = Math.max(0, Math.floor((Date.now() - systemStartTime) / 1000));
-      const hours = Math.floor(elapsed / 3600);
+      const days = Math.floor(elapsed / 86400);
+      const hours = Math.floor((elapsed % 86400) / 3600);
       const minutes = Math.floor((elapsed % 3600) / 60);
       const seconds = elapsed % 60;
-      setSessionUptime({ hours, minutes, seconds });
+      setSessionUptime({ days, hours, minutes, seconds });
     };
 
     updateElapsed();
@@ -287,11 +289,12 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 p-3 sm:p-3.5 px-4 sm:px-8 rounded-3xl sm:rounded-full bg-white/95 backdrop-blur-md border-2 border-white shadow-xl text-xs sm:text-sm font-cute text-neutral-700 max-w-full">
           <div className="flex items-center gap-1.5 font-cute">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '本次运行' : 'Uptime'}:</span>
+            <span className="font-bold text-neutral-600">{locale === 'zh' ? '稳定运行' : 'Stable Uptime'}:</span>
             <span className="font-bubble font-bold text-neutral-900">
-              {sessionUptime.hours > 0 ? `${sessionUptime.hours}h ` : ''}
-              {String(sessionUptime.minutes).padStart(2, '0')}m{' '}
-              <span className="text-rose-500 font-bubble font-bold">{String(sessionUptime.seconds).padStart(2, '0')}s</span>
+              {sessionUptime.days > 0 ? `${sessionUptime.days}${locale === 'zh' ? '天 ' : 'd '}` : ''}
+              {sessionUptime.hours > 0 ? `${sessionUptime.hours}${locale === 'zh' ? '小时 ' : 'h '}` : ''}
+              {String(sessionUptime.minutes).padStart(2, '0')}{locale === 'zh' ? '分 ' : 'm '}
+              <span className="text-rose-500 font-bubble font-bold">{String(sessionUptime.seconds).padStart(2, '0')}{locale === 'zh' ? '秒' : 's'}</span>
             </span>
           </div>
 

@@ -36,7 +36,7 @@ import {
   Minus
 } from 'lucide-react';
 import { Note } from '../types/note';
-import { db, getAllTagCounts, getOrCreateActiveNote, extractTagsFromMarkdown } from '../db/dexie';
+import { db, getAllTagCounts, getOrCreateActiveNote } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { markdownToHtml, htmlToMarkdown, extractExcerptFromMarkdown, countWordsAndChars } from './utils/markdown';
@@ -205,25 +205,12 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
       const markdown = htmlToMarkdown(html);
       const excerpt = extractExcerptFromMarkdown(markdown, 'Untitled note');
       const { wordCount, charCount } = countWordsAndChars(markdown);
-
-      // Dynamically extract any typed inline tags and absorb into TAG dock
-      const inlineTags = extractTagsFromMarkdown(markdown);
       const currentTags = activeNoteTagsRef.current || [];
-      const mergedTags = Array.from(new Set([...currentTags, ...inlineTags])).sort((a, b) =>
-        a.localeCompare(b, 'zh-CN', { numeric: true, sensitivity: 'base' })
-      );
-
-      const hasNewTags = mergedTags.length !== currentTags.length;
-      if (hasNewTags) {
-        activeNoteTagsRef.current = mergedTags;
-      }
-
-      const finalTags = hasNewTags ? mergedTags : currentTags;
 
       db.notes.update(activeNoteIdRef.current, {
         rawMarkdown: markdown,
         excerpt,
-        tags: finalTags,
+        tags: currentTags,
         wordCount,
         charCount,
         isDirty: true,
@@ -234,7 +221,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
         ...note,
         rawMarkdown: markdown,
         excerpt,
-        tags: finalTags,
+        tags: currentTags,
         wordCount,
         charCount,
         isDirty: true,

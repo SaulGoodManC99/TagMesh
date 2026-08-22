@@ -155,6 +155,23 @@ export async function ensureNotesAuthorSeparation(): Promise<void> {
         changed = true;
       }
 
+      // Clean tags: filter out substring prefixes accidentally generated (e.g. #t or #ta when #tag exists)
+      if (Array.isArray(note.tags) && note.tags.length > 1) {
+        const cleanedTags = note.tags.filter((tag) => {
+          const lower = tag.toLowerCase();
+          const isPrefixOfAnother = note.tags.some(other => {
+            const otherLower = other.toLowerCase();
+            return otherLower !== lower && otherLower.startsWith(lower) && lower.length <= 3;
+          });
+          return !isPrefixOfAnother;
+        });
+
+        if (cleanedTags.length !== note.tags.length) {
+          updates.tags = cleanedTags;
+          changed = true;
+        }
+      }
+
       if (changed) {
         await db.notes.update(note.id, updates);
       }

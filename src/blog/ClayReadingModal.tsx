@@ -131,12 +131,10 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const formattedDate = new Date(note.createdAt || Date.now()).toLocaleDateString(
-    locale === 'zh' ? 'zh-CN' : 'en-US',
-    { year: 'numeric', month: 'long', day: 'numeric' }
-  );
-
-  const readMinutes = Math.max(1, Math.ceil((note.wordCount || 0) / 200));
+  const d = new Date(note.createdAt || Date.now());
+  const formattedDate = locale === 'zh'
+    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <div
@@ -156,7 +154,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
 
         {/* Top Sticky Header Bar */}
         <div className="px-3.5 sm:px-10 py-2.5 sm:py-3.5 bg-[#fdfbf7]/98 backdrop-blur-md border-b border-amber-900/10 flex items-center justify-between gap-2 shrink-0">
-          {/* Left: Close X + Author Badge + Date */}
+          {/* Left: Close X + Author Badge + Date + Word Count */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Quick Close Button */}
             <button
@@ -182,7 +180,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             )}
 
             <span className="text-[11px] sm:text-xs font-cute text-neutral-400 hidden xs:inline">
-              {formattedDate}
+              {formattedDate} • {note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}
             </span>
           </div>
 

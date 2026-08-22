@@ -511,10 +511,10 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
               {filteredNotes.map((note) => {
                 const isActive = activeNote?.id === note.id;
                 const isChecked = selectedIds.has(note.id);
-                const formattedDate = new Date(note.createdAt || Date.now()).toLocaleDateString(
-                  locale === 'zh' ? 'zh-CN' : 'en-US',
-                  { month: 'numeric', day: 'numeric' }
-                );
+                const d = new Date(note.createdAt || Date.now());
+                const formattedDate = locale === 'zh'
+                  ? `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`
+                  : d.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
 
                 const noteTags = (note.tags || []).slice(0, 2);
 
@@ -626,10 +626,10 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                 </div>
               ) : (
                 deletedNotes.map((note) => {
-                  const formattedDate = new Date(note.updatedAt || Date.now()).toLocaleDateString(
-                    locale === 'zh' ? 'zh-CN' : 'en-US',
-                    { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }
-                  );
+                  const d = new Date(note.updatedAt || Date.now());
+                  const formattedDate = locale === 'zh'
+                    ? `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+                    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
 
                   return (
                     <div

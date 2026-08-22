@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Clock, 
+  FileText, 
   Hash, 
   ArrowUpRight,
   Pin,
@@ -100,11 +100,10 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
     onClick();
   };
 
-  const readMinutes = Math.max(1, Math.ceil((note.wordCount || 50) / 200));
-  const formattedDate = new Date(note.createdAt || Date.now()).toLocaleDateString(
-    locale === 'zh' ? 'zh-CN' : 'en-US',
-    { month: 'short', day: 'numeric' }
-  );
+  const d = new Date(note.createdAt || Date.now());
+  const formattedDate = locale === 'zh'
+    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   // Dynamic excerpt length driven purely by the note's real content (organic height scaling)
   const rawLength = (note.rawMarkdown || '').length;
@@ -170,9 +169,9 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 opacity-80 text-xs font-cute shrink-0">
-            <Clock className="w-3 h-3" />
-            <span>{readMinutes} {locale === 'zh' ? '分钟' : 'min'}</span>
+          <div className="flex items-center gap-1 opacity-80 text-xs font-cute shrink-0">
+            <FileText className="w-3 h-3 text-neutral-400" />
+            <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
           </div>
         </div>
 

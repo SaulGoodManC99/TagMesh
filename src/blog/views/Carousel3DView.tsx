@@ -131,12 +131,11 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
 
   if (total === 0) return null;
 
-  const formattedDate = activeNote ? new Date(activeNote.createdAt || Date.now()).toLocaleDateString(
-    locale === 'zh' ? 'zh-CN' : 'en-US',
-    { year: 'numeric', month: 'short', day: 'numeric' }
-  ) : '';
+  const d = activeNote ? new Date(activeNote.createdAt || Date.now()) : new Date();
+  const formattedDate = locale === 'zh'
+    ? `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-  const readMinutes = activeNote ? Math.max(1, Math.ceil((activeNote.wordCount || 0) / 200)) : 1;
   const progressPercent = total > 0 ? Math.min(100, Math.max(0, ((currentIndex + 1) / total) * 100)) : 0;
 
   return (
@@ -279,7 +278,9 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
                   {/* Bottom Indicator */}
                   <div className="pt-2 border-t border-black/5 flex items-center justify-between text-xs">
                     <span className="font-cute text-neutral-500 text-[11px]">
-                      {new Date(note.createdAt).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })}
+                      {locale === 'zh'
+                        ? `${new Date(note.createdAt || Date.now()).getFullYear()}年${new Date(note.createdAt || Date.now()).getMonth() + 1}月${new Date(note.createdAt || Date.now()).getDate()}日`
+                        : new Date(note.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </span>
                     <span className="font-bubble font-bold text-xs text-rose-600 flex items-center gap-1">
                       {isCenter ? (locale === 'zh' ? '当前展出 ➜' : 'Active ➜') : (locale === 'zh' ? '点击切换' : 'Switch')}
@@ -332,11 +333,6 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
                   </div>
                   <div className="flex items-center gap-2 text-xs font-cute text-neutral-400 mt-1">
                     <span>{formattedDate}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-cyan-600" />
-                      <span>{readMinutes} {locale === 'zh' ? '分钟' : 'min'}</span>
-                    </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <FileText className="w-3 h-3 text-amber-600" />

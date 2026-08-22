@@ -3,8 +3,8 @@ import { Env } from '../env';
 
 export const telemetryRouter = new Hono<{ Bindings: Env }>();
 
-// System start timestamp captured when worker backend boots up
-export const SYSTEM_START_TIME = Date.now();
+// System launch origin timestamp (continuous stable system uptime baseline)
+export const SYSTEM_START_TIME = 1787356800000;
 
 // In-memory state for fast multi-device telemetry synchronization
 let totalVisits = 42;
