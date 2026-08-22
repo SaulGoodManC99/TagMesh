@@ -1,24 +1,24 @@
 <div align="center">
 
-# 🌸 TagMesh
+# 🌸 TagMesh 灵感手账
 
-### **无文件夹、无标题、全键盘驱动的粘土拟物风 Markdown 灵感手账**
+### **无文件夹 · 无标题 · 依托 `#标签` 网状编织的粘土拟物风高性能 Markdown 知识空间**
 
-*Organize knowledge organically through `#hashtags` — zero folders, zero title fatigue.*
-
-<br/>
-
-[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
-[![Tailwind CSS v4](https://img.shields.io/badge/TailwindCSS-v4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-[![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
-[![R2 Object Storage](https://img.shields.io/badge/R2-Object_Storage-FF6C37?style=flat-square&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
-[![MCP Server](https://img.shields.io/badge/MCP-JSON--RPC_2.0-8A2BE2?style=flat-square)](https://modelcontextprotocol.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=flat-square)](./LICENSE)
+*Ditch folders and titles. Weave thoughts organically through `#hashtags` at the edge.*
 
 <br/>
 
-[✨ 核心特性](#-核心特性) • [🎨 6大次元主题](#-6-大心境次元主题) • [🧭 6大多维展厅](#-6-大多维知识展厅) • [💬 实时弹幕与遥测](#-跨设备实时弹幕与权威遥测) • [⚡ 快捷键指南](#-全键盘极速快捷键) • [🤖 MCP AI对接](#-model-context-protocol-mcp-服务端) • [🚀 快速开始](#-快速开始与本地开发)
+[![React 19](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Tailwind CSS v4](https://img.shields.io/badge/TailwindCSS-v4.0.9-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
+[![R2 Object Storage](https://img.shields.io/badge/R2-Object_Storage-FF6C37?style=for-the-badge&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
+[![MCP Ready](https://img.shields.io/badge/MCP-JSON--RPC_2.0-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge)](./LICENSE)
+
+<br/>
+
+[📖 项目诞生背景](#-项目诞生背景与设计哲学) • [✨ 核心特性矩阵](#-核心特性矩阵) • [🎨 6大心境次元](#-6-大心境次元主题) • [🧭 6大多维展厅](#-6-大多维知识展厅) • [⚡ 快捷键速查](#-全键盘极速快捷键) • [☁️ Cloudflare部署指南](#️-cloudflare-零到一保姆级部署指南) • [🤖 MCP AI对接](#-model-context-protocol-mcp-服务端)
 
 <br/>
 
@@ -28,26 +28,18 @@
 
 </div>
 
-> [!TIP]
-> **TagMesh 在 30 秒内能为你带来什么？**  
-> 彻底抛弃“写之前必须想个标题”的纠结与“笔记该归到哪个文件夹”的归档内耗。随手敲下快捷键直接开写，在正文中任意穿插 `#标签`，系统将自动利用力导向图把所有碎片化灵感编织成双向网状星系。
-
 <br/>
 
-## 🌟 核心特性
-
-- 🏷️ **零标题 & 零文件夹（Zero Folders & Titles）**：以纯粹 Markdown 文本流为核心，分类全靠正文中的 `#标签`，首行自动智能提炼为摘要卡片。
-- 🎨 **粘土拟物手账风（Claymorphism）**：饱满圆润的胶囊微交互、物理空间浮雕投影、清脆听觉反馈与 Confetti 粒子。
-- 💬 **跨设备实时弹幕广场**：手机端发射的灵感弹幕秒级飞过电脑屏幕，爱心点赞跨端广播，智能防碰撞宽距分轨。
-- ⏱️ **真实系统后台运行时间（Authoritative Uptime）**：记录后台服务守护进程的真实启动时间戳，多终端秒级同步，刷新永不归零。
-- 👥 **权威会话去重访客统计**：基于 Session 独立会话进行跨终端去重，自动维护总访客与今日访客（跨天自动重置）。
-- 🧭 **6 大多维知识展厅**：Bento 拼图、3D 空间立体轮播、银河知识拓扑星网、拍立得手账墙、时光长河纪年与自由画布。
-- ⚡ **全键盘极速驱动**：`Cmd+K` 全局命令中枢、`Cmd+\` 侧边栏、`Cmd+N` 极速新建、`#` 智能补全已有标签。
-- 🤖 **原生 Serverless MCP 接口**：开放 8 大标准 AI 工具，零内置 AI 杂音，一键对接 Claude Desktop 与 Cursor。
+> [!TIP]
+> **💡 GitHub 仓库设置建议 (Repository Settings)**
+> - **About 简介**：`🌸 彻底摒弃标题与文件夹、依托 #标签 网状编织的粘土拟物风（Claymorphic）高性能 Markdown 灵感手账。集成跨端实时弹幕、6大次元展厅与 Serverless MCP 接口。`
+> - **Topics 标签**：`markdown`, `claymorphism`, `local-first`, `tiptap`, `cloudflare-workers`, `cloudflare-d1`, `cloudflare-r2`, `mcp-server`, `react19`, `tailwindcss4`, `notes-app`, `danmaku`
 
 ---
 
-## ⚖️ 设计哲学对比
+## 📖 项目诞生背景与设计哲学
+
+我们在使用传统笔记工具（如 Notion、Obsidian、Logseq、Apple Notes）时，常常被以下 **三大隐形阻力** 打断心流：
 
 ```
        #旅行随笔                   #灵感闪念
@@ -59,21 +51,60 @@
              #治愈日记       #todo待办
 ```
 
-| 传统笔记工具的困扰 😫 | TagMesh 的革新解法 ✨ |
-| :--- | :--- |
-| **起标题纠结**：记录一个闪念必须先想一个“恰当”的标题 | **零标题实体**：直接落笔书写，首行正文自动提炼为精致预览摘要 |
-| **文件夹分类焦虑**：层级太深找不到，分类归属模棱两可 | **纯 `#标签` 网状拓扑**：在文本任意位置敲 `#标签`，自动聚合成双向网状索引 |
-| **设备数据孤岛**：电脑写的内容手机看不了，状态统计混乱 | **边缘/局域网双向同步**：跨设备秒级同步，真实系统后台运行时长与权威访客去重统计 |
-| **枯燥冰冷的界面**：黑白单调的 Markdown 缺乏温度与书写欲 | **Clay 拟物手账风**：饱满圆润的胶囊微交互、立体浮雕投影、清脆拟真音效与次元主题 |
-| **内置臃肿的 AI 问答**：污染笔记界面，无法联动外部生产力工具 | **纯净 Serverless MCP 接口**：零内置冗余 AI，原生开放 8 大工具供 Claude Desktop / Cursor 直连 |
+1. **起标题纠结症（Title Writer's Block）**：在记下一句灵光一闪的想法前，系统非要你输入一个“合适”的标题。很多人卡在第一步，写作欲瞬间熄灭。
+2. **文件夹层级地狱（The Folder Labyrinth）**：随着笔记增多，必须建立《工作/2026/项目A/会议记录》这样的深层树状目录。时间一长，笔记被深埋在目录深渊，找寻成本极高。
+3. **内置 AI 杂音与枯燥 UI（AI Bloat & Cold Design）**：编辑器充斥着强行内置的 AI 续写弹窗，黑白冷淡风界面缺乏书写温度与情绪价值。
+
+### 🌸 TagMesh 的解法：
+- **无标题、无文件夹（Zero Titles & Folders）**：笔记即文本流。首行第一句话自动提炼为精致预览卡片；
+- **行内 `#标签` 网状拓扑编织**：在正文中随处敲下 `#标签`，系统自动利用力导向图将其编织成双向网状知识星系；
+- **粘土拟物（Claymorphism）温润美学**：立体浮雕阴影、清脆可爱的音效、Confetti 粒子、跨端实时弹幕广场与 6 大多维知识展厅；
+- **纯净 Serverless MCP 知识库**：端内零 AI 杂音，通过原生 MCP 协议开放给外部 Claude Desktop 与 Cursor，让 AI 真正成为知识库的无缝外挂。
+
+---
+
+## ✨ 核心特性矩阵
+
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🏷️ 零标题 & 零文件夹网状架构</h3>
+      <p>彻底抛弃层级目录树。在 Markdown 任意位置键入 <code>#标签</code>，Tiptap 编辑器实时渲染为可点击交互的粘土胶囊，键入 <code>#</code> 自动唤起已有标签智能补全。</p>
+    </td>
+    <td width="50%">
+      <h3>🎨 粘土拟物（Claymorphism）美学</h3>
+      <p>圆润饱满的拟物按键、空间物理微交互、清脆敲击音效、粒子爆发以及 6 套深度调色的心境次元主题，赋予数字笔记温暖的手账触感。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>💬 跨设备实时弹幕广场</h3>
+      <p>手机端发射的弹幕即刻在电脑屏幕上流畅划过！点赞 💖 跨端实时广播，内置 4 轨/6 轨智能防碰撞算法与馆长一键式快捷审核下架。</p>
+    </td>
+    <td width="50%">
+      <h3>⏱️ 真实后台系统运行时间与权威遥测</h3>
+      <p>废弃前端单机假时间，由后端常驻进程记录真实的 <code>SYSTEM_START_TIME</code>，手机与电脑毫秒级同步展示实际在线寿命，刷新永不归零；基于 Session 独立会话进行跨终端访客权威去重。</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🧭 6 大多维知识展厅视图</h3>
+      <p>随心切换 <b>Bento 拼图</b>、<b>3D 空间立体轮播</b>、<b>银河知识拓扑星网</b>、<b>拍立得手账墙</b>、<b>时光长河纪年</b> 与 <b>自由漂浮画布</b>，多角度透视灵感。</p>
+    </td>
+    <td width="50%">
+      <h3>🤖 原生 Serverless MCP AI 工具链</h3>
+      <p>边缘端提供标准 Model Context Protocol（JSON-RPC 2.0）接口，开放 8 大生产级工具，供 <b>Claude Desktop</b> 与 <b>Cursor</b> 零门槛调用。</p>
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## 🎨 6 大心境次元主题
 
-点击右上角主题切换胶囊或按下快捷键，即可在 6 种沉浸式心境次元中无缝穿梭：
+点击右上角主题胶囊或快捷键即可无缝切换全局色彩、氛围粒子与空间质感：
 
-| 次元主题 | 氛围特征 | 主色调 / 质感 | 适用心境 |
+| 次元主题 | 视觉氛围 | 主色调 / 质感 | 最佳契合心境 |
 | :--- | :--- | :--- | :--- |
 | 🌸 **樱花落雪 (Sakura Snow)** | 漫天飞樱与轻粉微光 | `#FFF5F7` · 柔粉温润 | 治愈手账、日常随想 |
 | 🌊 **深海鲸落 (Deep Ocean)** | 深蓝浩瀚与海浪波纹 | `#F0F9FF` · 幽蓝静谧 | 深度思考、技术架构 |
@@ -86,8 +117,6 @@
 
 ## 🧭 6 大多维知识展厅
 
-<div align="center">
-
 | 展厅视图 | 交互特色 | 最佳适用场景 |
 | :--- | :--- | :--- |
 | **🗂️ 治愈 Bento 拼图** | 响应式便签网格，内置标签过滤与字数密度指示 | 快速浏览全库笔记与标签筛选 |
@@ -97,22 +126,11 @@
 | **📅 时光长河纪年纪事** | 按时间流淌串联思考脉络，直观展示知识沉淀轨迹 | 长期思考演化与历史回溯 |
 | **🎨 自由空间漂浮画布** | 自由拖拽摆放的无限灵感空间，打破条框束缚 | 头脑风暴与自由卡片布局 |
 
-</div>
-
----
-
-## 💬 跨设备实时弹幕与权威遥测
-
-- **跨端实时互通**：在手机端发射一条弹幕，电脑屏幕即刻同步飞过；点赞 💖 实时跨端广播。
-- **智能防碰撞分轨**：自适应移动端（4 轨）与桌面端（6 轨）宽距分流，配备馆长一键式快捷内容管理。
-- **真实系统运行时间 (Uptime)**：记录服务端真实启动时间戳 `SYSTEM_START_TIME`，电脑与手机真机秒级同步展示实际在线寿命（如 `8h 48m 32s`），刷新页面不归零。
-- **权威访客记录 (Session Deduplication)**：基于 Session 会话进行跨端去重，自动维护总访客与今日访客（跨天自动重置）。
-
 ---
 
 ## ⚡ 全键盘极速快捷键
 
-TagMesh 专为键盘流设计，99% 的操作无需离开主键区：
+TagMesh 专为高阶键盘操作者打造，99% 的操作无需离开主键区：
 
 | 快捷键 | 作用说明 | 触发范围 |
 | :--- | :--- | :--- |
@@ -127,13 +145,97 @@ TagMesh 专为键盘流设计，99% 的操作无需离开主键区：
 
 ---
 
+## ☁️ Cloudflare 零到一保姆级部署指南
+
+TagMesh 完美适配 **Cloudflare 全套 Serverless 基础设施**（Workers + D1 SQLite 数据库 + R2 零出站费存储）。以下是完整的零到一部署教程：
+
+### 🛠️ 步骤 1：安装依赖与登录 Cloudflare 账号
+确保本地已安装 [Node.js (v18+)](https://nodejs.org/) 与 Git，然后执行：
+
+```bash
+# 1. 克隆代码仓库
+git clone https://github.com/SaulGoodManC99/TagMesh.git
+cd TagMesh
+
+# 2. 安装项目全部依赖
+npm install
+
+# 3. 登录 Cloudflare 账号（会调起浏览器完成 OAuth 授权）
+npx wrangler login
+```
+
+---
+
+### 🗄️ 步骤 2：创建 Cloudflare D1 数据库
+D1 是 Cloudflare 提供的边缘 SQLite 数据库，具备极高的读写性能：
+
+```bash
+# 创建名为 tagmesh-db 的数据库
+npx wrangler d1 create tagmesh-db
+```
+
+执行后终端会输出类似如下内容：
+```text
+✅ Successfully created DB 'tagmesh-db'!
+[[d1_databases]]
+binding = "DB"
+database_name = "tagmesh-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+👉 **修改 `wrangler.toml` 文件**：将终端输出的 `database_id` 替换填入项目根目录 `wrangler.toml` 文件的第 14 行中。
+
+---
+
+### 📜 步骤 3：初始化数据库表结构与 FTS5 虚拟表
+执行项目自带的 `schema.sql`，一键初始化笔记表、索引以及 FTS5 全文搜索虚拟表：
+
+```bash
+# 在远程 Cloudflare D1 数据库执行建表 SQL
+npm run db:init:remote
+```
+
+---
+
+### 📦 步骤 4：创建 Cloudflare R2 对象存储桶
+R2 用于存储粘贴的图片与 Markdown 备份文件，**享有 0 出站流量费**：
+
+```bash
+# 创建名为 tagmesh-markdown-assets 的存储桶
+npx wrangler r2 bucket create tagmesh-markdown-assets
+```
+
+---
+
+### 🚀 步骤 5：构建前端产物并一键部署至边缘网络
+
+```bash
+# 1. 编译前端生产包（产物自动输出至 dist/）
+npm run build
+
+# 2. 一键发布部署到 Cloudflare Workers 边缘网络
+npm run worker:deploy
+```
+
+部署成功后，终端将输出您的专属线上访问域名，例如：  
+`https://tagmesh-markdown.<你的子域名>.workers.dev`
+
+---
+
+### 🌐 步骤 6：绑定自定义域名（可选）
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)；
+2. 进入 **Workers & Pages** -> 选择 **tagmesh-markdown**；
+3. 点击 **Settings** -> **Domains & Routes** -> **Add Custom Domain**，输入你的自定义域名（如 `notes.yourdomain.com`）即可秒级生效！
+
+---
+
 ## 🤖 Model Context Protocol (MCP) 服务端
 
-TagMesh 边缘端原生提供符合 **MCP 协议规范（JSON-RPC 2.0）** 的知识库接口，零内置 AI 杂音，专为外接顶级 AI 客户端设计。
+TagMesh 在 `/mcp` 原生提供符合标准 **Model Context Protocol (JSON-RPC 2.0)** 规范的端点，让外部 AI 客户端直接把 TagMesh 当作高响应、无损格式的第二大脑。
 
 ### 🛠️ 开放的 8 大 MCP 核心工具
 
-| 工具名称 (Tool) | 功能描述 (Description) | 输入参数 (Parameters) |
+| 工具名称 (Tool) | 功能说明 (Description) | 参数列表 (Parameters) |
 | :--- | :--- | :--- |
 | `search_by_tag` | 按指定 `#标签` 精准检索笔记集合 | `tag` (string), `limit` (number) |
 | `search_fulltext` | 跨所有手账执行 SQLite FTS5 全文关键词检索 | `query` (string), `limit` (number) |
@@ -157,7 +259,7 @@ TagMesh 边缘端原生提供符合 **MCP 协议规范（JSON-RPC 2.0）** 的�
       "args": [
         "-y",
         "@modelcontextprotocol/server-fetch",
-        "http://127.0.0.1:8787/mcp"
+        "https://你的域名/mcp"
       ]
     }
   }
@@ -170,7 +272,7 @@ TagMesh 边缘端原生提供符合 **MCP 协议规范（JSON-RPC 2.0）** 的�
 
 在 Cursor Settings -> Features -> MCP Servers 中添加：
 - **Type**: `sse` / `http`
-- **URL**: `http://127.0.0.1:8787/mcp`
+- **URL**: `https://你的域名/mcp`
 </details>
 
 ---
@@ -203,44 +305,9 @@ graph TD
 
 ---
 
-## 🚀 快速开始与本地开发
-
-### 1. 克隆与安装依赖
-```bash
-git clone https://github.com/SaulGoodManC99/TagMesh.git
-cd TagMesh
-npm install
-```
-
-### 2. 启动本地开发服务
-```bash
-# 启动前端开发服务器（支持局域网 0.0.0.0:5173 真机访问）
-npm run dev
-
-# 启动 Cloudflare Worker 后端守护服务（端口 8787）
-npm run worker:dev
-```
-
-### 3. 生产构建打包
-```bash
-# 执行 TypeScript 校验与 Vite 生产构建打包
-npm run build
-```
-
-### 4. 初始化数据库与一键部署
-```bash
-# 初始化本地 Cloudflare D1 数据库与 FTS5 虚拟表
-npm run db:init
-
-# 部署至 Cloudflare Workers 边缘网络
-npm run worker:deploy
-```
-
----
-
 ## 📄 开源协议
 
-本项目基于 [MIT License](./LICENSE) 协议开源。
+本项目基于 [MIT License](./LICENSE) 协议开源。欢迎提交 Issue 与 Pull Request！
 
 <div align="center">
 

@@ -2,23 +2,23 @@
 
 # 🌸 TagMesh
 
-### **Zero-Folder, Titleless, Keyboard-Driven Markdown Journal with Claymorphic Aesthetics & Serverless Edge**
+### **Zero-Folder · Titleless · Tag-Woven Markdown Journal with Claymorphic Aesthetics & Serverless Edge**
 
-*Organize knowledge organically through `#hashtags` — zero folders, zero title fatigue.*
-
-<br/>
-
-[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
-[![Tailwind CSS v4](https://img.shields.io/badge/TailwindCSS-v4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-[![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
-[![R2 Object Storage](https://img.shields.io/badge/R2-Object_Storage-FF6C37?style=flat-square&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
-[![MCP Server](https://img.shields.io/badge/MCP-JSON--RPC_2.0-8A2BE2?style=flat-square)](https://modelcontextprotocol.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=flat-square)](./LICENSE)
+*Ditch folders and titles. Weave thoughts organically through `#hashtags` at the edge.*
 
 <br/>
 
-[✨ Features](#-key-features) • [🎨 6 Mood Themes](#-6-dimensional-mood-themes) • [🧭 6 Galleries](#-6-multi-dimensional-knowledge-galleries) • [💬 Live Danmaku](#-cross-device-real-time-danmaku--telemetry) • [⚡ Shortcuts](#-keyboard-first-shortcuts) • [🤖 MCP AI Server](#-model-context-protocol-mcp-server) • [🚀 Quick Start](#-quick-start--local-development)
+[![React 19](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Tailwind CSS v4](https://img.shields.io/badge/TailwindCSS-v4.0.9-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
+[![R2 Object Storage](https://img.shields.io/badge/R2-Object_Storage-FF6C37?style=for-the-badge&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
+[![MCP Ready](https://img.shields.io/badge/MCP-JSON--RPC_2.0-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge)](./LICENSE)
+
+<br/>
+
+[📖 Design Origin & Philosophy](#-design-origin--philosophy) • [✨ Feature Matrix](#-core-feature-matrix) • [🎨 6 Mood Themes](#-6-dimensional-mood-themes) • [🧭 6 Galleries](#-6-multi-dimensional-knowledge-galleries) • [⚡ Shortcuts](#-keyboard-first-shortcuts) • [☁️ Cloudflare Deployment](#️-step-by-step-cloudflare-deployment-guide) • [🤖 MCP AI Server](#-model-context-protocol-mcp-server)
 
 <br/>
 
@@ -28,44 +28,75 @@
 
 </div>
 
-> [!TIP]
-> **What does TagMesh do in 30 seconds?**  
-> Say goodbye to title writer's block and deep directory folder fatigue. Tap a shortcut, start writing immediately, and scatter `#hashtags` naturally in your Markdown stream. TagMesh dynamically connects your fragmented inspirations into a bidirectional knowledge galaxy.
-
 <br/>
 
-## 🌟 Key Features
-
-- 🏷️ **Zero Titles & Zero Folders**: Treat notes as pure Markdown text streams. Organization relies purely on `#hashtags` with smart first-line preview summaries.
-- 🎨 **Tactile Claymorphism Aesthetics**: Rounded clay pills, spatial relief shadows, auditory soundscapes, and confetti particle bursts.
-- 💬 **Cross-Device Shared Danmaku Plaza**: Barrages launched on your phone cruise instantly across desktop monitors with real-time reaction hearts.
-- ⏱️ **Real Server Backend Uptime**: Synchronized backend startup timestamp (`SYSTEM_START_TIME`) across all clients with zero reset on refresh.
-- 👥 **Authoritative Session Deduplicated Visits**: Session-based visitor tracking across devices with daily automatic rollovers.
-- 🧭 **6 Multi-Dimensional Galleries**: Bento Grid, 3D Spatial Carousel, Galaxy Mesh Graph, Polaroid Photo Wall, Timeline Stream, and Freeform Canvas.
-- ⚡ **Ultra-Fast Keyboard Flow**: `Cmd+K` Command Central, `Cmd+\` Sidebar, `Cmd+N` Instant Note, and `#` hashtag autocomplete.
-- 🤖 **Native Serverless MCP AI Interface**: 8 standard tools ready for Claude Desktop and Cursor with zero in-app AI noise.
+> [!TIP]
+> **💡 Recommended GitHub Repository Settings**
+> - **About**: `🌸 Zero-folder, titleless, keyboard-driven Markdown journal with Claymorphic aesthetics & serverless edge. Features live Danmaku plaza, 6 dimensional galleries, and Model Context Protocol (MCP) server.`
+> - **Topics**: `markdown`, `claymorphism`, `local-first`, `tiptap`, `cloudflare-workers`, `cloudflare-d1`, `cloudflare-r2`, `mcp-server`, `react19`, `tailwindcss4`, `notes-app`, `danmaku`
 
 ---
 
-## ⚖️ Design Philosophy Comparison
+## 📖 Design Origin & Philosophy
+
+When using traditional note-taking apps (Notion, Obsidian, Logseq, Apple Notes), digital gardening is frequently disrupted by **three chronic friction points**:
 
 ```
        #travel                     #ideas
           \                         /
-           \------- [ Note ] ------/
+           \------- [ Pure Note ] --/
           /         /      \       \
    #photography    /        \     #cloudflare
                   /          \
              #journal       #todo
 ```
 
-| Traditional Note Taking 😫 | The TagMesh Way ✨ |
-| :--- | :--- |
-| **Title Writer's Block**: Forced to come up with a title before jotting down a quick thought | **Zero Title Entity**: Just start typing. The first line automatically renders into a concise preview excerpt |
-| **Folder Organization Fatigue**: Deep directory trees where notes get buried and forgotten | **Pure `#Hashtag` Topology Mesh**: Scatter `#tags` anywhere in your text. Notes form bidirectional associative graphs |
-| **Multi-Device Data Silos**: Desktop notes isolated from mobile; mismatched telemetry | **LAN & Cloudflare Edge Sync**: Sub-second synchronization, unified system backend uptime & session deduplicated visitor analytics |
-| **Boring Monochrome UI**: Stark black-and-white Markdown lacking tactile inspiration | **Claymorphism Joy**: Tactile rounded clay pills, playful micro-interactions, crisp soundscapes, and mood themes |
-| **Clunky Embedded AI**: In-app chatbots cluttering your notes with useless prompts | **Clean Serverless MCP Interface**: Zero in-app AI bloat; native 8-tool MCP API ready for Claude Desktop and Cursor |
+1. **Title Writer's Block**: Before jotting down a quick spark of inspiration, you are forced to invent a "suitable" title. The flow stops before it even begins.
+2. **The Folder Labyrinth**: Directory structures quickly grow into complex deep trees like `Work/2026/ProjectX/MeetingNotes`. Notes get buried in folders and forgotten.
+3. **AI Bloat & Cold Design**: Editor canvases are cluttered with in-app AI completion popups, and stark monochrome interfaces lack tactile inspiration and emotional warmth.
+
+### 🌸 The TagMesh Solution:
+- **Zero Titles & Zero Folders**: Treat notes as fluid Markdown text streams. The first line automatically renders into a concise preview card;
+- **Pure `#Hashtag` Topology Mesh**: Scatter `#tags` anywhere in your text. Notes organically weave into bidirectional knowledge galaxies;
+- **Claymorphic Tactile Aesthetics**: Rounded spatial relief shadows, auditory soundscapes, particle bursts, a cross-device live Danmaku plaza, and 6 dimension galleries;
+- **Clean Serverless MCP Gateway**: Zero in-app AI noise. Natively exposes standard MCP tools for Claude Desktop and Cursor.
+
+---
+
+## ✨ Core Feature Matrix
+
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🏷️ Zero Titles & Zero Folders</h3>
+      <p>Ditch directory trees. Scatter <code>#hashtags</code> anywhere in raw Markdown. Tiptap renders tags as interactive clay pills, and typing <code>#</code> triggers instant autocomplete.</p>
+    </td>
+    <td width="50%">
+      <h3>🎨 Tactile Claymorphism Aesthetics</h3>
+      <p>Rounded spatial relief buttons, tactile micro-interactions, playful auditory feedback, confetti particle bursts, and 6 curated mood themes.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>💬 Cross-Device Shared Danmaku Plaza</h3>
+      <p>Broadcast thoughts across screens in real time. Danmakus launched from mobile fly across desktop monitors with reaction hearts 💖 and multi-lane collision avoidance.</p>
+    </td>
+    <td width="50%">
+      <h3>⏱️ Real Backend Uptime & Authoritative Telemetry</h3>
+      <p>Synchronized backend startup timestamp (<code>SYSTEM_START_TIME</code>) displayed across devices with zero reset on refresh; authoritative session deduplicated visit counting.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🧭 6 Multi-Dimensional Galleries</h3>
+      <p>Switch seamlessly between <b>Bento Grid</b>, <b>3D Spatial Carousel</b>, <b>Galaxy Mesh Graph</b>, <b>Polaroid Board</b>, <b>Timeline Stream</b>, and <b>Freeform Canvas</b>.</p>
+    </td>
+    <td width="50%">
+      <h3>🤖 Native Serverless MCP AI Toolset</h3>
+      <p>Edge-native Model Context Protocol (JSON-RPC 2.0) interface with 8 production tools ready for <b>Claude Desktop</b> and <b>Cursor</b>.</p>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -86,8 +117,6 @@ Switch effortlessly between 6 curated atmospheric themes:
 
 ## 🧭 6 Multi-Dimensional Knowledge Galleries
 
-<div align="center">
-
 | Gallery View | Interaction Highlights | Best Use Case |
 | :--- | :--- | :--- |
 | **🗂️ Bento Grid** | Responsive modern bento layout with instant tag filters and word density tags | Quick vault browsing & tag filtering |
@@ -96,17 +125,6 @@ Switch effortlessly between 6 curated atmospheric themes:
 | **🖼️ Polaroid Board** | Vintage pinned photo cards with organic rotation angles and paper clips | Moodboard & visual memories |
 | **📅 Timeline Stream** | Chronological river tracking your thinking evolution across time | Thought evolution & history log |
 | **🎨 Floating Canvas** | Draggable free-form spatial canvas for spatial brainstorming | Infinite free-form card mapping |
-
-</div>
-
----
-
-## 💬 Cross-Device Real-Time Danmaku & Telemetry
-
-- **Sub-Second Broadcast**: Messages sent from mobile fly across desktop screens instantly with heart reactions 💖.
-- **Anti-Collision Safe Lanes**: Responsive lane management (4 lanes on mobile, 6 on desktop) with instant curator moderation tools.
-- **Real Backend Uptime**: Powered by `SYSTEM_START_TIME` recorded when the server process starts, synchronized across all devices without resetting on page reload.
-- **Authoritative Deduplication**: Session-based visitor tracking across devices with daily midnight resets.
 
 ---
 
@@ -127,11 +145,93 @@ TagMesh is crafted for power keyboard users:
 
 ---
 
+## ☁️ Step-by-Step Cloudflare Deployment Guide
+
+TagMesh is optimized for Cloudflare's serverless edge ecosystem (**Workers + D1 SQLite Database + R2 0-Egress Object Storage**). Follow this complete zero-to-one tutorial:
+
+### 🛠️ Step 1: Install Dependencies & Login to Cloudflare
+Ensure [Node.js (v18+)](https://nodejs.org/) and Git are installed:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/SaulGoodManC99/TagMesh.git
+cd TagMesh
+
+# 2. Install all dependencies
+npm install
+
+# 3. Authenticate with Cloudflare via browser OAuth
+npx wrangler login
+```
+
+---
+
+### 🗄️ Step 2: Create Cloudflare D1 Database
+D1 is Cloudflare's serverless SQLite database at the edge:
+
+```bash
+# Create database named tagmesh-db
+npx wrangler d1 create tagmesh-db
+```
+
+The terminal will print:
+```text
+✅ Successfully created DB 'tagmesh-db'!
+[[d1_databases]]
+binding = "DB"
+database_name = "tagmesh-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+👉 **Update `wrangler.toml`**: Paste your `database_id` into line 14 of `wrangler.toml`.
+
+---
+
+### 📜 Step 3: Run Database Schema & FTS5 Virtual Table Migrations
+Execute the included `schema.sql` to initialize tables, indexes, and full-text virtual tables:
+
+```bash
+npm run db:init:remote
+```
+
+---
+
+### 📦 Step 4: Create Cloudflare R2 Storage Bucket
+R2 stores images and raw Markdown snapshots with **0 Egress bandwidth fees**:
+
+```bash
+npx wrangler r2 bucket create tagmesh-markdown-assets
+```
+
+---
+
+### 🚀 Step 5: Build Frontend & Deploy to Cloudflare Edge
+
+```bash
+# 1. Build production bundle into dist/
+npm run build
+
+# 2. Deploy edge worker and static assets
+npm run worker:deploy
+```
+
+The terminal will output your production live URL:  
+`https://tagmesh-markdown.<your-subdomain>.workers.dev`
+
+---
+
+### 🌐 Step 6: Custom Domain Binding (Optional)
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/);
+2. Navigate to **Workers & Pages** -> **tagmesh-markdown**;
+3. Go to **Settings** -> **Domains & Routes** -> **Add Custom Domain** (e.g. `notes.yourdomain.com`).
+
+---
+
 ## 🤖 Model Context Protocol (MCP) Server
 
-TagMesh natively provides an edge **Model Context Protocol (JSON-RPC 2.0)** knowledge gateway at `/mcp` without in-app AI clutter.
+TagMesh provides an edge **Model Context Protocol (JSON-RPC 2.0)** endpoint at `/mcp`.
 
-### 🛠️ 8 Core MCP Server Tools
+### 🛠️ 8 Production-Ready MCP Tools
 
 | Tool Name | Description | Parameters |
 | :--- | :--- | :--- |
@@ -157,7 +257,7 @@ Add to `claude_desktop_config.json`:
       "args": [
         "-y",
         "@modelcontextprotocol/server-fetch",
-        "http://127.0.0.1:8787/mcp"
+        "https://your-domain.com/mcp"
       ]
     }
   }
@@ -170,7 +270,7 @@ Add to `claude_desktop_config.json`:
 
 In Cursor Settings -> Features -> MCP Servers:
 - **Type**: `sse` / `http`
-- **URL**: `http://127.0.0.1:8787/mcp`
+- **URL**: `https://your-domain.com/mcp`
 </details>
 
 ---
@@ -179,7 +279,7 @@ In Cursor Settings -> Features -> MCP Servers:
 
 ```mermaid
 graph TD
-    subgraph Client["🖥️ Client (React 19 + Vite + Tailwind CSS v4)"]
+    subgraph Client["🖥️ Frontend (React 19 + Vite + Tailwind CSS v4)"]
         UI["Clay UI & 6-Dimension Galleries"]
         Editor["Tiptap v2 (Hashtag & R2 Paste)"]
         LocalDB["Dexie.js (IndexedDB Local-First Engine)"]
@@ -199,40 +299,6 @@ graph TD
     Worker -->|Stream Markdown & Images| R2
     Worker -->|Expose knowledge tools| MCP
     UI <-->|Bidirectional Sync| Telemetry
-```
-
----
-
-## 🚀 Quick Start & Local Development
-
-### 1. Clone & Install
-```bash
-git clone https://github.com/SaulGoodManC99/TagMesh.git
-cd TagMesh
-npm install
-```
-
-### 2. Start Development Servers
-```bash
-# Start frontend with LAN access on 0.0.0.0:5173
-npm run dev
-
-# Start Cloudflare Worker backend on port 8787
-npm run worker:dev
-```
-
-### 3. Build Production Bundle
-```bash
-npm run build
-```
-
-### 4. Initialize Database & Edge Deploy
-```bash
-# Initialize local D1 SQLite schema & FTS5 virtual table
-npm run db:init
-
-# Deploy to Cloudflare Workers edge network
-npm run worker:deploy
 ```
 
 ---
