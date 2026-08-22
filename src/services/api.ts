@@ -164,6 +164,29 @@ export async function submitGlobalStamp(): Promise<{ stampCount: number } | null
 }
 
 /**
+ * Reset system telemetry (admin operation)
+ */
+export async function resetTelemetryRemote(options?: {
+  resetUptime?: boolean;
+  resetVisits?: boolean;
+  resetStamps?: boolean;
+}): Promise<SystemTelemetryData | null> {
+  try {
+    const res = await fetch(`${API_BASE}/telemetry/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(options || { resetUptime: true, resetVisits: true, resetStamps: true }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { success: boolean } & SystemTelemetryData;
+    return data;
+  } catch (err) {
+    console.warn('[Telemetry] resetTelemetryRemote error:', err);
+    return null;
+  }
+}
+
+/**
  * Danmaku Remote API
  */
 export interface RemoteDanmakuResponse {

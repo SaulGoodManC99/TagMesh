@@ -4,7 +4,8 @@ import { Env } from '../env';
 export const telemetryRouter = new Hono<{ Bindings: Env }>();
 
 // System launch origin timestamp (continuous stable system uptime baseline)
-export const SYSTEM_START_TIME = 1787356800000;
+export const DEFAULT_SYSTEM_START_TIME = 1787356800000;
+let currentSystemStartTime = DEFAULT_SYSTEM_START_TIME;
 
 // In-memory state for fast multi-device telemetry synchronization
 let totalVisits = 42;
@@ -31,11 +32,11 @@ telemetryRouter.get('/', (c) => {
   checkDateRollover();
   return c.json({
     success: true,
-    systemStartTime: SYSTEM_START_TIME,
+    systemStartTime: currentSystemStartTime,
     serverTime: Date.now(),
-    totalVisits: Math.max(1, totalVisits),
-    todayVisits: Math.max(1, todayVisits),
-    stampCount: globalStampCount,
+    totalVisits: Math.max(0, totalVisits),
+    todayVisits: Math.max(0, todayVisits),
+    stampCount: Math.max(0, globalStampCount),
   });
 });
 
@@ -60,8 +61,8 @@ telemetryRouter.post('/visit', async (c) => {
 
   return c.json({
     success: true,
-    totalVisits: Math.max(1, totalVisits),
-    todayVisits: Math.max(1, todayVisits),
+    totalVisits: Math.max(0, totalVisits),
+    todayVisits: Math.max(0, todayVisits),
   });
 });
 
@@ -75,4 +76,42 @@ telemetryRouter.post('/stamp', (c) => {
     success: true,
     stampCount: globalStampCount,
   });
+});
+
+/**
+ * POST /api/telemetry/reset
+ * Admin resets system telemetry (uptime start time, visits, and stamps)
+ */
+telemetryRouter.post('/reset', async (c) => {
+  try {
+    const body = await c.req.json<{
+      resetUptime?: boolean;
+      resetVisits?: boolean;
+      resetStamps?: boolean;
+    }>().catch(() => ({ resetUptime: true, resetVisits: true, resetStamps: true }));
+
+    const now = Date.now();
+
+    if (body.resetUptime) {
+      currentSystemStartTime = now;
+    }
+    if (body.resetVisits) {
+      totalVisits = 0;
+      todayVisits = 0;
+      sessionSet.clear();
+    }
+    if (body.resetStamps) {
+      globalStampCount = 0;
+    }
+
+    return c.json({
+      success: true,
+      systemStartTime: currentSystemStartTime,
+      totalVisits: 0,
+      todayVisits: 0,
+      stampCount: globalStampCount,
+    });
+  } catch (err: unknown) {
+    return c.json({ success: false, error: String(err) }, 500);
+  }
 });

@@ -15,6 +15,7 @@ import { db, getAllTagCounts, getActiveNotes } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { fetchSystemTelemetry, recordVisitSession, submitGlobalStamp, deleteNoteRemote } from '../services/api';
+import { APP_VERSION, getFormattedBuildTime } from '../constants/version';
 import { ClayHeader } from './ClayHeader';
 import { ClayGachaModal } from './components/ClayGachaModal';
 import { ClayReadingModal } from './ClayReadingModal';
@@ -351,9 +352,26 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         </div>
       </main>
 
-      {/* 3. Minimal Footer Bar */}
-      <footer className="text-center py-4 text-xs font-cute text-neutral-400 select-none">
-        <span>🎨 TagMesh Clay Paradise • Powered by IndexedDB & React</span>
+      {/* 3. Aesthetic Version & Cloudflare Deployment Footer Bar */}
+      <footer className="text-center py-6 px-4 text-xs font-cute text-neutral-500 select-none flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3.5 flex-wrap">
+        <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/80 border border-neutral-200/70 shadow-3xs backdrop-blur-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-bubble font-bold text-neutral-800">TagMesh {APP_VERSION}</span>
+        </div>
+
+        <span className="text-neutral-300 hidden sm:inline">•</span>
+
+        <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/80 border border-neutral-200/70 shadow-3xs backdrop-blur-xs">
+          <span className="text-amber-600">☁️</span>
+          <span className="font-medium text-neutral-600">{locale === 'zh' ? 'Cloudflare 最新部署时间' : 'Cloudflare Deployed'}:</span>
+          <span className="font-mono font-bold text-neutral-800">{getFormattedBuildTime(locale)}</span>
+        </div>
+
+        <span className="text-neutral-300 hidden sm:inline">•</span>
+
+        <div className="flex items-center gap-1.5 text-neutral-400">
+          <span>⚡ Cloudflare Workers + D1 Edge</span>
+        </div>
       </footer>
 
       {/* Lucky Gacha Modal */}

@@ -6,6 +6,7 @@ import { db, getAllTagCounts, getActiveNotes } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { deleteNoteRemote } from '../services/api';
+import { APP_VERSION, getFormattedBuildTime } from '../constants/version';
 
 import { ClayHeader } from './ClayHeader';
 import { ClayTagCloud } from './ClayTagCloud';
@@ -448,18 +449,20 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 
       {/* Clean & Elegant Minimal Gallery Footer */}
       <footer className="mt-12 py-8 px-4 border-t border-amber-900/10 bg-[#fdfbf7]/90 text-center select-none">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-cute text-neutral-500">
-          <div className="flex items-center gap-3">
-            <span className="font-bubble font-bold text-neutral-700">TagMesh 笔记专属展厅</span>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-cute text-neutral-500">
+          <div className="flex items-center gap-2.5 flex-wrap justify-center md:justify-start">
+            <span className="font-bubble font-bold text-neutral-700">TagMesh {APP_VERSION}</span>
             <span>•</span>
-            <span>{totalNotes} 篇笔记</span>
+            <span>{totalNotes} {locale === 'zh' ? '篇笔记' : 'notes'}</span>
             <span>•</span>
-            <span>{totalTags} 个聚合标签</span>
+            <span>{totalTags} {locale === 'zh' ? '个标签' : 'tags'}</span>
             <span>•</span>
-            <span>{totalWords.toLocaleString()} 字</span>
+            <span>{totalWords.toLocaleString()} {locale === 'zh' ? '字' : 'words'}</span>
+            <span>•</span>
+            <span className="text-neutral-400">☁️ {locale === 'zh' ? '部署时间' : 'Deployed'}: {getFormattedBuildTime(locale)}</span>
           </div>
 
-          <div className="flex items-center gap-4 text-neutral-600">
+          <div className="flex items-center gap-3 sm:gap-4 text-neutral-600 flex-wrap justify-center">
             {onOpenShortcuts && (
               <button
                 onClick={onOpenShortcuts}

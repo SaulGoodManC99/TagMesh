@@ -13,6 +13,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  define: {
+    __APP_VERSION__: JSON.stringify('v1.2.0'),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,

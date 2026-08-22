@@ -117,6 +117,103 @@ export const ClayAdminAuthModal: React.FC = () => {
                 </div>
               </div>
 
+              {/* Telemetry Reset & Re-timing Section (Admin Exclusive) */}
+              <div className="p-3.5 rounded-2xl bg-white border border-neutral-200/80 shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between border-b border-amber-900/10 pb-2">
+                  <span className="font-bubble font-bold text-neutral-800 text-xs flex items-center gap-1.5">
+                    <span>📊</span>
+                    <span>{locale === 'zh' ? '站点运行时长与数据重置' : 'Site Uptime & Data Reset'}</span>
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    {locale === 'zh' ? '馆长专享' : 'Admin'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {/* Reset Uptime Button */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      playPop();
+                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetUptime: true }));
+                      if (res) {
+                        try { localStorage.setItem('tagmesh_cached_system_start_time', String(res.systemStartTime)); } catch {}
+                        playChime();
+                        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
+                        setSuccessMsg(locale === 'zh' ? '⚡ 稳定运行时长已重置为从现在起重新计时！' : '⚡ Stable uptime counter reset to now!');
+                        setTimeout(() => setSuccessMsg(null), 3500);
+                      }
+                    }}
+                    className="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bubble font-bold text-[11px] border border-amber-200 shadow-3xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
+                  >
+                    <span>⏱️</span>
+                    <span>{locale === 'zh' ? '重置运行时长' : 'Reset Uptime'}</span>
+                  </button>
+
+                  {/* Reset Visits Button */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      playPop();
+                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetVisits: true }));
+                      if (res) {
+                        playChime();
+                        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
+                        setSuccessMsg(locale === 'zh' ? '👥 访客统计记录已全部清零！' : '👥 Visitor stats have been reset to 0!');
+                        setTimeout(() => setSuccessMsg(null), 3500);
+                      }
+                    }}
+                    className="p-2 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-900 font-bubble font-bold text-[11px] border border-pink-200 shadow-3xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
+                  >
+                    <span>👥</span>
+                    <span>{locale === 'zh' ? '清零访客统计' : 'Reset Visits'}</span>
+                  </button>
+
+                  {/* Reset Stamps Button */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      playPop();
+                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetStamps: true }));
+                      if (res) {
+                        try { localStorage.setItem('tagmesh_clay_stamp_count', '0'); } catch {}
+                        playChime();
+                        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
+                        setSuccessMsg(locale === 'zh' ? '🐾 爪印手印计数已清零！' : '🐾 Stamp counts have been reset to 0!');
+                        setTimeout(() => setSuccessMsg(null), 3500);
+                      }
+                    }}
+                    className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bubble font-bold text-[11px] border border-emerald-200 shadow-3xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
+                  >
+                    <span>🐾</span>
+                    <span>{locale === 'zh' ? '清零爪印手印' : 'Reset Stamps'}</span>
+                  </button>
+
+                  {/* Reset All Button */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      playPop();
+                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetUptime: true, resetVisits: true, resetStamps: true }));
+                      if (res) {
+                        try { 
+                          localStorage.setItem('tagmesh_cached_system_start_time', String(res.systemStartTime));
+                          localStorage.setItem('tagmesh_clay_stamp_count', '0');
+                        } catch {}
+                        playChime();
+                        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
+                        setSuccessMsg(locale === 'zh' ? '✨ 全部运行时间、访客与爪印数据已一键全量清零重置！' : '✨ All uptime, visits and stamp data have been reset!');
+                        setTimeout(() => setSuccessMsg(null), 4000);
+                      }
+                    }}
+                    className="p-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bubble font-bold text-[11px] shadow-3xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
+                  >
+                    <span>⚡</span>
+                    <span>{locale === 'zh' ? '一键全量重置' : 'Reset All'}</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Password update section toggle */}
               {activeTab === 'changePwd' ? (
                 <form onSubmit={handleChangePassword} className="space-y-2.5 p-3 rounded-2xl bg-white border border-neutral-200/80 shadow-xs">
@@ -169,8 +266,8 @@ export const ClayAdminAuthModal: React.FC = () => {
               )}
 
               {successMsg && (
-                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 flex items-center gap-1.5 text-xs">
-                  <Check className="w-4 h-4" />
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 flex items-center gap-1.5 text-xs animate-in fade-in">
+                  <Check className="w-4 h-4 shrink-0" />
                   <span>{successMsg}</span>
                 </div>
               )}
