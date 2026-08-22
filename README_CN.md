@@ -12,9 +12,9 @@
 [![Tailwind CSS v4](https://img.shields.io/badge/TailwindCSS-v4.0.9-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
-[![R2 Object Storage](https://img.shields.io/badge/R2-Object_Storage-FF6C37?style=for-the-badge&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
+[![Local-First Dexie](https://img.shields.io/badge/Local--First-Dexie_IndexedDB-10B981?style=for-the-badge)](https://dexie.org/)
 [![MCP Ready](https://img.shields.io/badge/MCP-JSON--RPC_2.0-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](./LICENSE)
 
 <br/>
 
@@ -197,17 +197,7 @@ npm run db:init:remote
 
 ---
 
-### 📦 步骤 4：创建 Cloudflare R2 对象存储桶
-R2 用于存储粘贴的图片与 Markdown 备份文件，**享有 0 出站流量费**：
-
-```bash
-# 创建名为 tagmesh-markdown-assets 的存储桶
-npx wrangler r2 bucket create tagmesh-markdown-assets
-```
-
----
-
-### 🚀 步骤 5：构建前端产物并一键部署至边缘网络
+### 🚀 步骤 4：构建前端产物并一键部署至边缘网络
 
 ```bash
 # 1. 编译前端生产包（产物自动输出至 dist/）
@@ -222,7 +212,7 @@ npm run worker:deploy
 
 ---
 
-### 🌐 步骤 6：绑定自定义域名（可选）
+### 🌐 步骤 5：绑定自定义域名（可选）
 1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)；
 2. 进入 **Workers & Pages** -> 选择 **tagmesh-markdown**；
 3. 点击 **Settings** -> **Domains & Routes** -> **Add Custom Domain**，输入你的自定义域名（如 `notes.yourdomain.com`）即可秒级生效！
@@ -274,34 +264,6 @@ TagMesh 在 `/mcp` 原生提供符合标准 **Model Context Protocol (JSON-RPC 2
 - **Type**: `sse` / `http`
 - **URL**: `https://你的域名/mcp`
 </details>
-
----
-
-## 🏗️ 全栈边缘架构
-
-```mermaid
-graph TD
-    subgraph Client["🖥️ 前端 (React 19 + Vite + Tailwind CSS v4)"]
-        UI["Clay 拟物 UI & 6 大多维知识展厅"]
-        Editor["Tiptap v2 (Hashtag 扩展 & R2 截图直传)"]
-        LocalDB["Dexie.js (IndexedDB 本地优先引擎)"]
-    end
-
-    subgraph Edge["⚡ Cloudflare Serverless 边缘端 (Port 8787)"]
-        Worker["Cloudflare Worker (Hono.js)"]
-        D1["Cloudflare D1 (SQLite + FTS5 全文检索)"]
-        R2["Cloudflare R2 (Markdown 源文件与图片，0出站费)"]
-        MCP["MCP JSON-RPC 2.0 知识接口"]
-        Telemetry["集中式 Uptime / 访客 / 弹幕数据池"]
-    end
-
-    Editor -->|即时写入| LocalDB
-    LocalDB -->|1.5秒防抖增量同步 /api/notes/sync| Worker
-    Worker -->|写入结构化记录| D1
-    Worker -->|异步转存 Markdown & 图片| R2
-    Worker -->|对外暴露 AI 工具| MCP
-    UI <-->|双向同步| Telemetry
-```
 
 ---
 

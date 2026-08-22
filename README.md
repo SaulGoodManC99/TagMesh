@@ -12,9 +12,9 @@
 [![Tailwind CSS v4](https://img.shields.io/badge/TailwindCSS-v4.0.9-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
-[![R2 Object Storage](https://img.shields.io/badge/R2-Object_Storage-FF6C37?style=for-the-badge&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
+[![Local-First Dexie](https://img.shields.io/badge/Local--First-Dexie_IndexedDB-10B981?style=for-the-badge)](https://dexie.org/)
 [![MCP Ready](https://img.shields.io/badge/MCP-JSON--RPC_2.0-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge)](./LICENSE)
 
 <br/>
 
@@ -185,8 +185,6 @@ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 👉 **Update `wrangler.toml`**: Paste your `database_id` into line 14 of `wrangler.toml`.
 
----
-
 ### 📜 Step 3: Run Database Schema & FTS5 Virtual Table Migrations
 Execute the included `schema.sql` to initialize tables, indexes, and full-text virtual tables:
 
@@ -194,18 +192,7 @@ Execute the included `schema.sql` to initialize tables, indexes, and full-text v
 npm run db:init:remote
 ```
 
----
-
-### 📦 Step 4: Create Cloudflare R2 Storage Bucket
-R2 stores images and raw Markdown snapshots with **0 Egress bandwidth fees**:
-
-```bash
-npx wrangler r2 bucket create tagmesh-markdown-assets
-```
-
----
-
-### 🚀 Step 5: Build Frontend & Deploy to Cloudflare Edge
+### 🚀 Step 4: Build Frontend & Deploy to Cloudflare Edge
 
 ```bash
 # 1. Build production bundle into dist/
@@ -218,9 +205,7 @@ npm run worker:deploy
 The terminal will output your production live URL:  
 `https://tagmesh-markdown.<your-subdomain>.workers.dev`
 
----
-
-### 🌐 Step 6: Custom Domain Binding (Optional)
+### 🌐 Step 5: Custom Domain Binding (Optional)
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/);
 2. Navigate to **Workers & Pages** -> **tagmesh-markdown**;
 3. Go to **Settings** -> **Domains & Routes** -> **Add Custom Domain** (e.g. `notes.yourdomain.com`).
@@ -272,34 +257,6 @@ In Cursor Settings -> Features -> MCP Servers:
 - **Type**: `sse` / `http`
 - **URL**: `https://your-domain.com/mcp`
 </details>
-
----
-
-## 🏗️ Serverless Full-Stack Edge Architecture
-
-```mermaid
-graph TD
-    subgraph Client["🖥️ Frontend (React 19 + Vite + Tailwind CSS v4)"]
-        UI["Clay UI & 6-Dimension Galleries"]
-        Editor["Tiptap v2 (Hashtag & R2 Paste)"]
-        LocalDB["Dexie.js (IndexedDB Local-First Engine)"]
-    end
-
-    subgraph Edge["⚡ Cloudflare Serverless Edge (Port 8787)"]
-        Worker["Cloudflare Worker (Hono.js)"]
-        D1["Cloudflare D1 (SQLite + FTS5 Fulltext)"]
-        R2["Cloudflare R2 (Markdown Snapshots & Images, 0 Egress)"]
-        MCP["MCP JSON-RPC 2.0 Knowledge Interface"]
-        Telemetry["Centralized Uptime / Visits / Danmaku Pool"]
-    end
-
-    Editor -->|Instant write| LocalDB
-    LocalDB -->|1.5s Debounced Sync /api/notes/sync| Worker
-    Worker -->|Write records| D1
-    Worker -->|Stream Markdown & Images| R2
-    Worker -->|Expose knowledge tools| MCP
-    UI <-->|Bidirectional Sync| Telemetry
-```
 
 ---
 
