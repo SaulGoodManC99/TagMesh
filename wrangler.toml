@@ -14,12 +14,6 @@ database_name = "tagmesh-db"
 database_id = "tagmesh-db-id"
 migrations_dir = "./migrations"
 
-# Cloudflare R2 Object Storage (Markdown files & pasted images)
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "tagmesh-markdown-assets"
-
 [vars]
 ENVIRONMENT = "production"
 MCP_AUTH_TOKEN = "tagmesh_mcp_secret_bearer_token"
-R2_PUBLIC_BASE_URL = "https://r2.tagmesh.dev"
