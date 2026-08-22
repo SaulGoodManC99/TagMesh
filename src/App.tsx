@@ -100,10 +100,10 @@ export const App: React.FC = () => {
   useEffect(() => {
     import('./db/dexie').then(({ getActiveNotes, ensureNotesAuthorSeparation, createNewNote }) => {
       ensureNotesAuthorSeparation().then(async () => {
-        const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v1') === 'true';
+        const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v2') === 'true';
         if (!hasSeededGuest) {
-          const { seed40GuestSampleNotes } = await import('./db/guestSampleNotes');
-          await seed40GuestSampleNotes();
+          const { seed10GuestSampleNotes } = await import('./db/guestSampleNotes');
+          await seed10GuestSampleNotes();
         }
 
         const notes = await getActiveNotes();

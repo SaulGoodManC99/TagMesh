@@ -42,10 +42,10 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   useEffect(() => {
     import('../db/dexie').then(({ getActiveNotes, ensureNotesAuthorSeparation }) => {
       ensureNotesAuthorSeparation().then(async () => {
-        const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v1') === 'true';
+        const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v2') === 'true';
         if (!hasSeededGuest) {
-          const { seed40GuestSampleNotes } = await import('../db/guestSampleNotes');
-          await seed40GuestSampleNotes();
+          const { seed10GuestSampleNotes } = await import('../db/guestSampleNotes');
+          await seed10GuestSampleNotes();
         }
 
         const hasSeeded = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_sample_notes_v1') === 'true';
