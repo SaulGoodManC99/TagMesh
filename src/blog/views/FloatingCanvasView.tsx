@@ -405,8 +405,7 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1 text-[11px] font-cute text-neutral-400">
-                      <Clock className="w-3 h-3" />
-                      <span>{Math.max(1, Math.ceil((node.note.wordCount || 0) / 200))} min</span>
+                      <span>{node.note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
                     </div>
                   </div>
 

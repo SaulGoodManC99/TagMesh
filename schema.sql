@@ -44,3 +44,17 @@ CREATE TABLE IF NOT EXISTS system_telemetry (
     updated_at INTEGER NOT NULL
 );
 
+-- 4. Persistent Danmaku Plaza Table
+CREATE TABLE IF NOT EXISTS danmakus (
+    id TEXT PRIMARY KEY,
+    sender TEXT NOT NULL,
+    avatar TEXT NOT NULL,
+    content TEXT NOT NULL,
+    theme_style TEXT NOT NULL DEFAULT 'rainbow',
+    likes INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_danmakus_created_at ON danmakus(created_at DESC);
+
+

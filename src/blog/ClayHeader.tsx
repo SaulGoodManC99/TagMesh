@@ -68,7 +68,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               </span>
             </div>
             <p className="text-[10px] sm:text-[11px] font-cute text-neutral-400 -mt-0.5 hidden md:block">
-              {locale === 'zh' ? '🎈 纯标签驱动的趣味黏土知识乐园' : '🎈 A Playful Claymorphic Knowledge Paradise'}
+              {locale === 'zh' ? '🎈 趣味黏土手账与思维织网乐园' : '🎈 A Playful Claymorphic Inspiration Journal & Thought Mesh'}
             </p>
           </div>
         </div>

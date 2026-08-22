@@ -2,8 +2,8 @@ import { TranslationDictionary } from '../types/i18n';
 
 export const en: TranslationDictionary = {
   app: {
-    title: 'TagMesh Markdown',
-    tagline: 'No-title, no-folder, pure hashtag-driven Markdown knowledge engine',
+    title: 'TagMesh Journal',
+    tagline: 'No-title, no-folder, playful claymorphic inspiration journal and knowledge mesh',
   },
   commandPalette: {
     placeholder: 'Search notes, tags (#), or type to create...',

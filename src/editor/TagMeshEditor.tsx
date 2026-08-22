@@ -421,12 +421,11 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
 
             <span className="flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-amber-500" />
-              <span className="font-mono font-bold text-neutral-700">{note?.wordCount || 0}</span> 字
+              <span className="font-mono font-bold text-neutral-700">{note?.wordCount || 0}</span> {locale === 'zh' ? '字' : 'words'}
             </span>
             <span>•</span>
             <span className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-cyan-500" />
-              <span>{readMinutes} min read</span>
+              <span className="font-mono font-bold text-neutral-700">{note?.charCount || 0}</span> {locale === 'zh' ? '字符' : 'chars'}
             </span>
           </div>
         </div>

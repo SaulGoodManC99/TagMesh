@@ -333,6 +333,8 @@ async function handleMcpRpc(c: Context<{ Bindings: Env }>) {
           isDeleted: false,
           createdAt: now,
           updatedAt: now,
+          author: 'admin' as const,
+          isOfficial: true,
         };
 
         const result = await syncNote(db, note, 0);

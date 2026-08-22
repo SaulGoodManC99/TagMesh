@@ -2,8 +2,8 @@ import { TranslationDictionary } from '../types/i18n';
 
 export const zh: TranslationDictionary = {
   app: {
-    title: 'TagMesh Markdown',
-    tagline: '无标题、无文件夹、纯标签驱动的高性能极客笔记',
+    title: 'TagMesh 灵感手账',
+    tagline: '无标题、无文件夹、趣味黏土灵感手账乐园',
   },
   commandPalette: {
     placeholder: '搜索全文、按 # 筛选标签，或直接输入内容按回车新建...',

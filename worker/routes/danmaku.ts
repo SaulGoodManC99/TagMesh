@@ -12,6 +12,16 @@ export interface DanmakuItem {
   isSelf?: boolean;
 }
 
+interface DbDanmakuRow {
+  id: string;
+  sender: string;
+  avatar: string;
+  content: string;
+  theme_style: string;
+  likes: number;
+  created_at: number;
+}
+
 export const danmakuRouter = new Hono<{ Bindings: Env }>();
 
 const SEED_DANMAKUS: DanmakuItem[] = [
@@ -62,13 +72,48 @@ const SEED_DANMAKUS: DanmakuItem[] = [
   },
 ];
 
-let danmakuList: DanmakuItem[] = [...SEED_DANMAKUS];
-let extraLikesTotal = 0;
+function rowToDanmaku(row: DbDanmakuRow): DanmakuItem {
+  return {
+    id: row.id,
+    sender: row.sender,
+    avatar: row.avatar,
+    content: row.content,
+    themeStyle: (row.theme_style || 'rainbow') as any,
+    likes: row.likes,
+    timestamp: row.created_at,
+  };
+}
 
-function computeStats() {
-  const sendersSet = new Set(danmakuList.map((d) => d.sender));
-  const totalLaunches = danmakuList.length;
-  const totalLikes = danmakuList.reduce((acc, curr) => acc + (curr.likes || 1), 0) + extraLikesTotal;
+async function listD1Danmakus(db: D1Database): Promise<DanmakuItem[]> {
+  try {
+    const { results } = await db
+      .prepare('SELECT * FROM danmakus ORDER BY created_at DESC LIMIT 100')
+      .all<DbDanmakuRow>();
+
+    if (!results || results.length === 0) {
+      // Seed initial danmakus
+      for (const seed of SEED_DANMAKUS) {
+        await db
+          .prepare(
+            'INSERT OR IGNORE INTO danmakus (id, sender, avatar, content, theme_style, likes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+          )
+          .bind(seed.id, seed.sender, seed.avatar, seed.content, seed.themeStyle, seed.likes, seed.timestamp)
+          .run();
+      }
+      return [...SEED_DANMAKUS];
+    }
+
+    return results.map(rowToDanmaku);
+  } catch (err) {
+    console.warn('[D1 Danmaku Non-fatal]', err);
+    return [...SEED_DANMAKUS];
+  }
+}
+
+function computeStats(list: DanmakuItem[]) {
+  const sendersSet = new Set(list.map((d) => d.sender));
+  const totalLaunches = list.length;
+  const totalLikes = list.reduce((acc, curr) => acc + (curr.likes || 1), 0);
 
   return {
     totalSenders: Math.max(1, sendersSet.size),
@@ -79,19 +124,20 @@ function computeStats() {
 
 /**
  * GET /api/danmaku
- * Retrieve all shared danmakus and global telemetry stats
+ * Retrieve all shared danmakus and global telemetry stats from D1
  */
-danmakuRouter.get('/', (c) => {
+danmakuRouter.get('/', async (c) => {
+  const list = await listD1Danmakus(c.env.DB);
   return c.json({
     success: true,
-    danmakus: danmakuList,
-    stats: computeStats(),
+    danmakus: list,
+    stats: computeStats(list),
   });
 });
 
 /**
  * POST /api/danmaku
- * Publish a new danmaku visible to all connected devices
+ * Publish a new danmaku saved into D1
  */
 danmakuRouter.post('/', async (c) => {
   try {
@@ -100,54 +146,75 @@ danmakuRouter.post('/', async (c) => {
       return c.json({ error: 'Missing content' }, 400);
     }
 
+    const now = Date.now();
     const newDanmaku: DanmakuItem = {
-      id: `dm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      id: `dm_${now}_${Math.random().toString(36).slice(2, 6)}`,
       sender: body.sender?.trim() || '🎭 匿名旅人',
       avatar: body.avatar || (body.sender?.includes('馆长') ? '👑' : '🐾'),
       content: body.content.trim(),
       themeStyle: body.themeStyle || 'rainbow',
       likes: 1,
-      timestamp: Date.now(),
+      timestamp: now,
     };
 
-    danmakuList.unshift(newDanmaku);
-    // Keep max 100 recent danmakus
-    if (danmakuList.length > 100) {
-      danmakuList = danmakuList.slice(0, 100);
-    }
+    await c.env.DB.prepare(
+      'INSERT INTO danmakus (id, sender, avatar, content, theme_style, likes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    )
+      .bind(
+        newDanmaku.id,
+        newDanmaku.sender,
+        newDanmaku.avatar,
+        newDanmaku.content,
+        newDanmaku.themeStyle,
+        newDanmaku.likes,
+        newDanmaku.timestamp
+      )
+      .run();
+
+    const list = await listD1Danmakus(c.env.DB);
 
     return c.json({
       success: true,
       danmaku: newDanmaku,
-      stats: computeStats(),
+      stats: computeStats(list),
     });
-  } catch (err: any) {
-    return c.json({ error: err.message || 'Invalid payload' }, 500);
+  } catch (err: unknown) {
+    return c.json({ error: String(err) }, 500);
   }
 });
 
 /**
  * POST /api/danmaku/:id/like
- * Add a like to a danmaku
+ * Add a like to a danmaku in D1
  */
-danmakuRouter.post('/:id/like', (c) => {
+danmakuRouter.post('/:id/like', async (c) => {
   const id = c.req.param('id');
-  const target = danmakuList.find((d) => d.id === id);
-  if (target) {
-    target.likes = (target.likes || 0) + 1;
-    return c.json({ success: true, likes: target.likes, stats: computeStats() });
-  }
+  try {
+    await c.env.DB.prepare('UPDATE danmakus SET likes = likes + 1 WHERE id = ?').bind(id).run();
+    const list = await listD1Danmakus(c.env.DB);
+    const target = list.find((d) => d.id === id);
 
-  extraLikesTotal += 1;
-  return c.json({ success: true, likes: 1, stats: computeStats() });
+    return c.json({
+      success: true,
+      likes: target ? target.likes : 1,
+      stats: computeStats(list),
+    });
+  } catch (err: unknown) {
+    return c.json({ error: String(err) }, 500);
+  }
 });
 
 /**
  * DELETE /api/danmaku/:id
- * Moderate/delete a danmaku
+ * Moderate/delete a danmaku from D1
  */
-danmakuRouter.delete('/:id', (c) => {
+danmakuRouter.delete('/:id', async (c) => {
   const id = c.req.param('id');
-  danmakuList = danmakuList.filter((d) => d.id !== id);
-  return c.json({ success: true, id, stats: computeStats() });
+  try {
+    await c.env.DB.prepare('DELETE FROM danmakus WHERE id = ?').bind(id).run();
+    const list = await listD1Danmakus(c.env.DB);
+    return c.json({ success: true, id, stats: computeStats(list) });
+  } catch (err: unknown) {
+    return c.json({ error: String(err) }, 500);
+  }
 });

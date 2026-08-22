@@ -108,9 +108,8 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1 text-neutral-400 text-xs font-bubble font-bold">
-                  <Clock className="w-3 h-3" />
-                  <span>{Math.max(1, Math.ceil((note.wordCount || 0) / 200))}m</span>
+                <div className="flex items-center gap-1 text-neutral-400 text-xs font-cute font-medium">
+                  <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
                 </div>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../hooks/useI18n';
 import { playPop, playChime } from '../blog/utils/soundEffects';
 import { triggerParticleBurst } from '../blog/utils/confetti';
+import { resetTelemetryRemote } from '../services/api';
 
 export const ClayAdminAuthModal: React.FC = () => {
   const { role, isAdmin, loginAsAdmin, logoutToGuest, updateAdminPassword, isAuthModalOpen, closeAuthModal } = useAuth();
@@ -135,7 +136,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                     type="button"
                     onClick={async () => {
                       playPop();
-                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetUptime: true }));
+                      const res = await resetTelemetryRemote({ resetUptime: true });
                       if (res) {
                         try { localStorage.setItem('tagmesh_cached_system_start_time', String(res.systemStartTime)); } catch {}
                         window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
@@ -156,7 +157,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                     type="button"
                     onClick={async () => {
                       playPop();
-                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetVisits: true }));
+                      const res = await resetTelemetryRemote({ resetVisits: true });
                       if (res) {
                         window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
                         playChime();
@@ -176,7 +177,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                     type="button"
                     onClick={async () => {
                       playPop();
-                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetStamps: true }));
+                      const res = await resetTelemetryRemote({ resetStamps: true });
                       if (res) {
                         try { localStorage.setItem('tagmesh_clay_stamp_count', '0'); } catch {}
                         window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
@@ -197,7 +198,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                     type="button"
                     onClick={async () => {
                       playPop();
-                      const res = await import('../services/api').then(m => m.resetTelemetryRemote({ resetUptime: true, resetVisits: true, resetStamps: true }));
+                      const res = await resetTelemetryRemote({ resetUptime: true, resetVisits: true, resetStamps: true });
                       if (res) {
                         try { 
                           localStorage.setItem('tagmesh_cached_system_start_time', String(res.systemStartTime));

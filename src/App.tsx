@@ -20,7 +20,8 @@ import {
   BookOpen
 } from 'lucide-react';
 import { Note } from './types/note';
-import { db, getActiveNotes, createNewNote, getOrCreateActiveNote } from './db/dexie';
+import { db, getActiveNotes, createNewNote, getOrCreateActiveNote, ensureNotesAuthorSeparation } from './db/dexie';
+import { fetchRemoteNotes, deleteNoteRemote } from './services/api';
 import { useZeroSync } from './hooks/useZeroSync';
 import { useI18n } from './hooks/useI18n';
 import { TagMeshEditor } from './editor/TagMeshEditor';
@@ -98,48 +99,44 @@ export const App: React.FC = () => {
 
   // Initialize DB, load initial note, seed guest sample notes, and ensure author separation
   useEffect(() => {
-    import('./db/dexie').then(({ getActiveNotes, ensureNotesAuthorSeparation, createNewNote }) => {
-      ensureNotesAuthorSeparation().then(async () => {
-        const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v2') === 'true';
-        if (!hasSeededGuest) {
-          const { seed10GuestSampleNotes } = await import('./db/guestSampleNotes');
-          await seed10GuestSampleNotes();
-        }
+    ensureNotesAuthorSeparation().then(async () => {
+      const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v2') === 'true';
+      if (!hasSeededGuest) {
+        const { seed10GuestSampleNotes } = await import('./db/guestSampleNotes');
+        await seed10GuestSampleNotes();
+      }
 
-        // Pull latest notes from D1 (including any created via MCP)
-        try {
-          const { fetchRemoteNotes } = await import('./services/api');
-          const remoteNotes = await fetchRemoteNotes();
-          if (remoteNotes.length > 0) {
-            const { db } = await import('./db/dexie');
-            for (const rNote of remoteNotes) {
-              await db.notes.put({
-                ...rNote,
-                isDirty: false,
-                syncedAt: rNote.syncedAt || Date.now(),
-              });
-            }
+      // Pull latest notes from D1 (including any created via MCP)
+      try {
+        const remoteNotes = await fetchRemoteNotes();
+        if (remoteNotes.length > 0) {
+          for (const rNote of remoteNotes) {
+            await db.notes.put({
+              ...rNote,
+              isDirty: false,
+              syncedAt: rNote.syncedAt || Date.now(),
+            });
           }
-        } catch {
-          // ignore offline
         }
+      } catch {
+        // ignore offline
+      }
 
-        const notes = await getActiveNotes();
-        const hasSeededAdmin = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_sample_notes_v1') === 'true';
+      const notes = await getActiveNotes();
+      const hasSeededAdmin = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_sample_notes_v1') === 'true';
 
-        if (notes.length === 0 && !hasSeededAdmin) {
-          const { seed40SampleNotes } = await import('./db/sampleNotes');
-          await seed40SampleNotes();
-          const seeded = await getActiveNotes();
-          setActiveNote(seeded[0] || null);
-        } else if (notes.length === 0) {
-          // If all notes were explicitly deleted, keep database clean and create a single fresh blank note
-          const blank = await createNewNote('', [], { author: isAdmin ? 'admin' : 'guest', isOfficial: Boolean(isAdmin) });
-          setActiveNote(blank);
-        } else {
-          setActiveNote(notes[0]);
-        }
-      });
+      if (notes.length === 0 && !hasSeededAdmin) {
+        const { seed40SampleNotes } = await import('./db/sampleNotes');
+        await seed40SampleNotes();
+        const seeded = await getActiveNotes();
+        setActiveNote(seeded[0] || null);
+      } else if (notes.length === 0) {
+        // If all notes were explicitly deleted, keep database clean and create a single fresh blank note
+        const blank = await createNewNote('', [], { author: isAdmin ? 'admin' : 'guest', isOfficial: Boolean(isAdmin) });
+        setActiveNote(blank);
+      } else {
+        setActiveNote(notes[0]);
+      }
     });
   }, [isAdmin]);
 
@@ -219,9 +216,7 @@ export const App: React.FC = () => {
     await db.notes.update(id, { isDeleted: true, isDirty: true, updatedAt: Date.now() });
     
     // Sync remote deletion to Cloudflare D1
-    import('./services/api').then(({ deleteNoteRemote }) => {
-      deleteNoteRemote(id);
-    });
+    deleteNoteRemote(id);
 
     showToast(locale === 'zh' ? '🗑 手账已移入废纸篓' : '🗑 Note Moved to Trash');
     

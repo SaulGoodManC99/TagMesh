@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Note, TagCount } from '../types/note';
 import { db, getAllTagCounts, searchNotesLocal, getOrCreateActiveNote, getActiveNotes, createNewNote } from '../db/dexie';
+import { deleteNoteRemote } from '../services/api';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
@@ -140,9 +141,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     }
 
     // Sync remote deletion to Cloudflare D1
-    import('../services/api').then(({ deleteNoteRemote }) => {
-      ids.forEach(id => deleteNoteRemote(id));
-    });
+    ids.forEach(id => deleteNoteRemote(id));
 
     // If active note was in the deleted list, switch to next available active note
     if (activeNote && ids.includes(activeNote.id)) {
@@ -177,9 +176,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     if (e) e.stopPropagation();
     playPop();
     await db.notes.delete(noteId);
-    import('../services/api').then(({ deleteNoteRemote }) => {
-      deleteNoteRemote(noteId);
-    });
+    deleteNoteRemote(noteId);
   };
 
   // Restore ALL notes from trash
@@ -201,9 +198,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     playPop();
     const ids = deletedNotes.map(n => n.id);
     await db.notes.bulkDelete(ids);
-    import('../services/api').then(({ deleteNoteRemote }) => {
-      ids.forEach(id => deleteNoteRemote(id));
-    });
+    ids.forEach(id => deleteNoteRemote(id));
   };
 
   const selectedNotesList = useMemo(() => {

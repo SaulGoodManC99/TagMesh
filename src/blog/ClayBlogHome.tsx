@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PenTool, Layers, Compass, ArrowLeft } from 'lucide-react';
 import { Note } from '../types/note';
-import { db, getAllTagCounts, getActiveNotes } from '../db/dexie';
+import { db, getAllTagCounts, getActiveNotes, ensureNotesAuthorSeparation } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
-import { deleteNoteRemote } from '../services/api';
+import { deleteNoteRemote, fetchRemoteNotes } from '../services/api';
 import { APP_VERSION, getFormattedBuildTime } from '../constants/version';
 
 import { ClayHeader } from './ClayHeader';
@@ -65,41 +65,37 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 
   // Auto seed on mount ONLY IF never seeded before & ensure separation of admin vs guest notes
   useEffect(() => {
-    import('../db/dexie').then(({ getActiveNotes, ensureNotesAuthorSeparation }) => {
-      ensureNotesAuthorSeparation().then(async () => {
-        const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v2') === 'true';
-        if (!hasSeededGuest) {
-          const { seed10GuestSampleNotes } = await import('../db/guestSampleNotes');
-          await seed10GuestSampleNotes();
-        }
+    ensureNotesAuthorSeparation().then(async () => {
+      const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v2') === 'true';
+      if (!hasSeededGuest) {
+        const { seed10GuestSampleNotes } = await import('../db/guestSampleNotes');
+        await seed10GuestSampleNotes();
+      }
 
-        // Pull latest notes from D1 (including any created via MCP)
-        try {
-          const { fetchRemoteNotes } = await import('../services/api');
-          const remoteNotes = await fetchRemoteNotes();
-          if (remoteNotes.length > 0) {
-            const { db } = await import('../db/dexie');
-            for (const rNote of remoteNotes) {
-              await db.notes.put({
-                ...rNote,
-                isDirty: false,
-                syncedAt: rNote.syncedAt || Date.now(),
-              });
-            }
-          }
-        } catch {
-          // ignore offline
-        }
-
-        const hasSeeded = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_sample_notes_v1') === 'true';
-        if (!hasSeeded) {
-          const notes = await getActiveNotes();
-          if (notes.length === 0) {
-            const { seed40SampleNotes } = await import('../db/sampleNotes');
-            await seed40SampleNotes();
+      // Pull latest notes from D1 (including any created via MCP)
+      try {
+        const remoteNotes = await fetchRemoteNotes();
+        if (remoteNotes.length > 0) {
+          for (const rNote of remoteNotes) {
+            await db.notes.put({
+              ...rNote,
+              isDirty: false,
+              syncedAt: rNote.syncedAt || Date.now(),
+            });
           }
         }
-      });
+      } catch {
+        // ignore offline
+      }
+
+      const hasSeeded = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_sample_notes_v1') === 'true';
+      if (!hasSeeded) {
+        const notes = await getActiveNotes();
+        if (notes.length === 0) {
+          const { seed40SampleNotes } = await import('../db/sampleNotes');
+          await seed40SampleNotes();
+        }
+      }
     });
   }, []);
 
