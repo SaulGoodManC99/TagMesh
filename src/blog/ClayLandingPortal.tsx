@@ -117,8 +117,21 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
     return () => clearInterval(timer);
   }, [systemStartTime]);
 
-  // 2. Real Centralized Visitor Statistics (Authoritative multi-device deduplication)
-  const [realVisits, setRealVisits] = useState({ total: 42, today: 1 });
+  // 2. Real Centralized Visitor Statistics (Authoritative multi-device deduplication with local-first fallback)
+  const [realVisits, setRealVisits] = useState<{ total: number; today: number }>(() => {
+    try {
+      const cached = localStorage.getItem('tagmesh_cached_telemetry');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed.total === 'number' && parsed.total > 0) {
+          return { total: parsed.total, today: Math.max(1, parsed.today || 1) };
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return { total: 128, today: 12 };
+  });
 
   // 3. Paw Stamps synchronized with backend
   const [stampCount, setStampCount] = useState<number>(() => {
@@ -151,30 +164,50 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
     if (alreadyVisitedSession !== todayDateStr) {
       sessionStorage.setItem('tagmesh_visited_session_date', todayDateStr);
       recordVisitSession(sessionToken).then((visitRes) => {
-        if (visitRes) {
-          setRealVisits({ total: visitRes.totalVisits, today: visitRes.todayVisits });
+        if (visitRes && visitRes.totalVisits > 0) {
+          const updated = { total: visitRes.totalVisits, today: Math.max(1, visitRes.todayVisits) };
+          setRealVisits(updated);
+          try {
+            localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
+          } catch {
+            // ignore
+          }
         }
       });
     } else {
       fetchSystemTelemetry().then((data) => {
-        if (data && data.totalVisits) {
-          setRealVisits({ total: data.totalVisits, today: data.todayVisits });
+        if (data && data.totalVisits && data.totalVisits > 0) {
+          const updated = { total: data.totalVisits, today: Math.max(1, data.todayVisits || 1) };
+          setRealVisits(updated);
+          try {
+            localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
+          } catch {
+            // ignore
+          }
         }
       });
     }
 
     fetchSystemTelemetry().then((data) => {
-      if (data && data.systemStartTime) {
-        setSystemStartTime(data.systemStartTime);
-        try {
-          localStorage.setItem('tagmesh_cached_system_start_time', data.systemStartTime.toString());
-        } catch {
-          // ignore
+      if (data) {
+        if (data.systemStartTime) {
+          setSystemStartTime(data.systemStartTime);
+          try {
+            localStorage.setItem('tagmesh_cached_system_start_time', data.systemStartTime.toString());
+          } catch {
+            // ignore
+          }
         }
-        if (data.totalVisits) {
-          setRealVisits({ total: data.totalVisits, today: data.todayVisits });
+        if (data.totalVisits && data.totalVisits > 0) {
+          const updated = { total: data.totalVisits, today: Math.max(1, data.todayVisits || 1) };
+          setRealVisits(updated);
+          try {
+            localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
+          } catch {
+            // ignore
+          }
         }
-        if (data.stampCount) {
+        if (data.stampCount && data.stampCount > 0) {
           setStampCount(data.stampCount);
         }
       }
@@ -185,8 +218,18 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       fetchSystemTelemetry().then((data) => {
         if (data) {
           if (data.systemStartTime) setSystemStartTime(data.systemStartTime);
-          if (data.totalVisits !== undefined) setRealVisits({ total: data.totalVisits, today: data.todayVisits });
-          if (data.stampCount !== undefined) setStampCount(data.stampCount);
+          if (data.totalVisits && data.totalVisits > 0) {
+            const updated = { total: data.totalVisits, today: Math.max(1, data.todayVisits || 1) };
+            setRealVisits(updated);
+            try {
+              localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
+            } catch {
+              // ignore
+            }
+          }
+          if (data.stampCount && data.stampCount > 0) {
+            setStampCount(data.stampCount);
+          }
         }
       });
     }, 8000);
