@@ -26,6 +26,12 @@ jobs:
       - name: 🛠️ Build production bundle
         run: npm run build
 
+      - name: 🔒 Securely Inject D1 Database ID from Secrets
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}" ]; then
+            sed -i "s/D1_DATABASE_ID_PLACEHOLDER/${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}/g" wrangler.toml
+          fi
+
       - name: 🚀 Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
