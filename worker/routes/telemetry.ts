@@ -163,10 +163,11 @@ telemetryRouter.post('/reset', async (c) => {
       await setD1TelemetryKey(c.env.DB, 'system_start_time', String(now));
     }
     if (body.resetVisits) {
-      totalVisits = 0;
-      todayVisits = 0;
-      await setD1TelemetryKey(c.env.DB, 'total_visits', '0');
-      await setD1TelemetryKey(c.env.DB, 'today_visits', '0');
+      totalVisits = 1;
+      todayVisits = 1;
+      await setD1TelemetryKey(c.env.DB, 'total_visits', '1');
+      await setD1TelemetryKey(c.env.DB, 'today_visits', '1');
+      await setD1TelemetryKey(c.env.DB, 'today_date', new Date().toISOString().slice(0, 10));
     }
     if (body.resetStamps) {
       stampCount = 0;

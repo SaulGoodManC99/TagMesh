@@ -159,18 +159,21 @@ export const ClayAdminAuthModal: React.FC = () => {
                       playPop();
                       const res = await resetTelemetryRemote({ resetVisits: true });
                       if (res) {
-                        try { localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify({ total: 0, today: 0 })); } catch {}
-                        window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: { ...res, totalVisits: 0, todayVisits: 0 } }));
+                        try { 
+                          sessionStorage.removeItem('tagmesh_visited_session_date');
+                          localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify({ total: 1, today: 1 })); 
+                        } catch {}
+                        window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: { ...res, totalVisits: 1, todayVisits: 1 } }));
                         playChime();
                         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
-                        setSuccessMsg(locale === 'zh' ? '👥 访客统计记录已全部清零！' : '👥 Visitor stats have been reset to 0!');
+                        setSuccessMsg(locale === 'zh' ? '👥 访客统计已重置，从当前会话 1 重新起步！' : '👥 Visitor stats reset to 1 for current session!');
                         setTimeout(() => setSuccessMsg(null), 3500);
                       }
                     }}
                     className="p-2 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-900 font-bubble font-bold text-[11px] border border-pink-200 shadow-3xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
                   >
                     <span>👥</span>
-                    <span>{locale === 'zh' ? '清零访客统计' : 'Reset Visits'}</span>
+                    <span>{locale === 'zh' ? '重置访客统计' : 'Reset Visits'}</span>
                   </button>
 
                   {/* Reset Stamps Button */}
@@ -205,22 +208,23 @@ export const ClayAdminAuthModal: React.FC = () => {
                       const res = await resetTelemetryRemote({ resetUptime: true, resetVisits: true, resetStamps: true });
                       if (res) {
                         try { 
+                          sessionStorage.removeItem('tagmesh_visited_session_date');
                           localStorage.setItem('tagmesh_cached_system_start_time', String(res.systemStartTime));
-                          localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify({ total: 0, today: 0 }));
+                          localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify({ total: 1, today: 1 }));
                           localStorage.setItem('tagmesh_paw_stamps_count', '0');
                           localStorage.setItem('tagmesh_paw_stamps_list', '[]');
                         } catch {}
                         window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { 
                           detail: {
                             systemStartTime: res.systemStartTime,
-                            totalVisits: 0,
-                            todayVisits: 0,
+                            totalVisits: 1,
+                            todayVisits: 1,
                             stampCount: 0
                           } 
                         }));
                         playChime();
                         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
-                        setSuccessMsg(locale === 'zh' ? '✨ 全部运行时间、访客与爪印数据已一键全量清零重置！' : '✨ All uptime, visits and stamp data have been reset!');
+                        setSuccessMsg(locale === 'zh' ? '✨ 运行时间、访客与爪印数据已一键全量重置生效！' : '✨ All uptime, visits and stamp data have been reset!');
                         setTimeout(() => setSuccessMsg(null), 4000);
                       }
                     }}
