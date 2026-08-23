@@ -88,9 +88,9 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
   const [systemStartTime, setSystemStartTime] = useState<number>(() => {
     try {
       const cached = localStorage.getItem('tagmesh_cached_system_start_time');
-      return cached ? parseInt(cached, 10) : 1787356800000;
+      return cached ? parseInt(cached, 10) : 1740000000000;
     } catch {
-      return 1787356800000;
+      return 1740000000000;
     }
   });
 
@@ -356,12 +356,12 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
           </button>
         </div>
 
-        {/* Responsive Live Telemetry Strip */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 p-3 sm:p-3.5 px-4 sm:px-7 rounded-3xl sm:rounded-full bg-white/95 backdrop-blur-md border-2 border-white shadow-xl text-xs sm:text-sm font-cute text-neutral-700 max-w-full">
+        {/* Responsive Live Telemetry Status Dashboard (Aesthetic Modular Clay Capsules) */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 max-w-5xl mx-auto w-full select-none">
           {/* 1. Stable Uptime */}
-          <div className="flex items-center gap-1.5 font-cute">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '稳定运行' : 'Stable Uptime'}:</span>
+            <span className="font-bold text-neutral-600">{locale === 'zh' ? '稳定运行' : 'Uptime'}:</span>
             <span className="font-bubble font-bold text-neutral-900">
               {sessionUptime.days > 0 ? `${sessionUptime.days}${locale === 'zh' ? '天 ' : 'd '}` : ''}
               {sessionUptime.hours > 0 ? `${sessionUptime.hours}${locale === 'zh' ? '小时 ' : 'h '}` : ''}
@@ -370,10 +370,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             </span>
           </div>
 
-          <span className="text-neutral-300 hidden sm:inline">•</span>
-
           {/* 2. Total Visitors */}
-          <div className="flex items-center gap-1.5 font-cute">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
             <Eye className="w-4 h-4 text-indigo-500 shrink-0" />
             <span className="font-bold text-neutral-600">{locale === 'zh' ? '总访客' : 'Total Visits'}:</span>
             <span className="font-bubble font-bold text-neutral-900">
@@ -381,39 +379,34 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             </span>
           </div>
 
-          <span className="text-neutral-300 hidden sm:inline">•</span>
-
           {/* 3. Today's Visitors */}
-          <div className="flex items-center gap-1.5 font-cute">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
             <Sparkles className="w-4 h-4 text-pink-500 shrink-0" />
             <span className="font-bold text-neutral-600">{locale === 'zh' ? '今日访客' : 'Today Visits'}:</span>
-            <span className="text-pink-600 font-bubble font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-bubble font-bold text-xs shadow-3xs">
               +{realVisits.today} {locale === 'zh' ? '人次' : ''}
             </span>
           </div>
 
-          <span className="text-neutral-300 hidden sm:inline">•</span>
-
           {/* 4. Notes & Word Count */}
-          <div className="flex items-center gap-1.5 font-cute">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
             <Coffee className="w-4 h-4 text-amber-600 shrink-0" />
             <span className="font-bold text-neutral-600">{locale === 'zh' ? '笔记沉淀' : 'Notes'}:</span>
             <span className="font-bubble font-bold text-neutral-900">
               {totalNotes} {locale === 'zh' ? '篇' : 'notes'}
             </span>
-            <span className="text-neutral-500 font-bubble font-bold text-xs">
+            <span className="text-neutral-500 font-bubble font-bold text-[11px]">
               ({totalWords.toLocaleString()} {locale === 'zh' ? '字' : 'words'})
             </span>
           </div>
 
-          <span className="text-neutral-300 hidden sm:inline">•</span>
-
-          {/* 5. Paw Stamp Interactive Button */}
+          {/* 5. Interactive Paw Stamp Button */}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleLeaveStamp}
-            className="relative inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-100 via-rose-100 to-pink-100 hover:from-amber-200 hover:to-pink-200 border border-rose-200 text-neutral-800 font-bubble text-xs font-bold shadow-3xs hover:shadow-sm active:scale-90 transition-transform cursor-pointer overflow-hidden mt-1 sm:mt-0"
+            className="relative inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-100 via-rose-100 to-pink-100 hover:from-amber-200 hover:to-pink-200 border-2 border-white text-neutral-800 font-bubble text-xs font-bold shadow-3xs hover:shadow-md active:scale-90 transition-all cursor-pointer overflow-hidden"
+            title="Leave a paw stamp"
           >
             {stamps.map((st) => (
               <span
@@ -429,6 +422,24 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             <span className="px-1.5 py-0.2 rounded-full bg-white/90 text-rose-600 font-bubble font-bold text-[11px] shadow-3xs">
               {stampCount}
             </span>
+          </button>
+
+          {/* 6. Quick Identity / Curator Login Capsule */}
+          <button
+            type="button"
+            onClick={() => {
+              playPop();
+              openAuthModal();
+            }}
+            className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-white shadow-3xs hover:shadow-md active:scale-90 hover:scale-105 transition-all text-xs font-bubble font-bold cursor-pointer ${
+              isAdmin
+                ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-neutral-900'
+                : 'bg-emerald-50/90 text-emerald-800 hover:bg-emerald-100'
+            }`}
+            title={isAdmin ? 'Admin Dashboard' : 'Login as Curator'}
+          >
+            <span>{isAdmin ? '👑' : '🌱'}</span>
+            <span>{isAdmin ? (locale === 'zh' ? '馆长后台' : 'Admin Panel') : (locale === 'zh' ? '馆长登录' : 'Curator Login')}</span>
           </button>
         </div>
       </main>

@@ -3,8 +3,8 @@ import { Env } from '../env';
 
 export const telemetryRouter = new Hono<{ Bindings: Env }>();
 
-// System launch origin timestamp fallback
-export const DEFAULT_SYSTEM_START_TIME = 1787356800000;
+// System launch origin timestamp fallback (set to past launch date, e.g. Feb 2025)
+export const DEFAULT_SYSTEM_START_TIME = 1740000000000;
 
 interface TelemetryRecord {
   systemStartTime: number;
@@ -41,26 +41,26 @@ async function getD1Telemetry(db: D1Database): Promise<TelemetryRecord> {
       map.set(row.key, row.value);
     }
 
-    const systemStartTime = map.has('system_start_time') ? parseInt(map.get('system_start_time')!, 10) : fallback.systemStartTime;
+    let systemStartTime = map.has('system_start_time') ? parseInt(map.get('system_start_time')!, 10) : fallback.systemStartTime;
     let totalVisits = map.has('total_visits') ? parseInt(map.get('total_visits')!, 10) : fallback.totalVisits;
     let todayVisits = map.has('today_visits') ? parseInt(map.get('today_visits')!, 10) : fallback.todayVisits;
     let todayDate = map.has('today_date') ? map.get('today_date')! : defaultDate;
     let stampCount = map.has('stamp_count') ? parseInt(map.get('stamp_count')!, 10) : fallback.stampCount;
 
-    // Ensure totalVisits and todayVisits never drop below healthy baseline
-    if (isNaN(totalVisits) || totalVisits <= 0) totalVisits = fallback.totalVisits;
-    if (isNaN(todayVisits) || todayVisits <= 0) todayVisits = 1;
-    if (isNaN(stampCount) || stampCount <= 0) stampCount = fallback.stampCount;
+    if (isNaN(systemStartTime) || systemStartTime <= 0) systemStartTime = fallback.systemStartTime;
+    if (isNaN(totalVisits) || totalVisits < 0) totalVisits = fallback.totalVisits;
+    if (isNaN(todayVisits) || todayVisits < 0) todayVisits = 0;
+    if (isNaN(stampCount) || stampCount < 0) stampCount = fallback.stampCount;
 
     // Daily rollover check
     if (todayDate !== defaultDate) {
       todayDate = defaultDate;
-      todayVisits = 1;
+      todayVisits = 0;
       await db.prepare('INSERT OR REPLACE INTO system_telemetry (key, value, updated_at) VALUES (?, ?, ?)')
         .bind('today_date', todayDate, Date.now())
         .run();
       await db.prepare('INSERT OR REPLACE INTO system_telemetry (key, value, updated_at) VALUES (?, ?, ?)')
-        .bind('today_visits', '1', Date.now())
+        .bind('today_visits', '0', Date.now())
         .run();
     }
 
@@ -97,9 +97,9 @@ telemetryRouter.get('/', async (c) => {
     success: true,
     systemStartTime: data.systemStartTime,
     serverTime: Date.now(),
-    totalVisits: Math.max(1, data.totalVisits),
-    todayVisits: Math.max(1, data.todayVisits),
-    stampCount: Math.max(1, data.stampCount),
+    totalVisits: Math.max(0, data.totalVisits),
+    todayVisits: Math.max(0, data.todayVisits),
+    stampCount: Math.max(0, data.stampCount),
   });
 });
 

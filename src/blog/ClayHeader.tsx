@@ -190,17 +190,34 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
           </button>
         </div>
 
-        {/* Mobile Navigation Header Right: ONLY Theme Button + Unified Menu Button (< 1024px) */}
-        <div className="flex lg:hidden items-center gap-2 shrink-0">
-          {/* 1. Theme Button (Retained as requested) */}
+        {/* Mobile Navigation Header Right: Identity Button + Theme Button + Unified Menu Button (< 1024px) */}
+        <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Identity Login Capsule for Mobile */}
+          <button
+            type="button"
+            onClick={() => {
+              playPop();
+              openAuthModal();
+            }}
+            className={
+              isAdmin
+                ? "h-9 px-2.5 sm:px-3 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-neutral-900 border-2 border-white shadow-sm active:scale-90 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                : "h-9 px-2.5 sm:px-3 rounded-full font-bubble font-bold text-xs bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 border-2 border-emerald-200 shadow-3xs active:scale-90 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+            }
+            title={isAdmin ? 'Admin' : 'Guest'}
+          >
+            <span>{isAdmin ? '👑' : '🌱'}</span>
+            <span>{isAdmin ? (locale === 'zh' ? '馆长' : 'Admin') : (locale === 'zh' ? '游客' : 'Guest')}</span>
+          </button>
+
+          {/* 1. Theme Button */}
           <button
             type="button"
             onClick={switchNextTheme}
-            className="h-9 px-3 rounded-full bg-white/95 text-neutral-700 hover:text-rose-600 border-2 border-white shadow-3xs flex items-center gap-1.5 text-xs font-bubble font-bold cursor-pointer active:scale-90"
+            className="h-9 px-2.5 sm:px-3 rounded-full bg-white/95 text-neutral-700 hover:text-rose-600 border-2 border-white shadow-3xs flex items-center gap-1 text-xs font-bubble font-bold cursor-pointer active:scale-90"
             title="Switch Theme"
           >
             <span className="text-sm">{theme.emoji}</span>
-            <span className="text-xs">{locale === 'zh' ? theme.nameZh : theme.nameEn}</span>
           </button>
 
           {/* 2. Unified Master Navigation Menu Button */}
