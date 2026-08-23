@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { PenTool, Layers, Compass, ArrowLeft, RefreshCw } from 'lucide-react';
+import { PenTool, Layers, Compass, ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
 import { Note } from '../types/note';
 import { db, getAllTagCounts, getActiveNotes, ensureNotesAuthorSeparation } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
@@ -40,25 +40,42 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   const [selectedTag, setSelectedTag] = useState<string>('#all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [authorFilter, setAuthorFilter] = useState<'all' | 'admin' | 'guest'>('all');
+  const [transitionType, setTransitionType] = useState<'slide-right' | 'slide-left' | 'view-switch'>('slide-right');
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // When 'all' is selected, retrieve ALL notes regardless of role
-  const effectiveRole = authorFilter === 'all' ? undefined : authorFilter;
+  const handleAuthorFilterChange = (newFilter: 'all' | 'admin' | 'guest', pitch: number) => {
+    playPop(pitch);
+    const filterOrder: Record<'all' | 'admin' | 'guest', number> = { all: 0, admin: 1, guest: 2 };
+    const currentOrder = filterOrder[authorFilter];
+    const newOrder = filterOrder[newFilter];
+    setTransitionType(newOrder >= currentOrder ? 'slide-right' : 'slide-left');
+    setAuthorFilter(newFilter);
+  };
 
-  // Dynamic Live Query with refreshTick dependency
+  const handleViewModeChange = (newMode: ViewMode) => {
+    setTransitionType('view-switch');
+    setViewMode(newMode);
+  };
+
+  const handleSelectTagWithTransition = (tg: string) => {
+    setTransitionType('view-switch');
+    setSelectedTag(tg);
+  };
+
+  // Dynamic Live Query: Retrieve all active notes so author badge counts always remain accurate
   const rawNotes = useLiveQuery(
-    () => getActiveNotes(effectiveRole),
-    [effectiveRole, refreshTick]
+    () => getActiveNotes(),
+    [refreshTick]
   );
 
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
 
-  // Live Query all tag counts (role-aware)
+  // Live Query all tag counts
   const allTagCounts = useLiveQuery(
-    () => getAllTagCounts(effectiveRole),
-    [effectiveRole, refreshTick]
+    () => getAllTagCounts(),
+    [refreshTick]
   ) || [];
 
   // Dynamic Manual & Auto Refresh Handler
@@ -267,7 +284,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       {/* Floating Dual Action Group: [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] (Synced with theme color) */}
       <ClayFloatingActions
         viewMode={viewMode}
-        onSelectMode={(m) => setViewMode(m)}
+        onSelectMode={(m) => handleViewModeChange(m)}
       />
 
       {/* Top Navigation Header */}
@@ -287,19 +304,22 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             className="p-2 sm:p-2.5 rounded-2xl bg-white hover:bg-pink-50 text-neutral-600 hover:text-pink-600 border border-neutral-200/80 shadow-3xs transition cursor-pointer active:scale-95 shrink-0"
             title="Back to Home Portal"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700" />
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl">📚</span>
-              <h2 className="font-bubble font-extrabold text-lg sm:text-2xl text-neutral-900 tracking-tight">
-                {locale === 'zh' ? '灵感笔记空间' : 'Notes Space'}
-              </h2>
+              <h1 className="font-bubble text-lg sm:text-2xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 bg-clip-text text-transparent">
+                {locale === 'zh' ? '旅人笔记' : 'Notes Space'}
+              </h1>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[11px] font-bubble font-bold border border-pink-200 shadow-3xs">
+                <Sparkles className="w-3 h-3 text-pink-500" />
+                <span>{locale === 'zh' ? '5 种笔记展示模式' : '5 Note Views'}</span>
+              </span>
             </div>
-            <p className="text-[11px] sm:text-xs font-cute text-neutral-400 -mt-0.5 line-clamp-1">
+            <p className="font-cute text-xs text-neutral-500 hidden sm:block mt-0.5">
               {locale === 'zh'
-                ? `共收录 ${totalNotes} 篇笔记 • 5 大视界交互漫游`
-                : `${totalNotes} notes exhibited • 5 Interactive Universes`}
+                ? `共收录 ${totalNotes} 篇笔记 • 5 种笔记展示模式自由切换`
+                : `${totalNotes} notes exhibited • 5 Interactive Note Views`}
             </p>
           </div>
         </div>
@@ -321,11 +341,8 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           <div className="inline-flex p-1 rounded-2xl bg-white/95 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold shrink-0">
             <button
               type="button"
-              onClick={() => {
-                playPop(520);
-                setAuthorFilter('all');
-              }}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+              onClick={() => handleAuthorFilterChange('all', 520)}
+              className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 hover:scale-105 ${
                 authorFilter === 'all'
                   ? 'bg-neutral-900 text-white shadow-xs'
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
@@ -336,11 +353,8 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 
             <button
               type="button"
-              onClick={() => {
-                playPop(540);
-                setAuthorFilter('admin');
-              }}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 ${
+              onClick={() => handleAuthorFilterChange('admin', 540)}
+              className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
                 authorFilter === 'admin'
                   ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-neutral-900 shadow-xs'
                   : 'text-amber-700 hover:bg-amber-50'
@@ -351,11 +365,8 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 
             <button
               type="button"
-              onClick={() => {
-                playPop(560);
-                setAuthorFilter('guest');
-              }}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 ${
+              onClick={() => handleAuthorFilterChange('guest', 560)}
+              className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
                 authorFilter === 'guest'
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs'
                   : 'text-emerald-700 hover:bg-emerald-50'
@@ -370,7 +381,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             <button
               onClick={() => {
                 playPop();
-                setSelectedTag('#all');
+                handleSelectTagWithTransition('#all');
               }}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bubble text-xs font-bold shadow-md hover:shadow-lg transition cursor-pointer active:scale-95 animate-in fade-in"
               title="Click to clear tag filter"
@@ -387,7 +398,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         tags={allTagCounts}
         totalNotesCount={totalNotes}
         selectedTag={selectedTag}
-        onSelectTag={(tg) => setSelectedTag(tg)}
+        onSelectTag={(tg) => handleSelectTagWithTransition(tg)}
       />
 
       {/* Main Full-Width Immersive 5-View Showcase Canvas */}
@@ -429,53 +440,62 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             </div>
           </div>
         ) : (
-          <>
+          <div 
+            key={`${authorFilter}-${selectedTag}-${viewMode}`} 
+            className={`w-full ${
+              transitionType === 'slide-right'
+                ? 'slide-in-right'
+                : transitionType === 'slide-left'
+                ? 'slide-in-left'
+                : 'view-universe-enter'
+            }`}
+          >
             {/* View 1: Bento Grid */}
             {viewMode === 'grid' && (
-              <BentoGridView
-                notes={filteredNotes}
-                onNoteClick={handleCardClick}
-                onTagClick={(tg) => setSelectedTag(tg)}
-              />
-            )}
+                <BentoGridView
+                  notes={filteredNotes}
+                  onNoteClick={handleCardClick}
+                  onTagClick={(tg) => setSelectedTag(tg)}
+                />
+              )}
 
-            {/* View 2: Floating Universe */}
-            {viewMode === 'floating' && (
-              <FloatingCanvasView
-                notes={filteredNotes}
-                onNoteClick={handleCardClick}
-                onTagClick={(tg) => setSelectedTag(tg)}
-              />
-            )}
+              {/* View 2: Floating Universe */}
+              {viewMode === 'floating' && (
+                <FloatingCanvasView
+                  notes={filteredNotes}
+                  onNoteClick={handleCardClick}
+                  onTagClick={(tg) => setSelectedTag(tg)}
+                />
+              )}
 
-            {/* View 3: Polaroid Sticky Board */}
-            {viewMode === 'polaroid' && (
-              <PolaroidBoardView
-                notes={filteredNotes}
-                onNoteClick={handleCardClick}
-                onTagClick={(tg) => setSelectedTag(tg)}
-              />
-            )}
+              {/* View 3: Polaroid Sticky Board */}
+              {viewMode === 'polaroid' && (
+                <PolaroidBoardView
+                  notes={filteredNotes}
+                  onNoteClick={handleCardClick}
+                  onTagClick={(tg) => setSelectedTag(tg)}
+                />
+              )}
 
-            {/* View 4: 3D Carousel Deck */}
-            {viewMode === 'carousel' && (
-              <Carousel3DView
-                notes={filteredNotes}
-                onNoteClick={handleCardClick}
-                onTagClick={(tg) => setSelectedTag(tg)}
-                onGoToEditorWithNote={onGoToEditorWithNote}
-              />
-            )}
+              {/* View 4: 3D Carousel Deck */}
+              {viewMode === 'carousel' && (
+                <Carousel3DView
+                  notes={filteredNotes}
+                  onNoteClick={handleCardClick}
+                  onTagClick={(tg) => setSelectedTag(tg)}
+                  onGoToEditorWithNote={onGoToEditorWithNote}
+                />
+              )}
 
-            {/* View 5: Timeline Stream */}
-            {viewMode === 'timeline' && (
-              <TimelineListView
-                notes={filteredNotes}
-                onNoteClick={handleCardClick}
-                onTagClick={(tg) => setSelectedTag(tg)}
-              />
-            )}
-          </>
+              {/* View 5: Timeline Stream */}
+              {viewMode === 'timeline' && (
+                <TimelineListView
+                  notes={filteredNotes}
+                  onNoteClick={handleCardClick}
+                  onTagClick={(tg) => setSelectedTag(tg)}
+                />
+              )}
+            </div>
         )}
       </main>
 
@@ -539,16 +559,6 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             >
               <span>👑</span>
               <span>{isAdmin ? (locale === 'zh' ? '馆长数据控制台' : 'Admin Console') : (locale === 'zh' ? '馆长入口' : 'Admin Portal')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                playPop(520);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="px-3 py-1 rounded-full bg-white hover:bg-neutral-100 border border-neutral-200/80 font-bubble font-bold text-neutral-700 shadow-3xs cursor-pointer transition"
-            >
-              {locale === 'zh' ? '⬆️ 回到顶部' : 'Top'}
             </button>
           </div>
         </div>

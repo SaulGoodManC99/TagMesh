@@ -29,11 +29,11 @@ const SLOGANS: SloganItem[] = [
     suffixEn: ' 🕸️',
   },
   {
-    prefixZh: '告别文件夹焦虑，\n自在漫游 ',
-    highlightZh: '5 大专属视界',
+    prefixZh: '告别文件夹焦虑，\n自由切换 ',
+    highlightZh: '5 种笔记展示模式',
     suffixZh: ' 🎡',
-    prefixEn: 'Zero folder anxiety, \nroam across ',
-    highlightEn: '5 Universes',
+    prefixEn: 'Zero folder anxiety, \nfreely explore ',
+    highlightEn: '5 Note Views',
     suffixEn: ' 🎡',
   },
   {

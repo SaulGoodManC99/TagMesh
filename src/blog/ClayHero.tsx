@@ -77,7 +77,7 @@ export const ClayHero: React.FC<ClayHeroProps> = ({
           </div>
 
           <div className="flex items-center gap-2 pt-4 text-xs font-cute text-neutral-400">
-            <span>💡 {locale === 'zh' ? '点击左下角魔盒圆钮可随时循环穿梭 5 种展示视界' : 'Click the bottom-left magic orb to cycle between 5 universes'}</span>
+            <span>💡 {locale === 'zh' ? '点击右下角浮动按钮可随时切换 5 种笔记展示模式' : 'Click the bottom-right floating button to switch between 5 note views'}</span>
           </div>
         </div>
 

@@ -83,7 +83,11 @@ export const BentoGridView: React.FC<BentoGridViewProps> = ({
       {columns.map((colNotes, colIdx) => (
         <div key={colIdx} className="flex-1 flex flex-col gap-5 sm:gap-6 min-w-0">
           {colNotes.map((item) => (
-            <div key={item.note.id} className="w-full">
+            <div 
+              key={item.note.id} 
+              className="w-full staggered-card-enter"
+              style={{ animationDelay: `${Math.min(item.originalIndex * 35, 280)}ms` }}
+            >
               <ClayNoteCard
                 note={item.note}
                 index={item.originalIndex}

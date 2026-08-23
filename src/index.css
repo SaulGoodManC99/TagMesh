@@ -678,3 +678,70 @@ article:hover .clay-sword-gleam::before,
   background-color: #cffafe !important;
   transform: translateY(-2px) scale(1.05);
 }
+
+/* ==========================================================================
+   VIEWPORT & CATEGORY SLIDE / FADE TRANSITIONS (HARDWARE ACCELERATED)
+   ========================================================================== */
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translate3d(50px, 0, 0) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50px, 0, 0) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes viewUniverseSwitch {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes staggeredCardIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.slide-in-right {
+  animation: slideInFromRight 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+.slide-in-left {
+  animation: slideInFromLeft 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+.view-universe-enter {
+  animation: viewUniverseSwitch 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+.staggered-card-enter {
+  animation: staggeredCardIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}

@@ -107,7 +107,7 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
           <div className="flex items-center justify-between px-2 pb-2 border-b border-neutral-100">
             <div className="flex items-center gap-1.5 font-bubble font-extrabold text-sm text-neutral-800">
               <Sparkles className="w-4 h-4 text-rose-500" />
-              <span>{locale === 'zh' ? '选择展示视界' : 'Exhibition Universes'}</span>
+              <span>{locale === 'zh' ? '选择笔记展示模式' : 'Note Display Modes'}</span>
             </div>
             <span className="text-[11px] font-cute text-neutral-400">5 模式</span>
           </div>

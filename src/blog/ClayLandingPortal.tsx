@@ -123,23 +123,23 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       const cached = localStorage.getItem('tagmesh_cached_telemetry');
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (parsed && typeof parsed.total === 'number' && parsed.total > 0) {
-          return { total: parsed.total, today: Math.max(1, parsed.today || 1) };
+        if (parsed && typeof parsed.total === 'number' && parsed.total >= 0) {
+          return { total: parsed.total, today: parsed.today ?? 0 };
         }
       }
     } catch {
       // ignore
     }
-    return { total: 128, today: 12 };
+    return { total: 0, today: 0 };
   });
 
   // 3. Paw Stamps synchronized with backend
   const [stampCount, setStampCount] = useState<number>(() => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_STAMP_KEY);
-      return saved ? parseInt(saved, 10) : 68;
+      return saved !== null && !isNaN(parseInt(saved, 10)) ? parseInt(saved, 10) : 0;
     } catch {
-      return 68;
+      return 0;
     }
   });
 
@@ -164,8 +164,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
     if (alreadyVisitedSession !== todayDateStr) {
       sessionStorage.setItem('tagmesh_visited_session_date', todayDateStr);
       recordVisitSession(sessionToken).then((visitRes) => {
-        if (visitRes && visitRes.totalVisits > 0) {
-          const updated = { total: visitRes.totalVisits, today: Math.max(1, visitRes.todayVisits) };
+        if (visitRes && typeof visitRes.totalVisits === 'number') {
+          const updated = { total: visitRes.totalVisits, today: visitRes.todayVisits ?? 0 };
           setRealVisits(updated);
           try {
             localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
@@ -176,8 +176,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       });
     } else {
       fetchSystemTelemetry().then((data) => {
-        if (data && data.totalVisits && data.totalVisits > 0) {
-          const updated = { total: data.totalVisits, today: Math.max(1, data.todayVisits || 1) };
+        if (data && typeof data.totalVisits === 'number') {
+          const updated = { total: data.totalVisits, today: data.todayVisits ?? 0 };
           setRealVisits(updated);
           try {
             localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
@@ -198,8 +198,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             // ignore
           }
         }
-        if (data.totalVisits && data.totalVisits > 0) {
-          const updated = { total: data.totalVisits, today: Math.max(1, data.todayVisits || 1) };
+        if (typeof data.totalVisits === 'number') {
+          const updated = { total: data.totalVisits, today: data.todayVisits ?? 0 };
           setRealVisits(updated);
           try {
             localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
@@ -207,8 +207,13 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             // ignore
           }
         }
-        if (data.stampCount && data.stampCount > 0) {
+        if (typeof data.stampCount === 'number') {
           setStampCount(data.stampCount);
+          try {
+            localStorage.setItem(LOCAL_STORAGE_STAMP_KEY, data.stampCount.toString());
+          } catch {
+            // ignore
+          }
         }
       }
     });
@@ -218,8 +223,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       fetchSystemTelemetry().then((data) => {
         if (data) {
           if (data.systemStartTime) setSystemStartTime(data.systemStartTime);
-          if (data.totalVisits && data.totalVisits > 0) {
-            const updated = { total: data.totalVisits, today: Math.max(1, data.todayVisits || 1) };
+          if (typeof data.totalVisits === 'number') {
+            const updated = { total: data.totalVisits, today: data.todayVisits ?? 0 };
             setRealVisits(updated);
             try {
               localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(updated));
@@ -227,8 +232,13 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
               // ignore
             }
           }
-          if (data.stampCount && data.stampCount > 0) {
+          if (typeof data.stampCount === 'number') {
             setStampCount(data.stampCount);
+            try {
+              localStorage.setItem(LOCAL_STORAGE_STAMP_KEY, data.stampCount.toString());
+            } catch {
+              // ignore
+            }
           }
         }
       });
@@ -239,7 +249,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       const detail = customEvent?.detail;
       if (detail) {
         if (detail.systemStartTime) setSystemStartTime(detail.systemStartTime);
-        if (detail.totalVisits !== undefined) setRealVisits({ total: detail.totalVisits, today: detail.todayVisits || 0 });
+        if (detail.totalVisits !== undefined) setRealVisits({ total: detail.totalVisits, today: detail.todayVisits ?? 0 });
         if (detail.stampCount !== undefined) setStampCount(detail.stampCount);
       }
     };
@@ -316,8 +326,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         {/* Healing Subtitle */}
         <p className="font-cute text-base sm:text-xl text-neutral-700/90 leading-relaxed mb-8 sm:mb-12 max-w-2xl mx-auto">
           {locale === 'zh'
-            ? '零文件夹焦虑，正文随时敲击 #标签 织就立体思维网，在 5 大互动视界中沉浸漫游、沉淀灵感。'
-            : 'Zero folder anxiety. Type #hashtags anywhere to weave a thought mesh, and roam across 5 exhibition universes.'}
+            ? '零文件夹焦虑，正文随时敲击 #标签 织就立体思维网，在 5 种沉浸式笔记展示模式中自由漫游、沉淀灵感。'
+            : 'Zero folder anxiety. Type #hashtags anywhere to weave a thought mesh, and roam across 5 immersive note views.'}
         </p>
 
         {/* 3 Chunky Center Action Candy Buttons */}

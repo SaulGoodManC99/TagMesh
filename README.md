@@ -28,7 +28,7 @@
 - 🏷️ **Zero Titles & Zero Folders**: Treat notes as fluid Markdown streams. Categorization relies purely on `#hashtags` with automatic first-line excerpt summaries.
 - 🎨 **Tactile Claymorphism Aesthetics**: Rounded clay pills, spatial relief shadows, auditory soundscapes, particle bursts, and 6 curated mood themes.
 - 💬 **Cross-Device Shared Danmaku Plaza**: Thoughts sent from mobile fly across desktop monitors in real time with synchronized reaction hearts and authoritative telemetry.
-- 🧭 **6 Multi-Dimensional Galleries**: Bento Grid, 3D Spatial Carousel, Galaxy Mesh Graph, Polaroid Board, Timeline Stream, and Freeform Canvas.
+- 🧭 **5 Note Display Views**: Bento Grid, 3D Spatial Carousel, Polaroid Board, Timeline Stream, and Floating Space.
 - 🤖 **Native Serverless MCP Interface**: Edge-native Model Context Protocol (JSON-RPC 2.0) interface with 8 production tools ready for Claude Desktop and Cursor.
 
 ---
