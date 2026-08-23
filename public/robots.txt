@@ -1,0 +1,8 @@
+# ==============================================================================
+# TagMesh Robots.txt - Allow all search crawlers with sitemap reference
+# ==============================================================================
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://tagmesh-markdown.sirestickysister.workers.dev/sitemap.xml
