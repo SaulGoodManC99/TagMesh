@@ -423,24 +423,6 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
               {stampCount}
             </span>
           </button>
-
-          {/* 6. Quick Identity / Curator Login Capsule */}
-          <button
-            type="button"
-            onClick={() => {
-              playPop();
-              openAuthModal();
-            }}
-            className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl border-2 border-white shadow-3xs hover:shadow-md active:scale-90 hover:scale-105 transition-all text-xs font-bubble font-bold cursor-pointer ${
-              isAdmin
-                ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-neutral-900'
-                : 'bg-emerald-50/90 text-emerald-800 hover:bg-emerald-100'
-            }`}
-            title={isAdmin ? 'Admin Dashboard' : 'Login as Curator'}
-          >
-            <span>{isAdmin ? '👑' : '🌱'}</span>
-            <span>{isAdmin ? (locale === 'zh' ? '馆长后台' : 'Admin Panel') : (locale === 'zh' ? '馆长登录' : 'Curator Login')}</span>
-          </button>
         </div>
       </main>
 

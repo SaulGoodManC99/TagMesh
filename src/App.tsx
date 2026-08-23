@@ -351,7 +351,7 @@ export const App: React.FC = () => {
           }}
         />
 
-        {/* Settings & Shortcuts Modals */}
+        {/* Settings & Shortcuts & Admin Auth Modals */}
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
@@ -360,6 +360,7 @@ export const App: React.FC = () => {
           isOpen={isShortcutsOpen}
           onClose={() => setIsShortcutsOpen(false)}
         />
+        <ClayAdminAuthModal />
       </>
     );
   }
