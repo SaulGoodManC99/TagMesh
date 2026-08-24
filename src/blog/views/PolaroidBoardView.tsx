@@ -59,7 +59,7 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
 
               <div>
                 {/* Polaroid Upper Photo Window */}
-                <div className="w-full h-52 sm:h-56 rounded-[20px] bg-neutral-50/95 border-2 border-neutral-100 p-3.5 flex flex-col justify-between mb-3 shadow-inner relative overflow-hidden">
+                <div className="w-full h-48 sm:h-52 rounded-[20px] bg-neutral-50/95 border-2 border-neutral-100 p-3.5 flex flex-col justify-between mb-2.5 shadow-inner relative overflow-hidden">
                   <div className="flex items-center justify-between text-xs font-cute text-neutral-600 mb-1 z-10">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xl group-hover:scale-125 transition-transform inline-block">
@@ -81,19 +81,25 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs font-bubble font-bold text-[11px] text-neutral-700 shadow-3xs">
-                      📅 {formattedDate}
+                    <span className="text-[11px] font-cute text-neutral-400">
+                      {note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}
                     </span>
                   </div>
 
-                  <div className="overflow-hidden flex-1 font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed z-10 line-clamp-6 pt-1">
-                    {renderCardMarkdownSnippet(note.rawMarkdown, 180)}
+                  <div className="overflow-hidden flex-1 font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed z-10 line-clamp-5 pt-1">
+                    {renderCardMarkdownSnippet(note.rawMarkdown, 160)}
                   </div>
+                </div>
+
+                {/* Polaroid Lower Chin: Dedicated Date Badge */}
+                <div className="flex items-center gap-1 text-xs font-cute font-bold text-neutral-500/90 px-1 mb-2">
+                  <span>📅</span>
+                  <span>{formattedDate}</span>
                 </div>
               </div>
 
-              {/* Bottom Tags & Read Minutes */}
-              <div className="pt-2.5 border-t border-neutral-100 flex items-center justify-between gap-1 text-xs font-cute px-1">
+              {/* Bottom Tags & Reactions */}
+              <div className="pt-2 border-t border-neutral-100 flex items-center justify-between gap-1 text-xs font-cute px-1">
                 <div className="flex flex-wrap gap-1.5">
                   {(note.tags || []).slice(0, 2).map((tg) => (
                     <span
@@ -103,16 +109,12 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
                         playPop();
                         onTagClick(tg);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-bubble font-bold tracking-wide border shadow-3xs transition-all hover:scale-105 active:scale-90 ${cardTheme.tagPill}`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bubble font-bold tracking-wide border shadow-3xs transition-all hover:scale-105 active:scale-90 ${cardTheme.tagPill}`}
                     >
                       <Hash className="w-3.5 h-3.5 opacity-70" />
                       <span>{tg.replace(/^#/, '')}</span>
                     </span>
                   ))}
-                </div>
-
-                <div className="flex items-center gap-1 text-neutral-400 text-xs font-cute font-medium">
-                  <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
                 </div>
               </div>
             </div>

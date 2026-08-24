@@ -140,7 +140,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
       {/* Top Meta Bar */}
       <div className="relative z-10">
-        {/* Single Row Clean Header: Emoji + Author Badge (+ Pinned) + Date Badge */}
+        {/* Single Row Clean Header: Emoji + Author Badge (+ Pinned) + Word Count */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap">
             <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform inline-flex items-center leading-none select-none">
@@ -165,16 +165,21 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs font-cute text-neutral-600 font-bold shrink-0">
-            <span className="px-2.5 py-0.8 rounded-full bg-white/85 border border-neutral-200/60 shadow-3xs text-[11px] font-bubble text-neutral-700">
-              📅 {formattedDate}
-            </span>
+          <div className="flex items-center gap-1 opacity-80 text-xs font-cute text-neutral-500 font-medium shrink-0">
+            <FileText className="w-3.5 h-3.5 text-neutral-400" />
+            <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
           </div>
         </div>
 
         {/* Pure Markdown Stream Content (Zero Duplicate Titles) */}
         <div className="font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed opacity-95 mb-2.5">
           {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
+        </div>
+
+        {/* Dedicated Date Badge Below Content (Clean, Legible & Roomy) */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-cute font-bold text-neutral-500/90 select-none mb-1">
+          <span className="text-xs">📅</span>
+          <span>{formattedDate}</span>
         </div>
       </div>
 

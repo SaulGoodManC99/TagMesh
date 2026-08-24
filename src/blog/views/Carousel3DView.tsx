@@ -270,10 +270,8 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
 
                   {/* Bottom Indicator */}
                   <div className="pt-2 border-t border-black/5 flex items-center justify-between text-xs">
-                    <span className="font-cute text-neutral-500 text-[11px]">
-                      {locale === 'zh'
-                        ? `${new Date(note.createdAt || Date.now()).getFullYear()}年${new Date(note.createdAt || Date.now()).getMonth() + 1}月${new Date(note.createdAt || Date.now()).getDate()}日`
-                        : new Date(note.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    <span className="font-cute text-neutral-500 font-bold text-xs">
+                      📅 {format24HourDateTime(note.createdAt || Date.now(), locale)}
                     </span>
                     <span className="font-bubble font-bold text-xs text-rose-600 flex items-center gap-1">
                       {isCenter ? (locale === 'zh' ? '当前展出 ➜' : 'Active ➜') : (locale === 'zh' ? '点击切换' : 'Switch')}
