@@ -1,4 +1,4 @@
-export type ButtonStyle = 'clay' | 'glass' | 'minimal';
+export type ButtonStyle = 'tint' | 'clay' | 'glass';
 export type ColorMode = 'auto' | 'light' | 'dark';
 
 export interface SiteConfig {
@@ -11,7 +11,7 @@ const STORAGE_KEY = 'tagmesh_site_config_v1';
 
 const DEFAULT_CONFIG: SiteConfig = {
   guestNotesEnabled: true,
-  buttonStyle: 'clay',
+  buttonStyle: 'tint',
   colorMode: 'auto',
 };
 
@@ -22,7 +22,7 @@ export function getStoredSiteConfig(): SiteConfig {
     const parsed = JSON.parse(raw);
     return {
       guestNotesEnabled: typeof parsed.guestNotesEnabled === 'boolean' ? parsed.guestNotesEnabled : true,
-      buttonStyle: ['clay', 'glass', 'minimal'].includes(parsed.buttonStyle) ? parsed.buttonStyle : 'clay',
+      buttonStyle: ['tint', 'clay', 'glass'].includes(parsed.buttonStyle) ? parsed.buttonStyle : 'tint',
       colorMode: ['auto', 'light', 'dark'].includes(parsed.colorMode) ? parsed.colorMode : 'auto',
     };
   } catch {

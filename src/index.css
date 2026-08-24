@@ -392,8 +392,12 @@ html.dark .clay-theme-orange:hover {
 }
 
 /* ==========================================================================
-   🎛️ BUTTON STYLE VARIANTS: [clay | glass | minimal]
+   🎛️ BUTTON STYLE VARIANTS: [tint | clay | glass]
    ========================================================================== */
+html[data-button-style="tint"] .clay-btn {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
 html[data-button-style="glass"] .clay-btn,
 html[data-button-style="glass"] button.rounded-full,
 html[data-button-style="glass"] button.rounded-2xl {
@@ -401,11 +405,8 @@ html[data-button-style="glass"] button.rounded-2xl {
   border-width: 1px !important;
 }
 
-html[data-button-style="minimal"] .clay-btn,
-html[data-button-style="minimal"] button.rounded-full,
-html[data-button-style="minimal"] button.rounded-2xl {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  border-width: 1px !important;
+html[data-button-style="clay"] .clay-btn {
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.12), inset 0 2px 2px rgba(255, 255, 255, 0.6) !important;
 }
 
 .clay-btn {

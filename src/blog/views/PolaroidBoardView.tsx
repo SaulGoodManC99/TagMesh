@@ -5,7 +5,6 @@ import { playPop } from '../utils/soundEffects';
 import { Clock, Hash, Pin } from 'lucide-react';
 import { renderCardMarkdownSnippet, renderInlineContent } from '../utils/markdownRenderer';
 import { useClayTheme } from '../utils/clayThemes';
-
 import { format24HourDateTime } from '../utils/dateFormatter';
 
 export interface PolaroidBoardViewProps {
@@ -39,14 +38,11 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
                 playPop();
                 onNoteClick(note);
               }}
-              style={{
-                boxShadow: undefined,
-              }}
-              className="relative p-4 sm:p-5 pb-5 bg-white rounded-[28px] shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border-3 border-white clay-card group flex flex-col justify-between"
+              className="relative p-4 sm:p-5 pb-5 bg-white dark:bg-neutral-900 rounded-[28px] shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border-3 border-white dark:border-white/10 clay-card group flex flex-col justify-between"
             >
               {/* Straight Centered Washi Tape at Top */}
               <div
-                className={`absolute -top-3 left-1/2 -translate-x-1/2 w-24 sm:w-28 h-5 bg-gradient-to-r ${theme.washiGradient} border border-white/60 shadow-xs rounded-xs opacity-90 group-hover:scale-105 transition-transform z-20`}
+                className={`absolute -top-3 left-1/2 -translate-x-1/2 w-24 sm:w-28 h-5 bg-gradient-to-r ${theme.washiGradient} border border-white/60 dark:border-white/20 shadow-xs rounded-xs opacity-90 group-hover:scale-105 transition-transform z-20`}
               />
 
               {/* Dynamic Theme Glow on Hover */}
@@ -59,8 +55,8 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
 
               <div>
                 {/* Polaroid Upper Photo Window */}
-                <div className="w-full h-48 sm:h-52 rounded-[20px] bg-neutral-50/95 border-2 border-neutral-100 p-3.5 flex flex-col justify-between mb-2.5 shadow-inner relative overflow-hidden">
-                  <div className="flex items-center justify-between text-xs font-cute text-neutral-600 mb-1 z-10">
+                <div className="w-full h-48 sm:h-52 rounded-[20px] bg-neutral-50/95 dark:bg-neutral-950/80 border-2 border-neutral-100 dark:border-white/10 p-3.5 flex flex-col justify-between mb-2.5 shadow-inner relative overflow-hidden">
+                  <div className="flex items-center justify-between text-xs font-cute text-neutral-600 dark:text-neutral-300 mb-1 z-10">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xl group-hover:scale-125 transition-transform inline-block">
                         {cardTheme.emoji}
@@ -70,7 +66,7 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
                           👑 {locale === 'zh' ? '馆长' : 'Curator'}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-0.5 px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bubble font-bold shadow-3xs">
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-bubble font-bold shadow-3xs">
                           🌱 {locale === 'zh' ? '旅人' : 'Guest'}
                         </span>
                       )}
@@ -81,25 +77,25 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="text-[11px] font-cute text-neutral-400">
+                    <span className="text-[11px] font-cute text-neutral-400 dark:text-neutral-500">
                       {note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}
                     </span>
                   </div>
 
-                  <div className="overflow-hidden flex-1 font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed z-10 line-clamp-5 pt-1">
+                  <div className="overflow-hidden flex-1 font-cute text-xs sm:text-sm text-neutral-700 dark:text-neutral-100 leading-relaxed z-10 line-clamp-5 pt-1">
                     {renderCardMarkdownSnippet(note.rawMarkdown, 160)}
                   </div>
                 </div>
 
                 {/* Polaroid Lower Chin: Dedicated Date Badge */}
-                <div className="flex items-center gap-1 text-xs font-cute font-bold text-neutral-500/90 px-1 mb-2">
+                <div className="flex items-center gap-1 text-xs font-cute font-bold text-neutral-500/90 dark:text-neutral-400 px-1 mb-2">
                   <span>📅</span>
                   <span>{formattedDate}</span>
                 </div>
               </div>
 
               {/* Bottom Tags & Reactions */}
-              <div className="pt-2 border-t border-neutral-100 flex items-center justify-between gap-1 text-xs font-cute px-1">
+              <div className="pt-2 border-t border-neutral-100 dark:border-white/10 flex items-center justify-between gap-1 text-xs font-cute px-1">
                 <div className="flex flex-wrap gap-1.5">
                   {(note.tags || []).slice(0, 2).map((tg) => (
                     <span

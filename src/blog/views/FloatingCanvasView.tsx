@@ -26,33 +26,33 @@ interface FloatingNode {
 
 const PASTEL_PALETTES = [
   {
-    cardBg: 'from-pink-100 to-rose-200 text-rose-900 border-rose-200',
-    tagPill: 'bg-rose-50/90 text-rose-700 border-rose-200',
+    cardBg: 'from-pink-100 to-rose-200 dark:from-pink-950/80 dark:to-rose-900/60 text-rose-900 dark:text-rose-100 border-rose-200 dark:border-rose-800/40',
+    tagPill: 'bg-rose-50/90 dark:bg-rose-950/70 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-800/40',
     emoji: '🌸',
   },
   {
-    cardBg: 'from-cyan-100 to-sky-200 text-cyan-900 border-cyan-200',
-    tagPill: 'bg-cyan-50/90 text-cyan-700 border-cyan-200',
+    cardBg: 'from-cyan-100 to-sky-200 dark:from-cyan-950/80 dark:to-sky-900/60 text-cyan-900 dark:text-cyan-100 border-cyan-200 dark:border-cyan-800/40',
+    tagPill: 'bg-cyan-50/90 dark:bg-cyan-950/70 text-cyan-700 dark:text-cyan-200 border-cyan-200 dark:border-cyan-800/40',
     emoji: '🌊',
   },
   {
-    cardBg: 'from-amber-100 to-yellow-200 text-amber-900 border-amber-200',
-    tagPill: 'bg-amber-50/90 text-amber-700 border-amber-200',
+    cardBg: 'from-amber-100 to-yellow-200 dark:from-amber-950/80 dark:to-yellow-900/60 text-amber-900 dark:text-amber-100 border-amber-200 dark:border-amber-800/40',
+    tagPill: 'bg-amber-50/90 dark:bg-amber-950/70 text-amber-700 dark:text-amber-200 border-amber-200 dark:border-amber-800/40',
     emoji: '🍯',
   },
   {
-    cardBg: 'from-emerald-100 to-teal-200 text-emerald-900 border-emerald-200',
-    tagPill: 'bg-emerald-50/90 text-emerald-700 border-emerald-200',
+    cardBg: 'from-emerald-100 to-teal-200 dark:from-emerald-950/80 dark:to-teal-900/60 text-emerald-900 dark:text-emerald-100 border-emerald-200 dark:border-emerald-800/40',
+    tagPill: 'bg-emerald-50/90 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/40',
     emoji: '🌿',
   },
   {
-    cardBg: 'from-purple-100 to-violet-200 text-purple-900 border-purple-200',
-    tagPill: 'bg-purple-50/90 text-purple-700 border-purple-200',
+    cardBg: 'from-purple-100 to-violet-200 dark:from-purple-950/80 dark:to-violet-900/60 text-purple-900 dark:text-purple-100 border-purple-200 dark:border-purple-800/40',
+    tagPill: 'bg-purple-50/90 dark:bg-purple-950/70 text-purple-700 dark:text-purple-200 border-purple-200 dark:border-purple-800/40',
     emoji: '🔮',
   },
   {
-    cardBg: 'from-orange-100 to-amber-200 text-orange-900 border-orange-200',
-    tagPill: 'bg-orange-50/90 text-orange-700 border-orange-200',
+    cardBg: 'from-orange-100 to-amber-200 dark:from-orange-950/80 dark:to-amber-900/60 text-orange-900 dark:text-orange-100 border-orange-200 dark:border-orange-800/40',
+    tagPill: 'bg-orange-50/90 dark:bg-orange-950/70 text-orange-700 dark:text-orange-200 border-orange-200 dark:border-orange-800/40',
     emoji: '🍊',
   },
 ];
@@ -98,14 +98,14 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
 
       return {
         note,
-        x: 20 + col * cellW + (Math.random() * 30 - 15),
-        y: 20 + row * cellH + (Math.random() * 30 - 15),
-        vx: (Math.random() - 0.5) * 0.45,
-        vy: (Math.random() - 0.5) * 0.45,
+        x: 30 + col * cellW + Math.random() * (cellW - 240),
+        y: 30 + row * cellH + Math.random() * (cellH - 180),
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
         size: 240,
         colorTheme: idx % PASTEL_PALETTES.length,
-        rotation: (Math.random() - 0.5) * 6,
-        vr: (Math.random() - 0.5) * 0.04,
+        rotation: (Math.random() - 0.5) * 8,
+        vr: (Math.random() - 0.5) * 0.15,
       };
     });
 
@@ -114,149 +114,10 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
 
   useEffect(() => {
     initNodes();
-    const handleResize = () => initNodes();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, [initNodes]);
 
-  // Global Window Mouse Move and Mouse Up Listeners to PREVENT edge sticking!
-  useEffect(() => {
-    const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (!dragInfoRef.current || !containerRef.current) return;
-
-      const rect = containerRef.current.getBoundingClientRect();
-      const cardWidth = 240;
-      const cardHeight = 150;
-      const width = containerRef.current.clientWidth || 1200;
-      const height = containerRef.current.clientHeight || 750;
-
-      // Mouse pos relative to container
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      let nx = mouseX - dragInfoRef.current.offsetX;
-      let ny = mouseY - dragInfoRef.current.offsetY;
-
-      // Clamping within bounds with 10px padding
-      nx = Math.max(10, Math.min(width - cardWidth - 10, nx));
-      ny = Math.max(10, Math.min(height - cardHeight - 10, ny));
-
-      // Calculate throw fling velocity
-      const vx = (e.clientX - dragInfoRef.current.lastX) * 0.35;
-      const vy = (e.clientY - dragInfoRef.current.lastY) * 0.35;
-
-      dragInfoRef.current.lastX = e.clientX;
-      dragInfoRef.current.lastY = e.clientY;
-      dragInfoRef.current.vx = vx;
-      dragInfoRef.current.vy = vy;
-      dragInfoRef.current.moved = true;
-
-      const draggingId = dragInfoRef.current.id;
-      setNodes((prev) =>
-        prev.map((n) => (n.note.id === draggingId ? { ...n, x: nx, y: ny } : n))
-      );
-    };
-
-    const handleGlobalMouseUp = () => {
-      if (!dragInfoRef.current) return;
-
-      const { id, moved, vx, vy } = dragInfoRef.current;
-      const draggedNode = nodes.find((n) => n.note.id === id);
-
-      if (moved) {
-        // Apply throw momentum velocity
-        setNodes((prev) =>
-          prev.map((n) =>
-            n.note.id === id
-              ? {
-                  ...n,
-                  vx: Math.max(-2.5, Math.min(2.5, vx || n.vx)),
-                  vy: Math.max(-2.5, Math.min(2.5, vy || n.vy)),
-                }
-              : n
-          )
-        );
-      } else if (draggedNode) {
-        // Simple click without dragging -> open full reading modal
-        playPop();
-        onNoteClick(draggedNode.note);
-      }
-
-      dragInfoRef.current = null;
-    };
-
-    window.addEventListener('mousemove', handleGlobalMouseMove);
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', handleGlobalMouseMove);
-      window.removeEventListener('mouseup', handleGlobalMouseUp);
-    };
-  }, [nodes, onNoteClick]);
-
-  // Animation Physics Loop
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    let animId: number;
-
-    const step = () => {
-      setNodes((prevNodes) => {
-        if (!containerRef.current) return prevNodes;
-        const width = containerRef.current.clientWidth || 1200;
-        const height = containerRef.current.clientHeight || 750;
-
-        const cardWidth = 240;
-        const cardHeight = 150;
-
-        return prevNodes.map((node) => {
-          // Pause motion if currently dragging or hovering this card
-          if (dragInfoRef.current?.id === node.note.id) return node;
-          if (hoveredNode?.note.id === node.note.id) return node;
-
-          let nx = node.x + node.vx;
-          let ny = node.y + node.vy;
-          let nvx = node.vx;
-          let nvy = node.vy;
-          let nrot = node.rotation + node.vr;
-
-          // Left/Right Wall Bounce
-          if (nx < 10) {
-            nx = 10;
-            nvx = Math.abs(nvx);
-          } else if (nx + cardWidth > width - 10) {
-            nx = width - cardWidth - 10;
-            nvx = -Math.abs(nvx);
-          }
-
-          // Top/Bottom Wall Bounce
-          if (ny < 10) {
-            ny = 10;
-            nvy = Math.abs(nvy);
-          } else if (ny + cardHeight > height - 10) {
-            ny = height - cardHeight - 10;
-            nvy = -Math.abs(nvy);
-          }
-
-          return {
-            ...node,
-            x: nx,
-            y: ny,
-            vx: nvx,
-            vy: nvy,
-            rotation: nrot,
-          };
-        });
-      });
-
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
-  }, [isPlaying, hoveredNode]);
-
-  // Card Mouse Down Handler (Initiate Drag)
-  const handleCardMouseDown = (node: FloatingNode, e: React.MouseEvent) => {
+  // Handle Drag Start
+  const handleMouseDown = (e: React.MouseEvent, node: FloatingNode) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -266,76 +127,191 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
       id: node.note.id,
       offsetX: mouseX - node.x,
       offsetY: mouseY - node.y,
-      lastX: e.clientX,
-      lastY: e.clientY,
+      lastX: mouseX,
+      lastY: mouseY,
       vx: 0,
       vy: 0,
       moved: false,
     };
   };
 
-  return (
-    <div className="relative w-full h-[calc(100vh-210px)] min-h-[680px] select-none animate-in fade-in duration-300">
-      {/* Floating Toolbar Controls (Borderless, Seamless Floating Pill) */}
-      <div className="absolute top-2 right-2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full clay-card border border-white shadow-md">
-        <button
-          onClick={() => {
-            playPop();
-            setIsPlaying((p) => !p);
-          }}
-          className="flex items-center gap-1.5 text-xs font-bubble text-neutral-700 hover:text-pink-600 transition cursor-pointer"
-        >
-          {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          <span>{isPlaying ? (locale === 'zh' ? '暂停漂浮' : 'Pause') : (locale === 'zh' ? '继续漂浮' : 'Float')}</span>
-        </button>
-        <span className="text-neutral-300">|</span>
-        <button
-          onClick={() => {
-            playPop();
-            initNodes();
-          }}
-          className="flex items-center gap-1.5 text-xs font-bubble text-neutral-700 hover:text-cyan-600 transition cursor-pointer"
-          title="Reset Gravity"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>{locale === 'zh' ? '重置重力' : 'Reset'}</span>
-        </button>
-      </div>
+  // Handle Drag Move & Window Physics
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragInfoRef.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-      {/* Top Banner */}
-      <div className="absolute top-2 left-2 z-20 pointer-events-none">
+      const dx = mouseX - dragInfoRef.current.lastX;
+      const dy = mouseY - dragInfoRef.current.lastY;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        dragInfoRef.current.moved = true;
+      }
+
+      dragInfoRef.current.vx = dx * 0.5;
+      dragInfoRef.current.vy = dy * 0.5;
+      dragInfoRef.current.lastX = mouseX;
+      dragInfoRef.current.lastY = mouseY;
+
+      const newX = mouseX - dragInfoRef.current.offsetX;
+      const newY = mouseY - dragInfoRef.current.offsetY;
+
+      setNodes((prev) =>
+        prev.map((n) =>
+          n.note.id === dragInfoRef.current?.id
+            ? { ...n, x: newX, y: newY, vx: dragInfoRef.current.vx, vy: dragInfoRef.current.vy }
+            : n
+        )
+      );
+    };
+
+    const handleMouseUp = () => {
+      dragInfoRef.current = null;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  // Floating Physics Loop (Soft Bouncing & Drift)
+  useEffect(() => {
+    let animId: number;
+
+    const loop = () => {
+      if (isPlaying && containerRef.current) {
+        const width = containerRef.current.clientWidth || 1200;
+        const height = containerRef.current.clientHeight || 750;
+
+        setNodes((prev) =>
+          prev.map((node) => {
+            // Skip actively dragged node
+            if (dragInfoRef.current && dragInfoRef.current.id === node.note.id) {
+              return node;
+            }
+
+            let nextX = node.x + node.vx;
+            let nextY = node.y + node.vy;
+            let nextVx = node.vx;
+            let nextVy = node.vy;
+            let nextRot = node.rotation + node.vr;
+
+            const cardW = 240;
+            const cardH = 160;
+
+            // Bounce on boundaries
+            if (nextX <= 10) {
+              nextX = 10;
+              nextVx = Math.abs(nextVx) * 0.9;
+            } else if (nextX + cardW >= width - 10) {
+              nextX = width - cardW - 10;
+              nextVx = -Math.abs(nextVx) * 0.9;
+            }
+
+            if (nextY <= 10) {
+              nextY = 10;
+              nextVy = Math.abs(nextVy) * 0.9;
+            } else if (nextY + cardH >= height - 10) {
+              nextY = height - cardH - 10;
+              nextVy = -Math.abs(nextVy) * 0.9;
+            }
+
+            // Air damping
+            nextVx *= 0.995;
+            nextVy *= 0.995;
+
+            // Gentle ambient turbulence if slowed down
+            if (Math.abs(nextVx) < 0.1) nextVx += (Math.random() - 0.5) * 0.15;
+            if (Math.abs(nextVy) < 0.1) nextVy += (Math.random() - 0.5) * 0.15;
+
+            return {
+              ...node,
+              x: nextX,
+              y: nextY,
+              vx: nextVx,
+              vy: nextVy,
+              rotation: nextRot,
+            };
+          })
+        );
+      }
+
+      animId = requestAnimationFrame(loop);
+    };
+
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
+  }, [isPlaying]);
+
+  return (
+    <div className="w-full select-none animate-in fade-in duration-300 pb-12 flex flex-col gap-4">
+      {/* Top Floating Controls Bar */}
+      <div className="flex items-center justify-between px-5 py-3 rounded-full bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-3 border-white dark:border-white/10 shadow-md clay-card">
         <div className="flex items-center gap-2">
-          <span className="text-2xl animate-spin" style={{ animationDuration: '10s' }}>
-            🌌
+          <span className="text-xl">🪐</span>
+          <span className="font-bubble font-extrabold text-sm text-neutral-800 dark:text-neutral-100">
+            {locale === 'zh' ? '失重空间 (可拖拽与悬浮预览)' : 'Zero-Gravity Mesh'}
           </span>
-          <div>
-            <h3 className="font-bubble text-sm font-bold text-neutral-800">
-              {locale === 'zh' ? '失重黏土宇宙 · 鼠标悬停即看内容 · 随意甩动' : 'Zero-Gravity Clay Universe · Hover to Peek · Fling & Play'}
-            </h3>
-            <p className="text-[11px] font-cute text-neutral-500">
-              {locale === 'zh' ? '光标靠近卡片自动悬停并展开透视小黑板，按住可抛掷' : 'Hover any card to inspect full content, grab to throw'}
-            </p>
-          </div>
+          <span className="hidden sm:inline text-xs font-cute text-neutral-400 dark:text-neutral-500 ml-1">
+            {locale === 'zh' ? '• 任意拖动卡片赋予初速度' : '• Drag cards to launch'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              playPop();
+              setIsPlaying(!isPlaying);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-cute font-bold border border-neutral-200/80 dark:border-white/10 shadow-3xs cursor-pointer active:scale-95"
+          >
+            {isPlaying ? <Pause className="w-3.5 h-3.5 text-amber-500" /> : <Play className="w-3.5 h-3.5 text-emerald-500" />}
+            <span>{isPlaying ? (locale === 'zh' ? '定格' : 'Pause') : (locale === 'zh' ? '漂浮' : 'Float')}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              playSwoosh();
+              initNodes();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-cute font-bold border border-neutral-200/80 dark:border-white/10 shadow-3xs cursor-pointer active:scale-95"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-cyan-500" />
+            <span>{locale === 'zh' ? '重置散布' : 'Scatter'}</span>
+          </button>
         </div>
       </div>
 
-      {/* Full Open Canvas Area with Draggable Cards */}
+      {/* Floating Canvas Sandbox */}
       <div
         ref={containerRef}
-        className="relative w-full h-full"
+        className="relative w-full h-[650px] sm:h-[720px] rounded-[36px] bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border-3 border-white dark:border-white/10 shadow-inner overflow-hidden select-none"
       >
         {nodes.map((node) => {
-          const palette = PASTEL_PALETTES[node.colorTheme];
+          const palette = PASTEL_PALETTES[node.colorTheme % PASTEL_PALETTES.length];
           const isHovered = hoveredNode?.note.id === node.note.id;
 
           return (
             <div
               key={node.note.id}
-              onMouseDown={(e) => handleCardMouseDown(node, e)}
+              onMouseDown={(e) => handleMouseDown(e, node)}
+              onClick={() => {
+                if (dragInfoRef.current?.moved) return;
+                playPop();
+                onNoteClick(node.note);
+              }}
               onMouseEnter={() => {
                 if (!dragInfoRef.current) {
-                  playSwoosh();
                   setHoveredNode(node);
+                  playPop(700);
                 }
               }}
               onMouseLeave={() => {
@@ -348,7 +324,7 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                 cursor: 'grab',
                 zIndex: isHovered ? 40 : 10,
               }}
-              className={`absolute w-60 p-4 rounded-3xl bg-gradient-to-br ${palette.cardBg} clay-card shadow-lg border-2 border-white transition-all duration-150 active:cursor-grabbing hover:shadow-2xl hover:scale-105 active:scale-95 group`}
+              className={`absolute w-60 p-4 rounded-3xl bg-gradient-to-br ${palette.cardBg} clay-card shadow-lg border-2 border-white dark:border-white/10 transition-all duration-150 active:cursor-grabbing hover:shadow-2xl hover:scale-105 active:scale-95 group`}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-base">{palette.emoji}</span>
@@ -363,11 +339,11 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                 </span>
               </div>
 
-              <div className="mb-3 overflow-hidden font-cute text-xs text-neutral-800 leading-relaxed line-clamp-3">
+              <div className="mb-3 overflow-hidden font-cute text-xs text-neutral-800 dark:text-neutral-100 leading-relaxed line-clamp-3">
                 {renderCardMarkdownSnippet(node.note.rawMarkdown, 100)}
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-black/5">
+              <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
                 <div className="flex items-center gap-1 overflow-hidden">
                   {(node.note.tags || []).slice(0, 2).map((tg) => (
                     <span
@@ -384,29 +360,29 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                   ))}
                 </div>
 
-                <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500 group-hover:text-rose-600 transition shrink-0 ml-1" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition shrink-0 ml-1" />
               </div>
 
               {/* 🌟 Hover Quick-Peek Glass Popover (鼠标悬停即时透视小画板，无需点击) */}
               {isHovered && !dragInfoRef.current && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-80 sm:w-96 p-5 rounded-[28px] bg-white/95 backdrop-blur-xl border-3 border-white shadow-2xl clay-card z-50 animate-in zoom-in-95 fade-in duration-150 flex flex-col gap-3 text-neutral-800 pointer-events-auto"
+                  className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-80 sm:w-96 p-5 rounded-[28px] bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-3 border-white dark:border-white/10 shadow-2xl clay-card z-50 animate-in zoom-in-95 fade-in duration-150 flex flex-col gap-3 text-neutral-800 dark:text-neutral-100 pointer-events-auto"
                 >
-                  <div className="flex items-center justify-between pb-2 border-b border-black/5">
+                  <div className="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/5">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{palette.emoji}</span>
-                      <span className="font-bubble font-bold text-xs text-rose-500 uppercase tracking-wider">
+                      <span className="font-bubble font-bold text-xs text-rose-500 dark:text-rose-400 uppercase tracking-wider">
                         {locale === 'zh' ? '即时透视预览' : 'QUICK PEEK'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-[11px] font-cute text-neutral-400">
+                    <div className="flex items-center gap-1 text-[11px] font-cute text-neutral-400 dark:text-neutral-500">
                       <span>{node.note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
                     </div>
                   </div>
 
-                  <div className="bg-amber-50/60 p-3.5 rounded-2xl border border-amber-100/60 overflow-hidden max-h-48 font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed">
+                  <div className="bg-amber-50/60 dark:bg-neutral-800 p-3.5 rounded-2xl border border-amber-100/60 dark:border-white/10 overflow-hidden max-h-48 font-cute text-xs sm:text-sm text-neutral-800 dark:text-neutral-100 leading-relaxed">
                     {renderCardMarkdownSnippet(node.note.rawMarkdown, 250)}
                   </div>
 
@@ -421,7 +397,7 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                             playPop(620);
                             onTagClick(tg);
                           }}
-                          className="px-2 py-0.5 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-700 text-[10px] font-mono border border-pink-200 transition cursor-pointer"
+                          className="px-2 py-0.5 rounded-full bg-pink-50 dark:bg-pink-950/60 hover:bg-pink-100 dark:hover:bg-pink-900 text-pink-700 dark:text-pink-300 text-[10px] font-mono border border-pink-200 dark:border-pink-900 transition cursor-pointer"
                         >
                           {tg}
                         </span>
@@ -430,8 +406,8 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                   )}
 
                   {/* Bottom Action */}
-                  <div className="pt-2 border-t border-black/5 flex items-center justify-between">
-                    <span className="text-[11px] font-cute font-bold text-neutral-500">
+                  <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                    <span className="text-[11px] font-cute font-bold text-neutral-500 dark:text-neutral-400">
                       {format24HourDateTime(node.note.createdAt || Date.now(), locale)}
                     </span>
 
@@ -448,7 +424,7 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                   </div>
 
                   {/* Downward triangle arrow */}
-                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-white border-r-2 border-b-2 border-white rotate-45" />
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-white dark:bg-neutral-900 border-r-2 border-b-2 border-white dark:border-white/10 rotate-45" />
                 </div>
               )}
             </div>

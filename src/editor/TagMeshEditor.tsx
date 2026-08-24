@@ -61,13 +61,13 @@ export interface TagMeshEditorProps {
 }
 
 const TAG_COLOR_PALETTES = [
-  'bg-pink-100/90 text-pink-700 border-pink-200 hover:bg-pink-200',
-  'bg-purple-100/90 text-purple-700 border-purple-200 hover:bg-purple-200',
-  'bg-indigo-100/90 text-indigo-700 border-indigo-200 hover:bg-indigo-200',
-  'bg-teal-100/90 text-teal-700 border-teal-200 hover:bg-teal-200',
-  'bg-amber-100/90 text-amber-800 border-amber-200 hover:bg-amber-200',
-  'bg-rose-100/90 text-rose-700 border-rose-200 hover:bg-rose-200',
-  'bg-emerald-100/90 text-emerald-700 border-emerald-200 hover:bg-emerald-200',
+  'bg-pink-100/90 dark:bg-pink-950/70 text-pink-700 dark:text-pink-200 border-pink-200 dark:border-pink-800/50 hover:bg-pink-200',
+  'bg-purple-100/90 dark:bg-purple-950/70 text-purple-700 dark:text-purple-200 border-purple-200 dark:border-purple-800/50 hover:bg-purple-200',
+  'bg-indigo-100/90 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-200',
+  'bg-teal-100/90 dark:bg-teal-950/70 text-teal-700 dark:text-teal-200 border-teal-200 dark:border-teal-800/50 hover:bg-teal-200',
+  'bg-amber-100/90 dark:bg-amber-950/70 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800/50 hover:bg-amber-200',
+  'bg-rose-100/90 dark:bg-rose-950/70 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-800/50 hover:bg-rose-200',
+  'bg-emerald-100/90 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-200',
 ];
 
 function getTagColorClass(tag: string): string {
@@ -403,7 +403,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
       {/* Clay Paper Pad Workspace */}
       <div 
         onContextMenu={isNoteProtected ? undefined : handleEditorContextMenu}
-        className="relative w-full rounded-[24px] sm:rounded-[44px] bg-[#fdfbf7] border-2 sm:border-4 border-white shadow-lg sm:shadow-2xl clay-card p-3.5 sm:p-10 md:p-14 overflow-hidden flex flex-col justify-between min-h-[72vh] sm:min-h-[82vh] transition-all"
+        className="relative w-full rounded-[24px] sm:rounded-[44px] bg-[#fdfbf7] dark:bg-neutral-900/95 border-2 sm:border-4 border-white dark:border-white/10 shadow-lg sm:shadow-2xl clay-card p-3.5 sm:p-10 md:p-14 overflow-hidden flex flex-col justify-between min-h-[72vh] sm:min-h-[82vh] transition-all text-neutral-800 dark:text-neutral-100"
       >
         {/* Top Rainbow Accent Strip */}
         <div className="absolute top-0 left-0 right-0 h-2 sm:h-2.5 bg-gradient-to-r from-pink-400 via-rose-400 via-amber-300 to-cyan-400" />

@@ -29,6 +29,7 @@ export interface ClayTheme {
   editorBg: string;
   darkEditorBg: string;
   badgeBg: string;
+  activeBtnClass: string;
   island1Bg: string;
   island2Bg: string;
   universeRibbonBgs: string[];
@@ -55,6 +56,7 @@ export const CLAY_THEMES: ClayTheme[] = [
     editorBg: '#fff1f3',
     darkEditorBg: '#0f0e16',
     badgeBg: 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900',
+    activeBtnClass: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/25 dark:text-rose-300 border border-rose-300/90 dark:border-rose-500/40 shadow-sm',
     island1Bg: 'bg-white dark:bg-neutral-900',
     island2Bg: 'bg-white dark:bg-neutral-900',
     universeRibbonBgs: [
@@ -123,6 +125,7 @@ export const CLAY_THEMES: ClayTheme[] = [
     editorBg: '#ede9fe',
     darkEditorBg: '#0c0a16',
     badgeBg: 'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-900',
+    activeBtnClass: 'bg-purple-500/15 text-purple-600 dark:bg-purple-500/25 dark:text-purple-300 border border-purple-300/90 dark:border-purple-500/40 shadow-sm',
     island1Bg: 'bg-white dark:bg-neutral-900',
     island2Bg: 'bg-white dark:bg-neutral-900',
     universeRibbonBgs: [
@@ -191,6 +194,7 @@ export const CLAY_THEMES: ClayTheme[] = [
     editorBg: '#ecfdf5',
     darkEditorBg: '#08110e',
     badgeBg: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900',
+    activeBtnClass: 'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-300 border border-emerald-300/90 dark:border-emerald-500/40 shadow-sm',
     island1Bg: 'bg-white dark:bg-neutral-900',
     island2Bg: 'bg-white dark:bg-neutral-900',
     universeRibbonBgs: [
@@ -259,6 +263,7 @@ export const CLAY_THEMES: ClayTheme[] = [
     editorBg: '#fef3c7',
     darkEditorBg: '#120e07',
     badgeBg: 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-900',
+    activeBtnClass: 'bg-amber-500/15 text-amber-800 dark:bg-amber-500/25 dark:text-amber-300 border border-amber-300/90 dark:border-amber-500/40 shadow-sm',
     island1Bg: 'bg-white dark:bg-neutral-900',
     island2Bg: 'bg-white dark:bg-neutral-900',
     universeRibbonBgs: [
@@ -327,6 +332,7 @@ export const CLAY_THEMES: ClayTheme[] = [
     editorBg: '#ecfeff',
     darkEditorBg: '#070f17',
     badgeBg: 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 border-cyan-200 dark:border-cyan-900',
+    activeBtnClass: 'bg-cyan-500/15 text-cyan-800 dark:bg-cyan-500/25 dark:text-cyan-300 border border-cyan-300/90 dark:border-cyan-500/40 shadow-sm',
     island1Bg: 'bg-white dark:bg-neutral-900',
     island2Bg: 'bg-white dark:bg-neutral-900',
     universeRibbonBgs: [

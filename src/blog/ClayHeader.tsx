@@ -32,7 +32,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
   const { locale, toggleLocale } = useI18n();
   const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
-  const { guestNotesEnabled } = useSiteConfig();
+  const { guestNotesEnabled, buttonStyle } = useSiteConfig();
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -50,8 +50,15 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
     }
   };
 
-  const basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/95 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
-  const activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r ${theme.primaryGradient} text-white border-2 border-white/90 dark:border-white/30 shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
+  let basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+  let activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs ${theme.activeBtnClass} hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
+
+  if (buttonStyle === 'clay') {
+    activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r ${theme.primaryGradient} text-white border-2 border-white/90 dark:border-white/30 shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
+  } else if (buttonStyle === 'glass') {
+    basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/30 dark:bg-white/5 backdrop-blur-md text-neutral-700 dark:text-neutral-200 hover:bg-white/50 dark:hover:bg-white/10 border border-white/40 dark:border-white/10 shadow-3xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+    activePillClass = "h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs bg-white/70 dark:bg-white/20 backdrop-blur-xl text-neutral-950 dark:text-white border-2 border-white/90 dark:border-white/40 shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+  }
 
   return (
     <header 
@@ -97,7 +104,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             className={currentRoute === 'home' ? activePillClass : basePillClass}
             title={locale === 'zh' ? '返回乐园首页' : 'Return Home'}
           >
-            <Home className={`w-3.5 h-3.5 ${currentRoute === 'home' ? 'text-white' : 'text-pink-500'}`} />
+            <Home className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'home' ? 'text-white' : 'text-pink-500'}`} />
             <span>{locale === 'zh' ? '首页' : 'Home'}</span>
           </motion.button>
 
@@ -114,7 +121,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             className={currentRoute === 'gallery' ? activePillClass : basePillClass}
             title={locale === 'zh' ? '进入笔记' : 'Enter Notes'}
           >
-            <Layers className={`w-3.5 h-3.5 ${currentRoute === 'gallery' ? 'text-white' : 'text-amber-500'}`} />
+            <Layers className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'gallery' ? 'text-white' : 'text-amber-500'}`} />
             <span>{locale === 'zh' ? '笔记' : 'Notes'}</span>
           </motion.button>
 
@@ -131,7 +138,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             className={currentRoute === 'danmaku' ? activePillClass : basePillClass}
             title={locale === 'zh' ? '前往灵感弹幕广场' : 'Enter Danmaku Plaza'}
           >
-            <MessageSquare className={`w-3.5 h-3.5 ${currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
+            <MessageSquare className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
             <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku'}</span>
           </motion.button>
 

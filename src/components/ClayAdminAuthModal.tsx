@@ -181,23 +181,23 @@ export const ClayAdminAuthModal: React.FC = () => {
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-md bg-[#fdfbf7] border-4 border-white shadow-2xl rounded-[32px] clay-card p-6 text-neutral-800 modal-card-enter select-none">
+      <div className="relative w-full max-w-md bg-[#fdfbf7] dark:bg-neutral-900 border-4 border-white dark:border-white/10 shadow-2xl rounded-[32px] clay-card p-6 text-neutral-800 dark:text-neutral-100 modal-card-enter select-none">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-amber-900/10">
+        <div className="flex items-center justify-between pb-3 border-b border-amber-900/10 dark:border-white/10">
           <div className="flex items-center gap-2.5">
-            <div className={`p-2.5 rounded-2xl ${isAdmin ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'} shadow-xs`}>
+            <div className={`p-2.5 rounded-2xl ${isAdmin ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'} shadow-xs`}>
               {isAdmin ? <ShieldCheck className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
             </div>
             <div>
-              <h3 className="font-bubble text-lg font-bold text-neutral-900">
+              <h3 className="font-bubble text-lg font-bold text-neutral-900 dark:text-neutral-100">
                 {isAdmin 
                   ? (locale === 'zh' ? '👑 馆长后台权限中心' : '👑 Admin Command Center')
                   : (locale === 'zh' ? '🔐 馆长身份认证' : '🔐 Admin Authentication')}
               </h3>
-              <p className="font-cute text-xs text-neutral-500">
+              <p className="font-cute text-xs text-neutral-500 dark:text-neutral-400">
                 {locale === 'zh' ? '当前身份：' : 'Current Role: '}
-                <span className="font-bold text-amber-700">
+                <span className="font-bold text-amber-700 dark:text-amber-400">
                   {isAdmin ? (locale === 'zh' ? '👑 馆长 (完整读写/MCP/弹幕管理)' : '👑 Admin') : (locale === 'zh' ? '🌱 游客/旅人 (安全沙盒保护)' : '🌱 Guest')}
                 </span>
               </p>
@@ -206,7 +206,7 @@ export const ClayAdminAuthModal: React.FC = () => {
           <button
             type="button"
             onClick={closeAuthModal}
-            className="text-neutral-400 hover:text-neutral-700 p-1.5 rounded-xl hover:bg-neutral-100 transition cursor-pointer"
+            className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -217,13 +217,13 @@ export const ClayAdminAuthModal: React.FC = () => {
           {isAdmin ? (
             /* Admin Logged In Screen */
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 flex items-start gap-2.5">
+              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/60 text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
                 <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="font-bold text-sm font-bubble">
                     {locale === 'zh' ? '您当前处于最高管理员权限' : 'You are logged in as Admin'}
                   </p>
-                  <p className="text-[11px] leading-relaxed text-amber-800">
+                  <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
                     {locale === 'zh' 
                       ? '• 解锁所有卡片编辑与官方置顶\n• 解锁 MCP Token 与 Cloudflare 边缘同步密钥\n• 解锁弹幕广场总控管理与敏感词违规下架'
                       : '• Full note editing & official pinning\n• View & configure MCP keys & Cloudflare sync\n• Danmaku moderation & bad words cleanup'}
@@ -232,13 +232,13 @@ export const ClayAdminAuthModal: React.FC = () => {
               </div>
 
               {/* ⚙️ 站点全局配置与权限总控 (Admin Exclusive Controls) */}
-              <div className="p-3.5 rounded-2xl bg-white border border-neutral-200/80 shadow-xs space-y-3">
-                <div className="flex items-center justify-between border-b border-amber-900/10 pb-2">
-                  <span className="font-bubble font-bold text-neutral-800 text-xs flex items-center gap-1.5">
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-amber-900/10 dark:border-white/10 pb-2">
+                  <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100 text-xs flex items-center gap-1.5">
                     <span>⚙️</span>
                     <span>{locale === 'zh' ? '站点展示与权限总控' : 'Site & Access Control'}</span>
                   </span>
-                  <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                  <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
                     {locale === 'zh' ? '实时生效' : 'Live Sync'}
                   </span>
                 </div>
@@ -276,14 +276,14 @@ export const ClayAdminAuthModal: React.FC = () => {
 
                 {/* 2. Button Style Selector */}
                 <div className="space-y-1.5">
-                  <span className="font-bubble font-bold text-neutral-700 text-xs block">
+                  <span className="font-bubble font-bold text-neutral-700 dark:text-neutral-300 text-xs block">
                     🎨 {locale === 'zh' ? '前台交互按钮风格' : 'Button Aesthetic Style'}
                   </span>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
+                      { id: 'tint', labelZh: '主题半透微光', labelEn: 'Theme Tint' },
                       { id: 'clay', labelZh: '3D 空间黏土', labelEn: '3D Clay' },
                       { id: 'glass', labelZh: 'Vision 磨砂玻璃', labelEn: 'Frosted Glass' },
-                      { id: 'minimal', labelZh: '极简胶囊微光', labelEn: 'Minimal Pill' },
                     ].map((b) => (
                       <button
                         key={b.id}
@@ -294,8 +294,8 @@ export const ClayAdminAuthModal: React.FC = () => {
                         }}
                         className={`p-1.5 rounded-xl text-center text-xs font-bubble font-bold border transition cursor-pointer active:scale-95 ${
                           buttonStyle === b.id
-                            ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-xs'
-                            : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border-neutral-200/80'
+                            ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-600 shadow-xs'
+                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
                         }`}
                       >
                         {locale === 'zh' ? b.labelZh : b.labelEn}

@@ -45,7 +45,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
       return {
         icon: '👑',
         title: locale === 'zh' ? '馆长精选标签网' : 'Curator Tags Mesh',
-        badgeBg: 'bg-amber-100/90 text-amber-900 border-amber-300/80',
+        badgeBg: 'bg-amber-100/90 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border-amber-300/80 dark:border-amber-700',
         sparkleColor: 'text-amber-500',
       };
     }
@@ -53,14 +53,14 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
       return {
         icon: '🌱',
         title: locale === 'zh' ? '旅人灵感标签网' : 'Traveler Tags Mesh',
-        badgeBg: 'bg-emerald-100/90 text-emerald-900 border-emerald-300/80',
+        badgeBg: 'bg-emerald-100/90 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 border-emerald-300/80 dark:border-emerald-700',
         sparkleColor: 'text-emerald-500',
       };
     }
     return {
       icon: '🌈',
       title: locale === 'zh' ? '灵感标签分类网' : 'Tag Mesh Explorer',
-      badgeBg: 'bg-white/95 text-neutral-800 border-rose-200/80',
+      badgeBg: 'bg-white/95 dark:bg-neutral-900/95 text-neutral-800 dark:text-neutral-100 border-rose-200/80 dark:border-white/10',
       sparkleColor: 'text-rose-500',
     };
   };
@@ -101,22 +101,21 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
   };
 
   const getSortModeLabel = () => {
-    if (sortMode === 'count') return locale === 'zh' ? '🔥 频次排序' : '🔥 Count';
-    if (sortMode === 'alphabet') return locale === 'zh' ? '🔤 字母排序' : '🔤 Alpha';
-    return locale === 'zh' ? '⏱️ 最新排序' : '⏱️ Recent';
+    if (sortMode === 'count') return locale === 'zh' ? '按热度' : 'By Count';
+    if (sortMode === 'alphabet') return locale === 'zh' ? '按字母' : 'A-Z';
+    return locale === 'zh' ? '最新' : 'Recent';
   };
 
   const isTagFiltered = selectedTag && selectedTag !== '#all';
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-8 py-3 select-none w-full">
-      {/* 1. Header Toolbar Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
-        
-        {/* Left Title & Active Filter Chip */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 shadow-3xs transition-all duration-300 ${headerStyle.badgeBg}`}>
-            <span className="text-sm select-none">{headerStyle.icon}</span>
+    <div className="w-full mb-6 sm:mb-8 select-none">
+      {/* 1. Header Toolbar Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 px-1">
+        {/* Left Badge + Title */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border shadow-3xs backdrop-blur-md ${headerStyle.badgeBg}`}>
+            <span className="text-base leading-none select-none">{headerStyle.icon}</span>
             <span className="font-bubble font-extrabold text-xs sm:text-sm">
               {headerStyle.title}
             </span>
@@ -127,7 +126,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
 
           {/* Active Tag Filter Indicator */}
           {isTagFiltered && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border-2 border-rose-200/90 text-rose-700 text-xs font-bubble font-bold shadow-3xs animate-in zoom-in-95 duration-150">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/60 border-2 border-rose-200/90 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-bubble font-bold shadow-3xs animate-in zoom-in-95 duration-150">
               <Sparkles className="w-3.5 h-3.5 text-rose-500" />
               <span>{locale === 'zh' ? '当前筛选:' : 'Filtering:'}</span>
               <span className="underline decoration-rose-300 font-extrabold">{selectedTag}</span>
@@ -136,7 +135,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
                   playPop(500);
                   onSelectTag('#all');
                 }}
-                className="w-4 h-4 rounded-full bg-rose-200/80 hover:bg-rose-500 hover:text-white flex items-center justify-center transition cursor-pointer ml-0.5"
+                className="w-4 h-4 rounded-full bg-rose-200/80 dark:bg-rose-800 hover:bg-rose-500 hover:text-white flex items-center justify-center transition cursor-pointer ml-0.5"
                 title="Clear filter"
               >
                 <X className="w-3 h-3" />
@@ -154,13 +153,13 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={locale === 'zh' ? '搜索标签...' : 'Search tags...'}
-              className="w-36 sm:w-44 pl-8 pr-7 py-1.5 rounded-full bg-white/95 border-2 border-white focus:border-rose-300 text-xs font-cute text-neutral-800 shadow-3xs focus:outline-hidden transition-all"
+              className="w-36 sm:w-44 pl-8 pr-7 py-1.5 rounded-full bg-white/95 dark:bg-neutral-900/95 border-2 border-white dark:border-white/10 focus:border-rose-300 text-xs font-cute text-neutral-800 dark:text-neutral-100 shadow-3xs focus:outline-hidden transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
             />
             <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -170,7 +169,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
           {/* Sort Switcher */}
           <button
             onClick={cycleSortMode}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/95 hover:bg-amber-50 text-neutral-700 hover:text-amber-800 border-2 border-white text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/95 dark:bg-neutral-900/95 hover:bg-amber-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:text-amber-800 border-2 border-white dark:border-white/10 text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
             title="Switch tag sorting"
           >
             <ArrowUpDown className="w-3.5 h-3.5 text-amber-500" />
@@ -184,7 +183,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
                 playPop(580);
                 setIsExpanded((prev) => !prev);
               }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/95 hover:bg-pink-50 text-neutral-600 hover:text-rose-600 border-2 border-white text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/95 dark:bg-neutral-900/95 hover:bg-pink-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:text-rose-600 border-2 border-white dark:border-white/10 text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
             >
               <span>
                 {isExpanded
@@ -202,7 +201,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
       </div>
 
       {/* 2. Delicate & Cute 3D Clay Tag Island */}
-      <div className="p-3.5 sm:p-4 rounded-[22px] sm:rounded-[26px] bg-white/90 backdrop-blur-md border-2 border-white shadow-md clay-card flex flex-wrap items-center gap-1.5 sm:gap-2 transition-all duration-300">
+      <div className="p-3.5 sm:p-4 rounded-[22px] sm:rounded-[26px] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-2 border-white dark:border-white/10 shadow-md clay-card flex flex-wrap items-center gap-1.5 sm:gap-2 transition-all duration-300">
         
         {/* All Notes Master Pill */}
         <button
@@ -212,14 +211,14 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
           }}
           className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.2 sm:py-1.5 rounded-full text-xs font-bubble font-bold transition-all cursor-pointer border-2 shrink-0 ${
             selectedTag === '#all'
-              ? `bg-gradient-to-r ${theme.primaryGradient} text-white shadow-sm scale-102 border-white`
-              : 'bg-white text-neutral-800 border-neutral-100 hover:bg-pink-50 hover:border-pink-200 shadow-3xs'
+              ? `bg-gradient-to-r ${theme.primaryGradient} text-white shadow-sm scale-102 border-white dark:border-white/30`
+              : 'bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100 border-neutral-100 dark:border-white/10 hover:bg-pink-50 dark:hover:bg-neutral-700 shadow-3xs'
           }`}
         >
           <Layers className="w-3.5 h-3.5 text-amber-400" />
           <span>{locale === 'zh' ? '全部灵感' : 'All Notes'}</span>
           <span className={`px-1.5 py-0.2 rounded-full text-[10px] sm:text-[11px] font-bubble font-bold ${
-            selectedTag === '#all' ? 'bg-white/25 text-white' : 'bg-neutral-100 text-neutral-700'
+            selectedTag === '#all' ? 'bg-white/25 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200'
           }`}>
             {totalNotesCount}
           </span>
@@ -227,7 +226,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
 
         {/* If searching and no tags match */}
         {displayedTags.length === 0 && searchQuery.trim().length > 0 && (
-          <div className="flex items-center gap-2 text-xs font-cute text-neutral-400 py-1 px-2.5">
+          <div className="flex items-center gap-2 text-xs font-cute text-neutral-400 dark:text-neutral-500 py-1 px-2.5">
             <span>🔍 {locale === 'zh' ? `未找到包含 "${searchQuery}" 的标签` : `No tags matching "${searchQuery}"`}</span>
             <button
               onClick={() => setSearchQuery('')}
@@ -269,15 +268,15 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
               }}
               className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.2 rounded-full text-xs font-bubble font-bold tracking-wide transition-all cursor-pointer border shadow-3xs hover:shadow-xs hover:scale-105 active:scale-95 shrink-0 ${
                 isSelected
-                  ? `bg-gradient-to-r ${theme.primaryGradient} text-white shadow-sm scale-102 border-white`
-                  : `bg-white hover:bg-neutral-50 text-neutral-800 border-neutral-100/90 hover:border-rose-200`
+                  ? `bg-gradient-to-r ${theme.primaryGradient} text-white shadow-sm scale-102 border-white dark:border-white/30`
+                  : `bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-100 border-neutral-100/90 dark:border-white/10 hover:border-rose-200`
               }`}
               title={isSelected ? 'Click to unselect this tag' : `Filter by ${tItem.tag}`}
             >
               <Hash className={`w-3 h-3 ${isSelected ? 'text-white/90' : 'text-rose-500 opacity-60'}`} />
               <span>{tItem.tag.replace(/^#/, '')}</span>
               <span className={`px-1.5 py-0.1 rounded-full text-[10px] font-bubble font-bold ${
-                isSelected ? 'bg-white/25 text-white' : 'bg-neutral-100 text-neutral-600'
+                isSelected ? 'bg-white/25 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'
               }`}>
                 {tItem.count}
               </span>
