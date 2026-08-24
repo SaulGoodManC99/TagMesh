@@ -60,6 +60,7 @@ export function useSiteConfig() {
   };
 
   const setGuestNotesEnabled = (enabled: boolean) => updateConfig({ guestNotesEnabled: enabled });
+  const setDanmakuEnabled = (enabled: boolean) => updateConfig({ danmakuEnabled: enabled });
   const setButtonStyle = (style: ButtonStyle) => updateConfig({ buttonStyle: style });
   const setColorMode = (mode: ColorMode) => updateConfig({ colorMode: mode });
 
@@ -73,10 +74,12 @@ export function useSiteConfig() {
     config,
     isDark,
     guestNotesEnabled: config.guestNotesEnabled,
+    danmakuEnabled: config.danmakuEnabled,
     buttonStyle: config.buttonStyle,
     colorMode: config.colorMode,
     updateConfig,
     setGuestNotesEnabled,
+    setDanmakuEnabled,
     setButtonStyle,
     setColorMode,
     toggleColorMode,

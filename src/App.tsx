@@ -35,6 +35,7 @@ import { ClayDeleteModal } from './components/ClayDeleteModal';
 import { ClayBlogHome } from './blog/ClayBlogHome';
 import { ClayLandingPortal } from './blog/ClayLandingPortal';
 import { ClayDanmakuPlaza } from './blog/ClayDanmakuPlaza';
+import { ClayHeader } from './blog/ClayHeader';
 import { ClayAdminAuthModal } from './components/ClayAdminAuthModal';
 import { playPop, playChime } from './blog/utils/soundEffects';
 import { useClayTheme } from './blog/utils/clayThemes';
@@ -47,7 +48,7 @@ export const App: React.FC = () => {
   const { t, locale, toggleLocale } = useI18n();
   const { theme, switchNextTheme } = useClayTheme();
   const { isAdmin, isGuest, openAuthModal } = useAuth();
-  const { guestNotesEnabled } = useSiteConfig();
+  const { guestNotesEnabled, danmakuEnabled } = useSiteConfig();
 
   // Route state: 'home' (Landing Portal) | 'gallery' (5 View Exhibition Hall) | 'danmaku' (Danmaku Plaza) | 'editor' (Workspace)
   const [route, setRoute] = useState<AppRoute>(() => {
@@ -660,17 +661,43 @@ export const App: React.FC = () => {
         )}
 
         {route === 'danmaku' && (
-          <ClayDanmakuPlaza
-            onGoToEditor={() => {
-              if (!guestNotesEnabled && !isAdmin) {
-                showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
-                openAuthModal();
-                return;
-              }
-              setRoute('editor');
-              window.location.hash = '#/editor';
-            }}
-          />
+          (!danmakuEnabled && !isAdmin) ? (
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center select-none animate-in fade-in duration-300">
+              <ClayHeader currentRoute="danmaku" onGoToEditor={() => { window.location.hash = '#/editor'; }} />
+              <div className="my-auto max-w-md p-8 sm:p-10 rounded-[38px] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-3 border-white dark:border-white/10 shadow-2xl clay-card flex flex-col items-center gap-4">
+                <span className="text-5xl select-none animate-bounce">💌</span>
+                <h3 className="font-bubble font-extrabold text-xl sm:text-2xl text-neutral-900 dark:text-neutral-100">
+                  {locale === 'zh' ? '弹幕广场暂停开放' : 'Danmaku Plaza is Closed'}
+                </h3>
+                <p className="font-cute text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                  {locale === 'zh' 
+                    ? '馆长当前关闭了弹幕广场互动通道，请漫游笔记或稍后再来！' 
+                    : 'The Curator has temporarily paused public Danmaku messages. Enjoy reading notes or check back later!'}
+                </p>
+                <button
+                  onClick={() => {
+                    playPop();
+                    window.location.hash = '#/';
+                  }}
+                  className={`mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-sm clay-btn shadow-md hover:scale-105 active:scale-95 transition cursor-pointer`}
+                >
+                  {locale === 'zh' ? '🎈 返回乐园首页' : '🎈 Back to Home'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ClayDanmakuPlaza
+              onGoToEditor={() => {
+                if (!guestNotesEnabled && !isAdmin) {
+                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                  openAuthModal();
+                  return;
+                }
+                setRoute('editor');
+                window.location.hash = '#/editor';
+              }}
+            />
+          )
         )}
 
         {route === 'editor' && renderEditorView()}

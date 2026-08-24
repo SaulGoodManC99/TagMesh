@@ -32,7 +32,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
   const { locale, toggleLocale } = useI18n();
   const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
-  const { guestNotesEnabled, buttonStyle } = useSiteConfig();
+  const { guestNotesEnabled, danmakuEnabled, buttonStyle } = useSiteConfig();
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -126,21 +126,23 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
           </motion.button>
 
           {/* 3. Danmaku Plaza */}
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05, y: -1 }}
-            whileTap={{ scale: 0.94 }}
-            transition={SPRING_MICRO}
-            onClick={() => {
-              playPop();
-              window.location.hash = '#/danmaku';
-            }}
-            className={currentRoute === 'danmaku' ? activePillClass : basePillClass}
-            title={locale === 'zh' ? '前往灵感弹幕广场' : 'Enter Danmaku Plaza'}
-          >
-            <MessageSquare className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
-            <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku'}</span>
-          </motion.button>
+          {(danmakuEnabled || isAdmin) && (
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.05, y: -1 }}
+              whileTap={{ scale: 0.94 }}
+              transition={SPRING_MICRO}
+              onClick={() => {
+                playPop();
+                window.location.hash = '#/danmaku';
+              }}
+              className={currentRoute === 'danmaku' ? activePillClass : basePillClass}
+              title={locale === 'zh' ? '前往灵感弹幕广场' : 'Enter Danmaku Plaza'}
+            >
+              <MessageSquare className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
+              <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku'}</span>
+            </motion.button>
+          )}
 
           {/* 4. Admin/Guest Role Identity */}
           <motion.button
@@ -286,24 +288,26 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
                 <ChevronRight className={`w-4 h-4 ${currentRoute === 'gallery' ? 'text-white/80' : 'text-neutral-400'}`} />
               </button>
 
-              <button
-                onClick={() => {
-                  playPop();
-                  setIsMobileMenuOpen(false);
-                  window.location.hash = '#/danmaku';
-                }}
-                className={`w-full p-3 rounded-2xl flex items-center justify-between font-bubble font-bold text-sm transition cursor-pointer border ${
-                  currentRoute === 'danmaku'
-                    ? `bg-gradient-to-r ${theme.primaryGradient} text-white border-white/60 shadow-md`
-                    : 'bg-white text-neutral-700 border-neutral-100 hover:bg-pink-50'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <MessageSquare className={`w-4 h-4 shrink-0 ${currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
-                  <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku Plaza'}</span>
-                </div>
-                <ChevronRight className={`w-4 h-4 ${currentRoute === 'danmaku' ? 'text-white/80' : 'text-neutral-400'}`} />
-              </button>
+              {(danmakuEnabled || isAdmin) && (
+                <button
+                  onClick={() => {
+                    playPop();
+                    setIsMobileMenuOpen(false);
+                    window.location.hash = '#/danmaku';
+                  }}
+                  className={`w-full p-3 rounded-2xl flex items-center justify-between font-bubble font-bold text-sm transition cursor-pointer border ${
+                    currentRoute === 'danmaku'
+                      ? `bg-gradient-to-r ${theme.primaryGradient} text-white border-white/60 shadow-md`
+                      : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border-neutral-100 dark:border-white/10 hover:bg-pink-50 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <MessageSquare className={`w-4 h-4 shrink-0 ${currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
+                    <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku Plaza'}</span>
+                  </div>
+                  <ChevronRight className={`w-4 h-4 ${currentRoute === 'danmaku' ? 'text-white/80' : 'text-neutral-400'}`} />
+                </button>
+              )}
 
               {(guestNotesEnabled || isAdmin) && (
                 <button

@@ -3,6 +3,7 @@ export type ColorMode = 'auto' | 'light' | 'dark';
 
 export interface SiteConfig {
   guestNotesEnabled: boolean;
+  danmakuEnabled: boolean;
   buttonStyle: ButtonStyle;
   colorMode: ColorMode;
 }
@@ -11,6 +12,7 @@ const STORAGE_KEY = 'tagmesh_site_config_v1';
 
 const DEFAULT_CONFIG: SiteConfig = {
   guestNotesEnabled: true,
+  danmakuEnabled: true,
   buttonStyle: 'tint',
   colorMode: 'auto',
 };
@@ -22,6 +24,7 @@ export function getStoredSiteConfig(): SiteConfig {
     const parsed = JSON.parse(raw);
     return {
       guestNotesEnabled: typeof parsed.guestNotesEnabled === 'boolean' ? parsed.guestNotesEnabled : true,
+      danmakuEnabled: typeof parsed.danmakuEnabled === 'boolean' ? parsed.danmakuEnabled : true,
       buttonStyle: ['tint', 'clay', 'glass'].includes(parsed.buttonStyle) ? parsed.buttonStyle : 'tint',
       colorMode: ['auto', 'light', 'dark'].includes(parsed.colorMode) ? parsed.colorMode : 'auto',
     };

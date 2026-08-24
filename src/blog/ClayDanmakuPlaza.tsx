@@ -507,29 +507,29 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
           const dm = item.danmaku;
 
           // Crisp, High-Contrast Pill Styles
-          let pillBorder = 'border-white';
-          let pillBg = 'bg-white/98';
-          let badgeBg = 'bg-rose-50 text-rose-600 border-rose-200';
+          let pillBorder = 'border-white dark:border-white/10';
+          let pillBg = 'bg-white/98 dark:bg-neutral-900/95';
+          let badgeBg = 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800';
 
           if (dm.themeStyle === 'rainbow' || dm.isSelf) {
-            pillBorder = 'border-amber-300 ring-3 ring-pink-400/40';
-            pillBg = 'bg-gradient-to-r from-white via-pink-50/90 to-white';
+            pillBorder = 'border-amber-300 dark:border-amber-500/50 ring-3 ring-pink-400/40';
+            pillBg = 'bg-gradient-to-r from-white via-pink-50/90 to-white dark:from-neutral-900 dark:via-pink-950/40 dark:to-neutral-900';
             badgeBg = 'bg-gradient-to-r from-pink-500 to-amber-500 text-white';
           } else if (dm.themeStyle === 'sakura') {
-            pillBorder = 'border-rose-300';
-            pillBg = 'bg-pink-50/95';
+            pillBorder = 'border-rose-300 dark:border-rose-700/50';
+            pillBg = 'bg-pink-50/95 dark:bg-pink-950/70';
             badgeBg = 'bg-pink-500 text-white';
           } else if (dm.themeStyle === 'cosmic') {
-            pillBorder = 'border-cyan-300';
-            pillBg = 'bg-cyan-50/95';
+            pillBorder = 'border-cyan-300 dark:border-cyan-700/50';
+            pillBg = 'bg-cyan-50/95 dark:bg-cyan-950/70';
             badgeBg = 'bg-cyan-600 text-white';
           } else if (dm.themeStyle === 'zen') {
-            pillBorder = 'border-emerald-300';
-            pillBg = 'bg-emerald-50/95';
+            pillBorder = 'border-emerald-300 dark:border-emerald-700/50';
+            pillBg = 'bg-emerald-50/95 dark:bg-emerald-950/70';
             badgeBg = 'bg-emerald-600 text-white';
           } else if (dm.themeStyle === 'gold') {
-            pillBorder = 'border-amber-400';
-            pillBg = 'bg-amber-50/95';
+            pillBorder = 'border-amber-400 dark:border-amber-700/50';
+            pillBg = 'bg-amber-50/95 dark:bg-amber-950/70';
             badgeBg = 'bg-amber-500 text-white';
           }
 
@@ -559,13 +559,13 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
                 </span>
 
                 {/* Big, Crisp Danmaku Message Content */}
-                <div className="text-xs sm:text-base font-bubble font-bold text-neutral-900 tracking-wide flex items-center gap-1.5 whitespace-nowrap antialiased shrink-0">
+                <div className="text-xs sm:text-base font-bubble font-bold text-neutral-900 dark:text-neutral-100 tracking-wide flex items-center gap-1.5 whitespace-nowrap antialiased shrink-0">
                   {renderInlineContent(dm.content)}
                 </div>
 
                 {/* Interactive Heart Likes Count (Solidly anchored inside capsule) */}
                 <div
-                  className="flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] sm:text-xs font-bubble font-bold border border-rose-200/80 transition-all shrink-0 active:scale-125 ml-auto"
+                  className="flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 text-rose-600 dark:text-rose-300 text-[11px] sm:text-xs font-bubble font-bold border border-rose-200/80 dark:border-rose-900 transition-all shrink-0 active:scale-125 ml-auto"
                   title="Click to send love (💖+1)"
                 >
                   <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-rose-500 text-rose-500 animate-pulse" />
@@ -594,41 +594,40 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
       <div className="relative z-40 p-3 sm:p-5 max-w-4xl mx-auto w-full">
         {/* Emoji Quick Tray Drawer Popover */}
         {showEmojiPicker && (
-          <div className="mb-3 p-3.5 rounded-[28px] bg-white/98 backdrop-blur-md border-3 border-white shadow-xl clay-card animate-in slide-in-from-bottom-2 duration-200 flex flex-col gap-2">
+          <div className="mb-3 p-3.5 rounded-[28px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-md border-3 border-white dark:border-white/10 shadow-xl clay-card animate-in slide-in-from-bottom-2 duration-200 flex flex-col gap-2">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bubble font-bold text-neutral-600 flex items-center gap-1">
+              <span className="text-xs font-bubble font-bold text-neutral-600 dark:text-neutral-300 flex items-center gap-1">
                 <Smile className="w-3.5 h-3.5 text-amber-500" />
-                <span>{locale === 'zh' ? '点击插入可爱表情 / 猫咪 MEME' : 'Select Emojis & Memes'}</span>
+                <span>{locale === 'zh' ? '快捷表情 & 趣味手势 (点击即插)' : 'Quick Emojis & Gestures'}</span>
               </span>
               <button
                 type="button"
                 onClick={() => setShowEmojiPicker(false)}
-                className="text-xs text-neutral-400 hover:text-neutral-700 font-bold px-2 py-0.5 rounded-full bg-neutral-100 cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 text-xs"
               >
                 ✕
               </button>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_EMOJI_PICKS.map((em, idx) => (
+            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto custom-scrollbar p-1">
+              {QUICK_EMOJI_PICKS.map((em) => (
                 <button
-                  key={idx}
+                  key={em.label}
                   type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onTouchStart={(e) => {
-                    e.stopPropagation();
+                  onMouseDown={(e) => {
+                    e.preventDefault();
                     if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
                       document.activeElement.blur();
                     }
                   }}
                   onClick={() => handleQuickInsert(em.code)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-pink-50 border border-neutral-200/80 hover:border-rose-300 text-xs font-bubble transition shadow-3xs cursor-pointer active:scale-90"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-neutral-800 hover:bg-pink-50 dark:hover:bg-neutral-700 border border-neutral-200/80 dark:border-white/10 hover:border-rose-300 text-xs font-bubble transition shadow-3xs cursor-pointer active:scale-90"
                 >
                   {em.icon.startsWith('http') ? (
                     <img src={em.icon} alt="" className="w-4 h-4 object-contain" />
                   ) : (
                     <span className="text-base">{em.icon}</span>
                   )}
-                  <span className="text-xs font-bold text-neutral-700">{em.label}</span>
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-200">{em.label}</span>
                 </button>
               ))}
             </div>
@@ -638,12 +637,12 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
         {/* Main Launcher Form Deck */}
         <form
           onSubmit={handleLaunch}
-          className="p-2.5 sm:p-4 rounded-[28px] sm:rounded-[32px] bg-white/98 backdrop-blur-md border-2 sm:border-3 border-white shadow-2xl clay-card flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3"
+          className="p-2.5 sm:p-4 rounded-[28px] sm:rounded-[32px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-md border-2 sm:border-3 border-white dark:border-white/10 shadow-2xl clay-card flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3"
         >
           {/* Mobile Top Row / Desktop Left: Nickname Input + Mobile Controls */}
           <div className="flex items-center gap-2 sm:contents">
             {/* Nickname Input Pill */}
-            <div className="flex-1 sm:flex-none sm:w-44 shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 h-11 sm:h-12 rounded-full bg-neutral-50 border border-neutral-200/80 shadow-inner">
+            <div className="flex-1 sm:flex-none sm:w-44 shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 h-11 sm:h-12 rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/80 dark:border-white/10 shadow-inner">
               <User className="w-4 h-4 text-cyan-500 shrink-0" />
               <input
                 type="text"
@@ -651,7 +650,7 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
                 value={sender}
                 onChange={(e) => setSender(e.target.value)}
                 placeholder={isAdmin ? (locale === 'zh' ? '👑 馆长' : '👑 Admin') : (locale === 'zh' ? '🎭 匿名旅人' : '🎭 Anonymous')}
-                className="w-full h-full bg-transparent text-xs sm:text-sm font-bubble font-bold text-neutral-800 placeholder:text-neutral-400 focus:outline-none"
+                className="w-full h-full bg-transparent text-xs sm:text-sm font-bubble font-bold text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
               />
             </div>
 
@@ -694,7 +693,7 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
           {/* Mobile Bottom Row / Desktop Center & Right: Content Input + Send Button */}
           <div className="flex items-center gap-2 flex-1 w-full sm:w-auto">
             {/* Message Content Input Pill */}
-            <div className="flex-1 flex items-center gap-2 px-3.5 sm:px-4 h-12 rounded-full bg-neutral-50 border border-neutral-200/80 shadow-inner">
+            <div className="flex-1 flex items-center gap-2 px-3.5 sm:px-4 h-12 rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/80 dark:border-white/10 shadow-inner">
               <MessageSquare className="w-4 h-4 text-rose-500 shrink-0" />
               <input
                 ref={inputRef}
@@ -703,9 +702,9 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={locale === 'zh' ? '在此输入弹幕内容...' : 'Type your barrage message...'}
-                className="w-full h-full bg-transparent text-sm sm:text-base font-bubble text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+                className="w-full h-full bg-transparent text-sm sm:text-base font-bubble text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
               />
-              <span className="text-[11px] sm:text-xs font-mono text-neutral-400 shrink-0 font-bold">
+              <span className="text-[11px] sm:text-xs font-mono text-neutral-400 dark:text-neutral-500 shrink-0 font-bold">
                 {content.length}/70
               </span>
             </div>
@@ -721,8 +720,8 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
                 }}
                 className={`h-12 px-4 rounded-full font-bubble font-bold text-xs sm:text-sm border-2 transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                   showEmojiPicker
-                    ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-xs'
-                    : 'bg-white hover:bg-neutral-100 text-neutral-700 border-neutral-200 shadow-3xs'
+                    ? 'bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 shadow-xs'
+                    : 'bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-neutral-200 dark:border-white/10 shadow-3xs'
                 }`}
                 title="Quick Emojis"
               >
@@ -738,7 +737,7 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
                   const nextIdx = (styles.indexOf(themeStyle as any) + 1) % styles.length;
                   setThemeStyle(styles[nextIdx]);
                 }}
-                className="h-12 px-3.5 sm:px-4 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 border-2 border-neutral-200 shadow-3xs font-bubble font-bold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer shrink-0"
+                className="h-12 px-3.5 sm:px-4 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-2 border-neutral-200 dark:border-white/10 shadow-3xs font-bubble font-bold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer shrink-0"
                 title="Switch Danmaku Highlight Color"
               >
                 <Palette className="w-4 h-4 text-pink-500" />

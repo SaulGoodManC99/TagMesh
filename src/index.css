@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @font-face {
   font-family: 'ChaoXiaoSheZhongYuan';
   src: url('/fonts/ChaoXiaoSheZhongYuan.ttf') format('truetype');
@@ -845,6 +847,48 @@ article:hover .clay-sword-gleam::before,
   height: 0;
   font-family: var(--font-cute) !important;
   font-weight: 500 !important;
+}
+
+/* 🌙 TipTap ProseMirror Dark Mode Overrides */
+html.dark .ProseMirror {
+  color: #f3f4f6 !important;
+}
+
+html.dark .ProseMirror h1 {
+  color: #ffffff !important;
+}
+
+html.dark .ProseMirror h2 {
+  color: #f8fafc !important;
+}
+
+html.dark .ProseMirror h3 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .ProseMirror blockquote {
+  color: #cbd5e1 !important;
+  background: rgba(244, 114, 182, 0.12) !important;
+  border-left-color: #f472b6 !important;
+}
+
+html.dark .ProseMirror code {
+  background-color: rgba(244, 114, 182, 0.2) !important;
+  color: #f472b6 !important;
+}
+
+html.dark .ProseMirror hr {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark .ProseMirror .is-editor-empty:first-child::before {
+  color: #64748b !important;
+}
+
+html.dark .inline-hashtag-badge {
+  background-color: rgba(6, 182, 212, 0.18) !important;
+  color: #22d3ee !important;
+  border-color: rgba(6, 182, 212, 0.35) !important;
 }
 
 /* Inline Hashtag Live Badge Decoration */
