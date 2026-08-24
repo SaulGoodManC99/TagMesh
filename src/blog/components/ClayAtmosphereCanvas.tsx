@@ -131,21 +131,21 @@ export const ClayAtmosphereCanvas: React.FC = () => {
           maxLife: 180,
         };
       } else {
-        // 'zen' / 'sundust'
+        // 🍵 'zen' / Bamboo Leaves
         return {
           x,
           y,
-          size: Math.random() * 4.5 + 2.5,
-          speedX: Math.random() * 0.6 - 0.3,
-          speedY: Math.random() * -0.5 - 0.2,
-          opacity: Math.random() * 0.65 + 0.3,
-          rot: 0,
-          rotSpeed: 0,
-          pitch: 0,
-          pitchSpeed: 0,
-          color: ['#059669', '#10b981', '#d97706', '#f59e0b', '#047857'][Math.floor(Math.random() * 5)],
-          life: Math.random() * 100,
-          maxLife: 200,
+          size: Math.random() * 8 + 6,
+          speedX: Math.random() * 1.2 - 0.4,
+          speedY: Math.random() * 1.2 + 0.6,
+          opacity: Math.random() * 0.45 + 0.4,
+          rot: Math.random() * Math.PI * 2,
+          rotSpeed: Math.random() * 0.025 - 0.012,
+          pitch: Math.random() * Math.PI * 2,
+          pitchSpeed: Math.random() * 0.035 + 0.015,
+          color: ['#059669', '#10b981', '#047857', '#34d399', '#6ee7b7', '#84cc16'][Math.floor(Math.random() * 6)],
+          life: 0,
+          maxLife: 1000,
         };
       }
     };
@@ -383,28 +383,38 @@ export const ClayAtmosphereCanvas: React.FC = () => {
             particles[i] = initParticle();
           }
         } else {
-          // 🍵 Zen Bamboo Dew & Herbal Sparks
-          p.life += 1;
-          const shimmer = (Math.sin((p.life / p.maxLife) * Math.PI * 2) + 1) / 2;
-          const currentAlpha = p.opacity * (0.35 + shimmer * 0.65);
-
-          p.x += p.speedX + Math.sin(time + p.y * 0.02) * 0.35;
+          // 🍵 Zen Bamboo Leaves Drifting with Wind
+          p.x += p.speedX + Math.sin(time + p.y * 0.015) * 0.8;
           p.y += p.speedY;
+          p.rot += p.rotSpeed;
+          p.pitch += p.pitchSpeed;
 
           ctx.save();
-          const dustGlow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.6);
-          dustGlow.addColorStop(0, p.color);
-          dustGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.scale(Math.cos(p.pitch), 1);
+          ctx.globalAlpha = p.opacity;
 
-          ctx.globalAlpha = currentAlpha;
-          ctx.fillStyle = dustGlow;
+          // Bamboo Leaf Shape
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * 2.2, 0, Math.PI * 2);
+          ctx.moveTo(-p.size * 1.5, 0);
+          ctx.quadraticCurveTo(0, -p.size * 0.6, p.size * 1.5, 0);
+          ctx.quadraticCurveTo(0, p.size * 0.6, -p.size * 1.5, 0);
+          ctx.fillStyle = p.color;
           ctx.fill();
+
+          // Leaf center vein
+          ctx.beginPath();
+          ctx.moveTo(-p.size * 1.3, 0);
+          ctx.lineTo(p.size * 1.3, 0);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
           ctx.restore();
 
-          if (p.life >= p.maxLife || p.y < -20 || p.x < -20 || p.x > width + 20) {
-            particles[i] = initParticle({ y: height + 10, x: Math.random() * width });
+          if (p.y > height + 20 || p.x > width + 30 || p.x < -30) {
+            particles[i] = initParticle({ y: -15, x: Math.random() * (width + 60) - 30 });
           }
         }
       }
@@ -443,11 +453,61 @@ export const ClayAtmosphereCanvas: React.FC = () => {
     };
   }, [theme.id]);
 
+  const getAuroraOrbs = () => {
+    switch (theme.id) {
+      case 'sakura':
+        return {
+          orb1: 'bg-gradient-to-br from-pink-400/40 via-rose-400/30 to-amber-300/20',
+          orb2: 'bg-gradient-to-tr from-amber-300/35 via-rose-300/25 to-pink-400/20',
+          orb3: 'bg-gradient-to-bl from-rose-400/35 via-pink-300/25 to-purple-300/20',
+        };
+      case 'stars':
+        return {
+          orb1: 'bg-gradient-to-br from-purple-500/40 via-indigo-600/30 to-pink-400/20',
+          orb2: 'bg-gradient-to-tr from-pink-500/35 via-violet-400/25 to-cyan-400/20',
+          orb3: 'bg-gradient-to-bl from-violet-500/35 via-blue-500/25 to-indigo-400/20',
+        };
+      case 'zen':
+        return {
+          orb1: 'bg-gradient-to-br from-emerald-400/40 via-teal-500/30 to-lime-300/20',
+          orb2: 'bg-gradient-to-tr from-lime-300/35 via-emerald-300/25 to-teal-400/20',
+          orb3: 'bg-gradient-to-bl from-teal-400/35 via-green-300/25 to-amber-200/20',
+        };
+      case 'fireflies':
+        return {
+          orb1: 'bg-gradient-to-br from-amber-400/40 via-orange-400/30 to-rose-400/20',
+          orb2: 'bg-gradient-to-tr from-yellow-300/35 via-amber-300/25 to-orange-300/20',
+          orb3: 'bg-gradient-to-bl from-orange-400/35 via-rose-300/25 to-yellow-200/20',
+        };
+      case 'rain':
+        return {
+          orb1: 'bg-gradient-to-br from-cyan-400/40 via-sky-500/30 to-blue-500/20',
+          orb2: 'bg-gradient-to-tr from-blue-400/35 via-cyan-300/25 to-teal-300/20',
+          orb3: 'bg-gradient-to-bl from-sky-400/35 via-indigo-300/25 to-cyan-200/20',
+        };
+      default:
+        return {
+          orb1: 'bg-pink-400/30',
+          orb2: 'bg-amber-300/25',
+          orb3: 'bg-rose-300/25',
+        };
+    }
+  };
+
+  const orbs = getAuroraOrbs();
+
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0 opacity-90 transition-opacity duration-500"
-      style={{ pointerEvents: 'none' }}
-    />
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
+      {/* 1. Living Dynamic Aurora Mesh Fluid Orbs */}
+      <div className={`absolute -top-32 -left-32 w-[550px] h-[550px] sm:w-[750px] sm:h-[750px] rounded-full blur-[100px] sm:blur-[140px] opacity-80 aurora-orb-1 transition-all duration-1000 ${orbs.orb1}`} />
+      <div className={`absolute top-1/3 -right-32 w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] rounded-full blur-[100px] sm:blur-[140px] opacity-75 aurora-orb-2 transition-all duration-1000 ${orbs.orb2}`} />
+      <div className={`absolute -bottom-32 left-1/4 w-[480px] h-[480px] sm:w-[650px] sm:h-[650px] rounded-full blur-[100px] sm:blur-[140px] opacity-75 aurora-orb-3 transition-all duration-1000 ${orbs.orb3}`} />
+
+      {/* 2. Physics Interactive Atmospheric Particle Canvas */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full opacity-90 transition-opacity duration-500"
+      />
+    </div>
   );
 };

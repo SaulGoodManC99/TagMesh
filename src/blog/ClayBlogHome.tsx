@@ -19,19 +19,24 @@ import { TimelineListView } from './views/TimelineListView';
 import { ClayReadingModal } from './ClayReadingModal';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
 import { ClayFloatingActions } from './components/ClayFloatingActions';
+import { ClayGlobalContextMenu } from './components/ClayGlobalContextMenu';
 import { playPop, playChime } from './utils/soundEffects';
 import { useClayTheme } from './utils/clayThemes';
 
 export interface ClayBlogHomeProps {
   onGoToEditor: () => void;
   onGoToEditorWithNote: (note: Note) => void;
-  onOpenShortcuts?: () => void;
+  onOpenShortcuts: () => void;
+  transitionClass?: string;
+  slideDirection?: 'slide-left' | 'slide-right';
 }
 
 export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   onGoToEditor,
   onGoToEditorWithNote,
   onOpenShortcuts,
+  transitionClass,
+  slideDirection = 'slide-left',
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -44,6 +49,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCardRefreshing, setIsCardRefreshing] = useState(false);
 
   const handleAuthorFilterChange = (newFilter: 'all' | 'admin' | 'guest', pitch: number) => {
     playPop(pitch);
@@ -88,13 +94,18 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
 
+  const [syncToast, setSyncToast] = useState<{ message: string; count: number } | null>(null);
+
   // Dynamic Manual & Auto Refresh Handler
   const handleDynamicRefresh = useCallback(async () => {
-    playPop();
+    playChime();
     setIsRefreshing(true);
+    setIsCardRefreshing(true);
+    let count = 0;
     try {
       const remoteNotes = await fetchRemoteNotes();
       if (remoteNotes && remoteNotes.length > 0) {
+        count = remoteNotes.length;
         for (const rNote of remoteNotes) {
           const localNote = await db.notes.get(rNote.id);
           await db.notes.put({
@@ -109,9 +120,19 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       // ignore
     } finally {
       setRefreshTick((t) => t + 1);
-      setTimeout(() => setIsRefreshing(false), 500);
+      setTimeout(() => {
+        setIsRefreshing(false);
+        setIsCardRefreshing(false);
+      }, 420);
+      setSyncToast({
+        message: locale === 'zh' ? '✨ 云端笔记与全网点赞已全部同步！' : '✨ Cloud notes & all likes synced!',
+        count,
+      });
+      setTimeout(() => {
+        setSyncToast(null);
+      }, 2600);
     }
-  }, []);
+  }, [locale]);
 
   const handleDeleteNote = async (noteId: string) => {
     await db.notes.update(noteId, { isDeleted: true, isDirty: true, updatedAt: Date.now() });
@@ -321,26 +342,56 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       style={{ backgroundColor: theme.bg }}
       className="min-h-screen text-neutral-800 flex flex-col selection:bg-pink-300 selection:text-pink-900 font-sans antialiased relative transition-colors duration-500 overflow-x-hidden"
     >
+      {/* Sleek Top Glow Progress Beam during Cloud Sync (KuaiShou / SWR style) */}
+      {isRefreshing && (
+        <div className="fixed top-0 left-0 right-0 h-[2.5px] z-[300] bg-gradient-to-r from-pink-500 via-amber-400 to-rose-500 animate-pulse shadow-sm" />
+      )}
+
       {/* 0. Live Ambient Atmospheric Particle World */}
       <ClayAtmosphereCanvas />
 
-      {/* Floating 3D Clay Action Dock: [ ⚡ 灵动快捷魔术坞 ] + [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] */}
+      {/* Dynamic Sync Toast Feedback (Top-Left Safe Corner) */}
+      {syncToast && (
+        <div className="fixed top-16 left-4 sm:left-8 z-[200] pointer-events-none animate-in fade-in slide-in-from-top-2 slide-in-from-left-3 duration-250">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/98 backdrop-blur-md border-2 border-emerald-300/80 shadow-2xl clay-card text-neutral-800 text-xs sm:text-sm font-bubble font-bold">
+            <span className="text-lg select-none">✨</span>
+            <span className="text-neutral-900">
+              {syncToast.message}
+            </span>
+            {syncToast.count > 0 && (
+              <span className="hidden sm:inline text-emerald-600 font-bubble text-xs">
+                ({locale === 'zh' ? `共同步 ${syncToast.count} 篇灵感笔记` : `Synced ${syncToast.count} notes`})
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Floating 3D Clay Action Dock: [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] */}
       <ClayFloatingActions
         viewMode={viewMode}
         onSelectMode={(m) => handleViewModeChange(m)}
+      />
+
+      {/* Universal 3D Clay Global Right-Click & Mobile Long-Press Menu */}
+      <ClayGlobalContextMenu
+        currentRoute="gallery"
+        viewMode={viewMode}
+        onSelectMode={(m) => handleViewModeChange(m)}
         onRefresh={handleDynamicRefresh}
-        isRefreshing={isRefreshing}
         onGoToEditor={onGoToEditor}
       />
 
-      {/* Top Navigation Header */}
+      {/* Top Navigation Header (Stationary, zero sliding) */}
       <ClayHeader
         onGoToEditor={onGoToEditor}
         currentRoute="gallery"
       />
 
-      {/* Compact Gallery Stage Bar */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-8 pt-4 sm:pt-6 pb-2 select-none w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      {/* Main Gallery Body (Smooth Slide/Fade/Zoom Transition below stationary Header) */}
+      <div className={`w-full flex-1 flex flex-col ${transitionClass || (slideDirection === 'slide-left' ? 'page-slide-in-left' : 'page-slide-in-right')}`}>
+        {/* Compact Gallery Stage Bar */}
+        <div className="max-w-7xl mx-auto px-3 sm:px-8 pt-4 sm:pt-6 pb-2 select-none w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
@@ -359,18 +410,18 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[11px] font-bubble font-bold border border-pink-200 shadow-3xs">
                 <Sparkles className="w-3 h-3 text-pink-500" />
-                <span>{locale === 'zh' ? '5 种笔记展示模式' : '5 Note Views'}</span>
+                <span>{locale === 'zh' ? '5 种展示风格自由切换' : '5 Note Views'}</span>
               </span>
             </div>
             <p className="font-cute text-xs text-neutral-500 hidden sm:block mt-0.5">
               {locale === 'zh'
-                ? `共收录 ${totalNotes} 篇笔记 • 5 种笔记展示模式自由切换`
-                : `${totalNotes} notes exhibited • 5 Interactive Note Views`}
+                ? `共收录 ${totalNotes} 篇笔记 • 点击右下角 🎡 轻松漫游`
+                : `${totalNotes} notes exhibited • Click 🎡 to roam`}
             </p>
           </div>
         </div>
 
-        {/* Author Dimension Filter Pills + Active Tag Status */}
+        {/* Author Dimension Filter Pills */}
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end overflow-x-auto no-scrollbar">
           {/* Author Switcher */}
           <div className="inline-flex p-1 rounded-2xl bg-white/95 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold shrink-0">
@@ -410,21 +461,6 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
               <span>🌱 {locale === 'zh' ? '旅人笔记' : 'Guests'} ({guestNotesCount})</span>
             </button>
           </div>
-
-          {/* Active Tag Filter Status with Clear X Button */}
-          {selectedTag && selectedTag !== '#all' && (
-            <button
-              onClick={() => {
-                playPop();
-                handleSelectTagWithTransition('#all');
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bubble text-xs font-bold shadow-md hover:shadow-lg transition cursor-pointer active:scale-95 animate-in fade-in"
-              title="Click to clear tag filter"
-            >
-              <span>🏷️ {selectedTag} ({filteredNotes.length})</span>
-              <span className="w-4 h-4 rounded-full bg-white/25 flex items-center justify-center text-[10px] ml-0.5">✕</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -599,6 +635,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 };

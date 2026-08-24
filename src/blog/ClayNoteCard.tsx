@@ -1,18 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion } from 'motion/react';
 import { 
   FileText, 
   Hash, 
   ArrowUpRight,
   Pin,
-  Sparkles
+  Quote
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
 import { format24HourDateTime } from './utils/dateFormatter';
 import { playPop, playChime } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
-import { renderCardMarkdownSnippet, renderInlineContent } from './utils/markdownRenderer';
+import { renderCardMarkdownSnippet } from './utils/markdownRenderer';
 import { useClayTheme } from './utils/clayThemes';
+import { SPRING_MACRO, SPRING_MICRO } from './utils/motionSystem';
 
 import { db } from '../db/dexie';
 import { likeNoteRemote } from '../services/api';
@@ -20,6 +22,7 @@ import { likeNoteRemote } from '../services/api';
 export interface ClayNoteCardProps {
   note: Note;
   index: number;
+  isWide?: boolean;
   onClick: () => void;
   onTagClick: (tag: string) => void;
 }
@@ -38,6 +41,13 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+
+  // Extract first image in note if present (Xiaohongshu-style visual card cover)
+  const firstImage = useMemo(() => {
+    if (!note.rawMarkdown) return null;
+    const match = note.rawMarkdown.match(/!\[.*?\]\((https?:\/\/[^\s\)]+|data:image\/[^\s\)]+)\)/);
+    return match ? match[1] : null;
+  }, [note.rawMarkdown]);
 
   // Persistent like counter
   const [likes, setLikes] = useState<number>(() => {
@@ -95,9 +105,12 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
   const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
 
-  // Dynamic excerpt length driven purely by the note's real content (organic height scaling)
+  // Truly Dynamic height driven purely by note's actual text length & media
   const rawLength = (note.rawMarkdown || '').length;
-  const excerptMaxChars = rawLength > 300 ? 220 : rawLength > 150 ? 140 : 80;
+  const isShortQuote = rawLength > 0 && rawLength < 70 && !firstImage;
+  
+  // Dynamic scaling: short note = compact, long note = tall rich text preview
+  const excerptMaxChars = rawLength > 500 ? 460 : rawLength > 280 ? 320 : rawLength > 140 ? 180 : 90;
 
   return (
     <article
@@ -108,7 +121,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
       style={{
         transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
       }}
-      className={`relative p-5 sm:p-6 ${cardTheme.bg} clay-card-interactive clay-sheen cursor-pointer group flex flex-col justify-between select-none overflow-hidden transition-all duration-300 w-full h-auto`}
+      className={`relative p-5 sm:p-6 ${cardTheme.bg} clay-card-interactive clay-sheen cursor-pointer group flex flex-col justify-between select-none overflow-hidden w-full h-auto gpu-layer`}
     >
       {/* Dynamic 3D Cursor Specular Glow Light */}
       <div 
@@ -163,12 +176,31 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
           </div>
         </div>
 
-        {/* Pure Markdown Stream Content (Zero Duplicate Titles) */}
-        <div className="font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed opacity-95 mb-2.5">
-          {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
-        </div>
+        {/* 📷 Xiaohongshu-Style First Image Cover (If Present) */}
+        {firstImage && (
+          <div className="w-full max-h-52 overflow-hidden rounded-2xl border-2 border-white/90 shadow-inner mb-3 bg-neutral-100/80 shrink-0 relative">
+            <img 
+              src={firstImage} 
+              alt="Cover" 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+              loading="lazy" 
+            />
+          </div>
+        )}
 
-        {/* Dedicated Date Badge Below Content (Clean, Legible & Roomy) */}
+        {/* Pure Markdown Stream Content (Organic Length Scaling) */}
+        {isShortQuote ? (
+          <div className="font-bubble text-base sm:text-lg font-black text-neutral-800 leading-snug py-1 mb-2 tracking-tight flex items-start gap-1.5">
+            <Quote className="w-4 h-4 text-pink-400 shrink-0 rotate-180 opacity-70 mt-0.5" />
+            <span className="italic">“{note.rawMarkdown.replace(/^#+\s*/, '').slice(0, 80)}”</span>
+          </div>
+        ) : (
+          <div className="font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed opacity-95 mb-2.5">
+            {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
+          </div>
+        )}
+
+        {/* Dedicated Date Badge Below Content */}
         <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-cute font-bold text-neutral-500/90 select-none mb-1">
           <span className="text-xs">📅</span>
           <span>{formattedDate}</span>
@@ -177,12 +209,15 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
       {/* Bottom Footer: Enlarged Hashtag Pills & Emoji Reactions */}
       <div className="relative z-10 pt-2.5 border-t border-black/5 flex flex-col gap-2.5 mt-auto">
-        {/* Enlarged Hashtags (Crisp Bold Font for English/Chinese) */}
+        {/* Enlarged Hashtags with Haptic Spring Touch */}
         {note.tags && note.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {note.tags.map((t) => (
-              <button
+              <motion.button
                 key={t}
+                whileHover={{ scale: 1.05, y: -1 }}
+                whileTap={{ scale: 0.94 }}
+                transition={SPRING_MICRO}
                 onMouseDown={(e) => e.preventDefault()}
                 onTouchStart={(e) => {
                   e.stopPropagation();
@@ -199,27 +234,30 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
                   playPop();
                   onTagClick(t);
                 }}
-                className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-bubble font-bold tracking-wide border shadow-3xs transition-all hover:scale-105 active:scale-90 ${cardTheme.tagPill}`}
+                className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-bubble font-bold tracking-wide border shadow-3xs cursor-pointer ${cardTheme.tagPill}`}
               >
                 <Hash className="w-3.5 h-3.5 opacity-70" />
                 <span className="leading-none">{t.replace(/^#/, '')}</span>
-              </button>
+              </motion.button>
             ))}
           </div>
         )}
 
         {/* Bottom Reaction Bar (Only Pure ❤️ Like) & Open Link Icon */}
         <div className="flex items-center justify-between text-xs pt-1">
-          {/* Single Heart Like Button */}
-          <button
+          {/* Single Heart Like Button with Spring Pop */}
+          <motion.button
             type="button"
             onClick={handleLikeClick}
-            className="px-2.5 py-1 rounded-xl bg-white/85 hover:bg-white text-rose-600 hover:text-rose-700 text-xs font-cute font-bold flex items-center gap-1.5 shadow-3xs hover:scale-110 active:scale-90 transition-all border border-pink-100 cursor-pointer"
+            whileHover={{ scale: 1.14 }}
+            whileTap={{ scale: 0.86 }}
+            transition={SPRING_MICRO}
+            className="px-2.5 py-1 rounded-xl bg-white/85 hover:bg-white text-rose-600 hover:text-rose-700 text-xs font-cute font-bold flex items-center gap-1.5 shadow-3xs border border-pink-100 cursor-pointer"
             title={locale === 'zh' ? '点赞这篇笔记' : 'Like this note'}
           >
             <span className="text-sm leading-none select-none">❤️</span>
             <span className="text-xs font-bubble font-bold leading-none">{likes}</span>
-          </button>
+          </motion.button>
 
           <div className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs shrink-0">
             <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

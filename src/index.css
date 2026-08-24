@@ -22,11 +22,23 @@
     --font-cute: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
     --font-bubble: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "Baloo 2", "YouYuan", "幼圆", cursive, sans-serif;
 
-    /* Physics Springs & Apple Easing Curves (Smooth, No Jarring Overshoot) */
-    --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1);
-    --ease-spring-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    /* Precision UI & Motion Architecture Variables */
+    --ease-micro: cubic-bezier(0.2, 0, 0, 1);
+    --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-exit: cubic-bezier(0.4, 0, 1, 1);
     --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-fluid: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* 100% GPU Hardware Compositing Primitives (Zero Layout Thrashing) */
+  .gpu-layer {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform, opacity;
   }
 
   *, ::before, ::after {
@@ -113,42 +125,50 @@
 }
 
 /* ==========================================================================
-   CLAYMORPHISM 3D CARD THEMES & CRISP BORDERS
+   CLAYMORPHISM 3D CARD THEMES & CRISP BORDERS (Apple Spatial Grade)
    ========================================================================== */
 
 .clay-card {
-  border-radius: 32px;
-  border: 3.5px solid #ffffff;
+  border-radius: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.94);
   box-shadow: 
-    0 12px 28px -6px rgba(0, 0, 0, 0.08),
-    0 6px 12px -3px rgba(0, 0, 0, 0.04),
-    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+    0 1px 3px 0 rgba(0, 0, 0, 0.02),
+    0 8px 24px -4px rgba(0, 0, 0, 0.05),
+    0 18px 42px -8px rgba(0, 0, 0, 0.04),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.02);
   transition: box-shadow 0.3s var(--ease-smooth), border-color 0.3s ease;
 }
 
-/* Only interactive showcase cards/widgets lift on hover, modals and editor canvas stay rock-solid */
+/* Interactive showcase cards/widgets with authentic tactile depth */
 .clay-card-interactive {
-  border-radius: 32px;
-  border: 3.5px solid #ffffff;
+  border-radius: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.94);
   box-shadow: 
-    0 12px 28px -6px rgba(0, 0, 0, 0.08),
-    0 6px 12px -3px rgba(0, 0, 0, 0.04),
-    inset 0 2px 4px rgba(255, 255, 255, 0.95);
-  transition: transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-smooth), border-color 0.2s ease;
+    0 1px 3px 0 rgba(0, 0, 0, 0.02),
+    0 8px 24px -4px rgba(0, 0, 0, 0.05),
+    0 18px 42px -8px rgba(0, 0, 0, 0.04),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.02);
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15), box-shadow 0.35s var(--ease-smooth), border-color 0.2s ease;
   will-change: transform, box-shadow;
   transform: translateZ(0);
 }
 
 .clay-card-interactive:hover {
-  transform: translateY(-3px) scale(1.008);
+  transform: translateY(-4px) scale(1.012);
   box-shadow: 
-    0 18px 32px -8px rgba(0, 0, 0, 0.1),
-    0 8px 16px -4px rgba(0, 0, 0, 0.05),
-    inset 0 2px 4px rgba(255, 255, 255, 0.95);
+    0 2px 6px 0 rgba(0, 0, 0, 0.03),
+    0 16px 36px -6px rgba(0, 0, 0, 0.08),
+    0 28px 60px -12px rgba(0, 0, 0, 0.06),
+    inset 0 2px 3px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.02);
 }
 
 .clay-card-interactive:active {
-  transform: translateY(0) scale(0.992);
+  transform: translateY(0) scale(0.988);
   transition-duration: 0.12s;
 }
 
@@ -164,58 +184,58 @@
   left: 0;
   right: 0;
   height: 45%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%);
-  border-radius: 28px 28px 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
+  border-radius: 26px 26px 0 0;
   pointer-events: none;
 }
 
-/* 6 Distinct Candy Clay Themes with Colorful Ambient Glow Light */
+/* 6 Distinct Candy Clay Themes with Richer Ambient Light & Soft Diffuse Glow */
 .clay-theme-pink {
-  background: linear-gradient(145deg, #fff1f2 0%, #ffe4e6 100%) !important;
+  background: linear-gradient(145deg, #ffffff 0%, #fff1f3 100%) !important;
   border-color: #ffffff !important;
 }
 .clay-theme-pink:hover {
-  box-shadow: 0 22px 42px -10px rgba(244, 114, 182, 0.38), 0 8px 18px -4px rgba(244, 114, 182, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 22px 42px -10px rgba(244, 114, 182, 0.35), 0 8px 18px -4px rgba(244, 114, 182, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.98) !important;
 }
 
 .clay-theme-cyan {
-  background: linear-gradient(145deg, #ecfeff 0%, #cffafe 100%) !important;
+  background: linear-gradient(145deg, #ffffff 0%, #ecfeff 100%) !important;
   border-color: #ffffff !important;
 }
 .clay-theme-cyan:hover {
-  box-shadow: 0 22px 42px -10px rgba(6, 182, 212, 0.38), 0 8px 18px -4px rgba(6, 182, 212, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 22px 42px -10px rgba(6, 182, 212, 0.35), 0 8px 18px -4px rgba(6, 182, 212, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.98) !important;
 }
 
 .clay-theme-amber {
-  background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 100%) !important;
+  background: linear-gradient(145deg, #ffffff 0%, #fffbeb 100%) !important;
   border-color: #ffffff !important;
 }
 .clay-theme-amber:hover {
-  box-shadow: 0 22px 42px -10px rgba(245, 158, 11, 0.38), 0 8px 18px -4px rgba(245, 158, 11, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 22px 42px -10px rgba(245, 158, 11, 0.35), 0 8px 18px -4px rgba(245, 158, 11, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.98) !important;
 }
 
 .clay-theme-emerald {
-  background: linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  background: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%) !important;
   border-color: #ffffff !important;
 }
 .clay-theme-emerald:hover {
-  box-shadow: 0 22px 42px -10px rgba(16, 185, 129, 0.38), 0 8px 18px -4px rgba(16, 185, 129, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 22px 42px -10px rgba(16, 185, 129, 0.35), 0 8px 18px -4px rgba(16, 185, 129, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.98) !important;
 }
 
 .clay-theme-purple {
-  background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 100%) !important;
+  background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%) !important;
   border-color: #ffffff !important;
 }
 .clay-theme-purple:hover {
-  box-shadow: 0 22px 42px -10px rgba(168, 85, 247, 0.38), 0 8px 18px -4px rgba(168, 85, 247, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 22px 42px -10px rgba(168, 85, 247, 0.35), 0 8px 18px -4px rgba(168, 85, 247, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.98) !important;
 }
 
 .clay-theme-orange {
-  background: linear-gradient(145deg, #fff7ed 0%, #ffedd5 100%) !important;
+  background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%) !important;
   border-color: #ffffff !important;
 }
 .clay-theme-orange:hover {
-  box-shadow: 0 22px 42px -10px rgba(249, 115, 22, 0.38), 0 8px 18px -4px rgba(249, 115, 22, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 22px 42px -10px rgba(249, 115, 22, 0.35), 0 8px 18px -4px rgba(249, 115, 22, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.98) !important;
 }
 
 .clay-btn {
@@ -707,10 +727,12 @@ article:hover .clay-sword-gleam::before,
 @keyframes viewUniverseSwitch {
   0% {
     opacity: 0;
-    transform: translate3d(0, 20px, 0) scale(0.96);
+    filter: blur(4px);
+    transform: translate3d(0, 14px, 0) scale(0.97);
   }
   100% {
     opacity: 1;
+    filter: blur(0px);
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
@@ -737,11 +759,155 @@ article:hover .clay-sword-gleam::before,
 }
 
 .view-universe-enter {
-  animation: viewUniverseSwitch 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
-  will-change: transform, opacity;
+  animation: viewUniverseSwitch 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
 }
 
 .staggered-card-enter {
   animation: staggeredCardIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: transform, opacity;
 }
+
+@keyframes cardRefreshPulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  45% {
+    transform: scale(1.025);
+    filter: brightness(1.12) drop-shadow(0 8px 24px rgba(244, 114, 182, 0.25));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.card-refresh-pulse {
+  animation: cardRefreshPulse 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* App-level Page Slide Transitions */
+@keyframes pageSlideInLeft {
+  0% {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0) scale(0.985);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes pageSlideInRight {
+  0% {
+    opacity: 0;
+    transform: translate3d(-40px, 0, 0) scale(0.985);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.page-slide-in-left {
+  animation: pageSlideInLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
+}
+
+.page-slide-in-right {
+  animation: pageSlideInRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
+}
+
+/* 2. Soft Glow Pre-render Cross-fade */
+@keyframes pageFadeGlowIn {
+  0% {
+    opacity: 0;
+    filter: blur(8px) brightness(1.04);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0) brightness(1);
+  }
+}
+
+.page-fade-glow {
+  animation: pageFadeGlowIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, filter;
+}
+
+/* 3. 3D Spring Zoom Transition */
+@keyframes pageSpringZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translate3d(0, 8px, 0);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+.page-spring-zoom {
+  animation: pageSpringZoomIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
+}
+
+/* ==========================================================================
+   ANIMATED AURORA MESH FLUID ORBS (Living Dynamic Atmosphere)
+   ========================================================================== */
+@keyframes floatOrb1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(120px, 80px, 0) scale(1.18);
+  }
+  66% {
+    transform: translate3d(-60px, 140px, 0) scale(0.92);
+  }
+}
+
+@keyframes floatOrb2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(-140px, -60px, 0) scale(1.15);
+  }
+  66% {
+    transform: translate3d(80px, -120px, 0) scale(0.88);
+  }
+}
+
+@keyframes floatOrb3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(100px, -100px, 0) scale(1.22);
+  }
+}
+
+.aurora-orb-1 {
+  animation: floatOrb1 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.aurora-orb-2 {
+  animation: floatOrb2 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.aurora-orb-3 {
+  animation: floatOrb3 15s ease-in-out infinite alternate;
+  will-change: transform;
+}
+

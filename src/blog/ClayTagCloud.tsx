@@ -87,7 +87,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
     return result;
   }, [safeTags, searchQuery, sortMode]);
 
-  const previewLimit = 16;
+  const previewLimit = 20;
   const hasMore = processedTags.length > previewLimit;
   const displayedTags = isExpanded || searchQuery.trim().length > 0 
     ? processedTags 
@@ -109,74 +109,72 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
   const isTagFiltered = selectedTag && selectedTag !== '#all';
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-8 py-1.5 select-none w-full">
+    <div className="max-w-7xl mx-auto px-3 sm:px-8 py-3 select-none w-full">
       {/* 1. Header Toolbar Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
         
         {/* Left Title & Active Filter Chip */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.8 rounded-full border shadow-3xs transition-all duration-300 ${headerStyle.badgeBg}`}>
-            <span className="text-xs select-none">{headerStyle.icon}</span>
-            <span className="font-bubble font-extrabold text-xs">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 shadow-3xs transition-all duration-300 ${headerStyle.badgeBg}`}>
+            <span className="text-sm select-none">{headerStyle.icon}</span>
+            <span className="font-bubble font-extrabold text-xs sm:text-sm">
               {headerStyle.title}
             </span>
-            <span className="text-[11px] font-cute opacity-70">
-              ({safeTags.length})
+            <span className="text-[11px] font-bubble font-bold opacity-60">
+              ({processedTags.length})
             </span>
           </div>
 
-          {/* Active Filter Dismiss Badge */}
+          {/* Active Tag Filter Indicator */}
           {isTagFiltered && (
-            <button
-              onClick={() => {
-                playPop();
-                onSelectTag('#all');
-              }}
-              className="inline-flex items-center gap-1 px-2.5 py-0.8 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-[11px] font-bubble font-bold shadow-xs active:scale-95 transition cursor-pointer"
-              title="Click to clear filter"
-            >
-              <span>{selectedTag}</span>
-              <span className="w-3 h-3 rounded-full bg-white/20 flex items-center justify-center text-[9px]">✕</span>
-            </button>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border-2 border-rose-200/90 text-rose-700 text-xs font-bubble font-bold shadow-3xs animate-in zoom-in-95 duration-150">
+              <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+              <span>{locale === 'zh' ? '当前筛选:' : 'Filtering:'}</span>
+              <span className="underline decoration-rose-300 font-extrabold">{selectedTag}</span>
+              <button
+                onClick={() => {
+                  playPop(500);
+                  onSelectTag('#all');
+                }}
+                className="w-4 h-4 rounded-full bg-rose-200/80 hover:bg-rose-500 hover:text-white flex items-center justify-center transition cursor-pointer ml-0.5"
+                title="Clear filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Right Search & Action Cluster */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {/* Search Input Box */}
-          <div className="relative w-full sm:w-40">
-            <Search className="w-3 h-3 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        {/* Right Search Input & Sort Trigger */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Quick Search Tag Input */}
+          <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={locale === 'zh' ? '搜索标签...' : 'Search tags...'}
-              className="w-full pl-7 pr-6 py-1 bg-white/95 border border-neutral-200/80 rounded-full text-xs font-cute text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-rose-400 transition shadow-3xs"
+              className="w-36 sm:w-44 pl-8 pr-7 py-1.5 rounded-full bg-white/95 border-2 border-white focus:border-rose-300 text-xs font-cute text-neutral-800 shadow-3xs focus:outline-hidden transition-all"
             />
+            <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             {searchQuery && (
               <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  playPop(520);
-                  setSearchQuery('');
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-neutral-200 hover:bg-rose-500 hover:text-white text-neutral-600 flex items-center justify-center text-[9px] cursor-pointer transition z-10"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
               >
-                <X className="w-2 h-2" />
+                <X className="w-3 h-3" />
               </button>
             )}
           </div>
 
-          {/* Sort Switcher Button */}
+          {/* Sort Switcher */}
           <button
             onClick={cycleSortMode}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 hover:bg-pink-50 text-neutral-700 hover:text-rose-600 border border-neutral-200/80 text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
-            title="Cycle Tag Sorting Mode"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/95 hover:bg-amber-50 text-neutral-700 hover:text-amber-800 border-2 border-white text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
+            title="Switch tag sorting"
           >
-            <ArrowUpDown className="w-3 h-3 text-amber-500" />
-            <span>{getSortModeLabel()}</span>
+            <ArrowUpDown className="w-3.5 h-3.5 text-amber-500" />
+            <span className="hidden sm:inline">{getSortModeLabel()}</span>
           </button>
 
           {/* Expand / Collapse Button */}
@@ -186,7 +184,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
                 playPop(580);
                 setIsExpanded((prev) => !prev);
               }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 hover:bg-pink-50 text-neutral-600 hover:text-rose-600 border border-neutral-200/80 text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/95 hover:bg-pink-50 text-neutral-600 hover:text-rose-600 border-2 border-white text-xs font-bubble font-bold shadow-3xs transition cursor-pointer shrink-0 active:scale-95"
             >
               <span>
                 {isExpanded
@@ -197,16 +195,14 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
                   ? `全部 (${processedTags.length})`
                   : `All (${processedTags.length})`}
               </span>
-              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
           )}
         </div>
       </div>
 
-      {/* 2. Frosted Clay Tag Deck Board (Compact & Cute Pills) */}
-      <div className={`p-2.5 sm:p-3.5 rounded-[20px] sm:rounded-[24px] bg-white/85 backdrop-blur-md border-2 border-white shadow-md items-center gap-1.5 sm:gap-2 transition-all duration-300 ${
-        isExpanded ? 'flex flex-wrap' : 'flex overflow-x-auto no-scrollbar sm:flex-wrap'
-      }`}>
+      {/* 2. Delicate & Cute 3D Clay Tag Island */}
+      <div className="p-3.5 sm:p-4 rounded-[22px] sm:rounded-[26px] bg-white/90 backdrop-blur-md border-2 border-white shadow-md clay-card flex flex-wrap items-center gap-1.5 sm:gap-2 transition-all duration-300">
         
         {/* All Notes Master Pill */}
         <button
@@ -214,15 +210,15 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
             playPop(600);
             onSelectTag('#all');
           }}
-          className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.2 sm:py-1.5 rounded-full text-xs font-bubble font-bold transition-all cursor-pointer border shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.2 sm:py-1.5 rounded-full text-xs font-bubble font-bold transition-all cursor-pointer border-2 shrink-0 ${
             selectedTag === '#all'
               ? `bg-gradient-to-r ${theme.primaryGradient} text-white shadow-sm scale-102 border-white`
-              : 'bg-white text-neutral-800 border-neutral-100 hover:bg-pink-50 shadow-3xs'
+              : 'bg-white text-neutral-800 border-neutral-100 hover:bg-pink-50 hover:border-pink-200 shadow-3xs'
           }`}
         >
           <Layers className="w-3.5 h-3.5 text-amber-400" />
-          <span>{locale === 'zh' ? '全部灵感' : 'All'}</span>
-          <span className={`px-2 py-0.2 rounded-full text-[10px] sm:text-[11px] font-bubble font-bold ${
+          <span>{locale === 'zh' ? '全部灵感' : 'All Notes'}</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] sm:text-[11px] font-bubble font-bold ${
             selectedTag === '#all' ? 'bg-white/25 text-white' : 'bg-neutral-100 text-neutral-700'
           }`}>
             {totalNotesCount}
@@ -243,7 +239,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
         )}
 
         {/* Aggregated Dynamic Themed Tags */}
-        {displayedTags.map((tItem, idx) => {
+        {displayedTags.map((tItem) => {
           if (!tItem || typeof tItem.tag !== 'string') return null;
           const isSelected = selectedTag.toLowerCase() === tItem.tag.toLowerCase();
 
@@ -271,23 +267,20 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
                   onSelectTag(tItem.tag);
                 }
               }}
-              className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.2 sm:py-1.5 rounded-full text-xs font-bubble font-bold tracking-wide transition-all cursor-pointer border shadow-3xs hover:scale-105 active:scale-95 shrink-0 ${
+              className={`flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.2 rounded-full text-xs font-bubble font-bold tracking-wide transition-all cursor-pointer border shadow-3xs hover:shadow-xs hover:scale-105 active:scale-95 shrink-0 ${
                 isSelected
                   ? `bg-gradient-to-r ${theme.primaryGradient} text-white shadow-sm scale-102 border-white`
-                  : `bg-white hover:bg-neutral-50 text-neutral-800 border-neutral-100`
+                  : `bg-white hover:bg-neutral-50 text-neutral-800 border-neutral-100/90 hover:border-rose-200`
               }`}
               title={isSelected ? 'Click to unselect this tag' : `Filter by ${tItem.tag}`}
             >
-              <Hash className={`w-3 h-3 shrink-0 ${isSelected ? 'opacity-90' : 'text-rose-500'}`} />
-              <span className="leading-none">{tItem.tag.replace(/^#/, '')}</span>
-              <span className={`px-1.8 py-0.2 rounded-full text-[10px] sm:text-[11px] font-bubble font-bold ${
+              <Hash className={`w-3 h-3 ${isSelected ? 'text-white/90' : 'text-rose-500 opacity-60'}`} />
+              <span>{tItem.tag.replace(/^#/, '')}</span>
+              <span className={`px-1.5 py-0.1 rounded-full text-[10px] font-bubble font-bold ${
                 isSelected ? 'bg-white/25 text-white' : 'bg-neutral-100 text-neutral-600'
               }`}>
                 {tItem.count}
               </span>
-              {isSelected && (
-                <span className="ml-0.5 text-[10px] opacity-90 hover:opacity-100 font-bold">✕</span>
-              )}
             </button>
           );
         })}

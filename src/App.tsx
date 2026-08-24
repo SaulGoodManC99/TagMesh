@@ -40,6 +40,8 @@ import { useClayTheme } from './blog/utils/clayThemes';
 import { useAuth } from './hooks/useAuth';
 import { ClayAtmosphereCanvas } from './blog/components/ClayAtmosphereCanvas';
 
+import { PageTransitionStyle, getStoredTransitionStyle } from './blog/utils/pageTransition';
+
 type AppRoute = 'home' | 'gallery' | 'danmaku' | 'editor';
 
 export const App: React.FC = () => {
@@ -56,6 +58,15 @@ export const App: React.FC = () => {
     return 'home';
   });
 
+  const ROUTE_ORDER: Record<AppRoute, number> = {
+    home: 0,
+    gallery: 1,
+    danmaku: 2,
+    editor: 3,
+  };
+
+  const [slideDirection, setSlideDirection] = useState<'slide-left' | 'slide-right'>('slide-left');
+  const [transitionStyle, setTransitionStyle] = useState<PageTransitionStyle>(() => getStoredTransitionStyle());
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('#all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -82,20 +93,48 @@ export const App: React.FC = () => {
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash;
+      let nextRoute: AppRoute = 'home';
       if (hash.startsWith('#/editor')) {
-        setRoute('editor');
+        nextRoute = 'editor';
       } else if (hash.startsWith('#/danmaku') || hash.startsWith('#/barrage') || hash.startsWith('#/chat')) {
-        setRoute('danmaku');
+        nextRoute = 'danmaku';
       } else if (hash.startsWith('#/gallery') || hash.startsWith('#/explore') || hash.startsWith('#/blog') || hash.startsWith('#/notes') || hash.startsWith('#/post')) {
-        setRoute('gallery');
+        nextRoute = 'gallery';
       } else {
-        setRoute('home');
+        nextRoute = 'home';
       }
+
+      setRoute((prev) => {
+        if (prev !== nextRoute) {
+          const prevOrder = ROUTE_ORDER[prev] ?? 0;
+          const nextOrder = ROUTE_ORDER[nextRoute] ?? 0;
+          setSlideDirection(nextOrder >= prevOrder ? 'slide-left' : 'slide-right');
+        }
+        return nextRoute;
+      });
     };
 
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
+
+  // Listen to transition style toggle from right-click menu
+  useEffect(() => {
+    const handleStyleChange = (e: Event) => {
+      const detail = (e as CustomEvent<PageTransitionStyle>).detail;
+      if (detail) setTransitionStyle(detail);
+    };
+    window.addEventListener('tagmesh_transition_style_changed', handleStyleChange);
+    return () => window.removeEventListener('tagmesh_transition_style_changed', handleStyleChange);
+  }, []);
+
+  const transitionClass = transitionStyle === 'fade'
+    ? 'page-fade-glow'
+    : transitionStyle === 'zoom'
+    ? 'page-spring-zoom'
+    : slideDirection === 'slide-left'
+    ? 'page-slide-in-left'
+    : 'page-slide-in-right';
 
   // Initialize DB, load initial note, seed guest sample notes, and ensure author separation
   useEffect(() => {
@@ -322,6 +361,8 @@ export const App: React.FC = () => {
             setRoute('editor');
             window.location.hash = '#/editor';
           }}
+          transitionClass={transitionClass}
+          slideDirection={slideDirection}
         />
 
         {/* Command Palette available via Cmd+K */}
@@ -380,6 +421,8 @@ export const App: React.FC = () => {
             window.location.hash = '#/editor';
           }}
           onOpenShortcuts={() => setIsShortcutsOpen(true)}
+          transitionClass={transitionClass}
+          slideDirection={slideDirection}
         />
 
         {/* Command Palette available via Cmd+K */}
@@ -432,6 +475,8 @@ export const App: React.FC = () => {
             setRoute('editor');
             window.location.hash = '#/editor';
           }}
+          transitionClass={transitionClass}
+          slideDirection={slideDirection}
         />
 
         {/* Command Palette available via Cmd+K */}
@@ -526,11 +571,11 @@ export const App: React.FC = () => {
             type="button"
             onClick={() => setIsSidebarOpen((prev) => !prev)}
             className={`h-9 px-2.5 sm:px-3 rounded-full border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer font-bubble font-bold text-xs ${
-              isSidebarOpen ? 'bg-rose-50 text-rose-600' : 'bg-white/95 text-neutral-700 hover:text-pink-600'
+              isSidebarOpen ? `bg-gradient-to-r ${theme.primaryGradient} text-white border-white shadow-sm` : 'bg-white/95 text-neutral-700 hover:text-neutral-900'
             }`}
             title="Toggle Sidebar Drawer (⌘\)"
           >
-            <PanelLeft className="w-3.5 h-3.5 text-rose-500" />
+            <PanelLeft className={`w-3.5 h-3.5 ${isSidebarOpen ? 'text-white' : 'text-neutral-500'}`} />
             <span className="hidden sm:inline">{locale === 'zh' ? '笔记列表' : 'Notes'}</span>
           </button>
 

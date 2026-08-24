@@ -1,6 +1,6 @@
 {
   "name": "tagmesh-markdown",
-  "version": "1.7.5",
+  "version": "1.8.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -36,6 +36,7 @@
     "dexie-react-hooks": "^1.1.7",
     "hono": "^4.7.2",
     "lucide-react": "^0.475.0",
+    "motion": "^13.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.2",

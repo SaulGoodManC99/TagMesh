@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { motion } from 'motion/react';
 import { 
   X, 
   Copy, 
@@ -23,6 +25,7 @@ import { format24HourDateTime } from './utils/dateFormatter';
 import { useClayTheme } from './utils/clayThemes';
 import { db } from '../db/dexie';
 import { likeNoteRemote } from '../services/api';
+import { MODAL_EXPAND_VARIANTS, SPRING_MICRO } from './utils/motionSystem';
 
 export interface ClayReadingModalProps {
   note: Note | null;
@@ -121,9 +124,11 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
 
   const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-6 bg-neutral-900/60 modal-backdrop-enter select-none"
+      className="fixed inset-0 z-[300] flex items-center justify-center p-0 sm:p-6 bg-neutral-900/60 modal-backdrop-enter select-none"
       onClick={() => handleDirectClose()}
     >
       {/* Background Soft Mesh Glow synchronized with Theme */}
@@ -132,9 +137,12 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
         style={{ background: theme.glowColor }}
       />
 
-      {/* Main Note Modal Card */}
-      <div
-        className="relative w-full h-full sm:h-auto sm:max-h-[92vh] max-w-4xl bg-white/95 rounded-none sm:rounded-[40px] sm:border-4 border-white shadow-2xl clay-card flex flex-col overflow-hidden modal-card-enter backdrop-blur-xl"
+      {/* Main Note Modal Card with Spatial Spring Expansion */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 14 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 480, damping: 28, mass: 0.7 }}
+        className="relative w-full h-full sm:h-auto sm:max-h-[92vh] max-w-4xl bg-white/95 rounded-none sm:rounded-[40px] sm:border-4 border-white shadow-2xl clay-card flex flex-col overflow-hidden backdrop-blur-xl gpu-layer"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Decorative Gradient Accent Bar */}
@@ -326,7 +334,8 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             )}
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </div>,
+    document.body
   );
 };

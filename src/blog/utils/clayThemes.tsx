@@ -431,11 +431,11 @@ export const ClayThemeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     <ClayThemeContext.Provider value={{ theme, themeId, setTheme, nextTheme, switchNextTheme: nextTheme }}>
       {children}
 
-      {/* Floating Theme Switch Toast Feedback */}
+      {/* Floating Theme Switch Toast Feedback (Top-Left Safe Corner) */}
       {themeToast && typeof document !== 'undefined' && createPortal(
-        <div className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-[200] pointer-events-none popover-enter">
-          <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/98 backdrop-blur-md border-2 border-amber-300/80 shadow-2xl clay-card text-neutral-800 text-xs sm:text-sm font-bubble font-bold animate-in zoom-in-95 fade-in duration-200">
-            <span className="text-xl select-none">{themeToast.emoji}</span>
+        <div className="fixed top-16 left-4 sm:left-8 z-[200] pointer-events-none animate-in fade-in slide-in-from-top-2 slide-in-from-left-3 duration-250">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/98 backdrop-blur-md border-2 border-amber-300/80 shadow-2xl clay-card text-neutral-800 text-xs sm:text-sm font-bubble font-bold">
+            <span className="text-lg select-none">{themeToast.emoji}</span>
             <span className="text-neutral-900">
               已切换至「{themeToast.nameZh}」次元
             </span>

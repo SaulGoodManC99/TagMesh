@@ -15,6 +15,7 @@ import {
 import { ClayHeader } from './ClayHeader';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
 import { ClayFloatingActions } from './components/ClayFloatingActions';
+import { ClayGlobalContextMenu } from './components/ClayGlobalContextMenu';
 import { ClayDanmakuAdminModal } from './components/ClayDanmakuAdminModal';
 import { DanmakuItem, getStoredDanmakus, saveNewDanmaku, getDanmakuTelemetryStats, DanmakuTelemetryStats, deleteStoredDanmaku } from './data/danmakuData';
 import { filterDanmakuContent } from './data/danmakuFilter';
@@ -29,6 +30,8 @@ import { fetchDanmakusRemote, publishDanmakuRemote, likeDanmakuRemote, deleteDan
 
 export interface ClayDanmakuPlazaProps {
   onGoToEditor: () => void;
+  transitionClass?: string;
+  slideDirection?: 'slide-left' | 'slide-right';
 }
 
 interface FlyingDanmaku {
@@ -70,6 +73,8 @@ const QUICK_EMOJI_PICKS = [
 
 export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
   onGoToEditor,
+  transitionClass,
+  slideDirection = 'slide-left',
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -384,23 +389,33 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
       {/* 0. Live Ambient Atmospheric Particle World */}
       <ClayAtmosphereCanvas />
 
-      {/* Global 3D Clay Floating Action Dock */}
-      <ClayFloatingActions
-        viewMode="grid"
-        onSelectMode={(m) => {
-          window.location.hash = `#/gallery?mode=${m}`;
+      {/* Universal 3D Clay Global Right-Click & Mobile Long-Press Menu */}
+      <ClayGlobalContextMenu
+        currentRoute="danmaku"
+        onRefresh={() => {
+          playChime();
+          fetchDanmakusRemote().then((res) => {
+            if (res?.danmakus && res.danmakus.length > 0) {
+              poolRef.current = res.danmakus;
+            }
+            if (res?.stats) {
+              setTelemetry(res.stats);
+            }
+          });
         }}
         onGoToEditor={onGoToEditor}
       />
 
-      {/* 1. Top Unified Navigation Header */}
+      {/* 1. Top Unified Navigation Header (Stationary, zero sliding) */}
       <ClayHeader
         onGoToEditor={onGoToEditor}
         currentRoute="danmaku"
       />
 
-      {/* 2. Top Telemetry & Atmosphere Live Stats Row (Safe Normal Flow below Header) */}
-      <div className="w-full px-3 sm:px-6 pt-3 sm:pt-4 pb-1 z-20 flex items-center justify-center gap-2 select-none shrink-0">
+      {/* Main Danmaku Stage (Smooth Slide/Fade/Zoom Transition below stationary Header) */}
+      <div className={`w-full flex-1 flex flex-col justify-between overflow-hidden relative z-10 ${transitionClass || (slideDirection === 'slide-left' ? 'page-slide-in-left' : 'page-slide-in-right')}`}>
+        {/* 2. Top Telemetry & Atmosphere Live Stats Row (Safe Normal Flow below Header) */}
+        <div className="w-full px-3 sm:px-6 pt-3 sm:pt-4 pb-1 z-20 flex items-center justify-center gap-2 select-none shrink-0">
         <div className="inline-flex items-center gap-2 sm:gap-3 px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-white/95 backdrop-blur-md border-2 border-white shadow-md text-xs sm:text-sm font-bubble font-bold text-neutral-800">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shadow-xs shrink-0" />
           <span className="flex items-center gap-1 text-neutral-700">
@@ -748,6 +763,7 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
             </button>
           </div>
         </form>
+      </div>
       </div>
 
       {/* Admin Danmaku Moderation Modal */}

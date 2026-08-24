@@ -31,6 +31,7 @@ import { triggerConfettiShower } from '../blog/utils/confetti';
 import { ClayDeleteModal } from './ClayDeleteModal';
 import { ClayBatchDeleteModal } from './ClayBatchDeleteModal';
 import { format24HourDateTime } from '../blog/utils/dateFormatter';
+import { useClayTheme } from '../blog/utils/clayThemes';
 
 export interface TagMeshSidebarProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
   onDeleteNoteById,
 }) => {
   const { locale } = useI18n();
+  const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
   const [sidebarTab, setSidebarTab] = useState<'notes' | 'trash'>('notes');
   const [tagSearch, setTagSearch] = useState('');
@@ -284,7 +286,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                     playPop();
                     onNewNote();
                   }}
-                  className="h-8 flex items-center gap-1 px-3 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white font-bubble text-xs font-bold shadow-sm hover:shadow-md transition cursor-pointer active:scale-95 shrink-0 border border-white"
+                  className={`h-8 flex items-center gap-1 px-3 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-xs font-bold shadow-sm hover:shadow-md transition cursor-pointer active:scale-95 shrink-0 border border-white`}
                   title="New Note (⌘N)"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -464,8 +466,8 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                 }}
                 className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition cursor-pointer border shadow-3xs ${
                   selectedTag === '#all'
-                    ? 'bg-rose-500 text-white border-rose-500 shadow-sm'
-                    : 'bg-white text-neutral-700 hover:bg-pink-50 hover:text-pink-700 border-neutral-200/80'
+                    ? `bg-gradient-to-r ${theme.primaryGradient} text-white border-white/80 shadow-sm`
+                    : 'bg-white text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 border-neutral-200/80'
                 }`}
               >
                 <span>#all</span>
@@ -485,8 +487,8 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                     }}
                     className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition cursor-pointer border shadow-3xs ${
                       isSelected
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-sm'
-                        : 'bg-white text-neutral-700 hover:bg-pink-50 hover:text-pink-700 border-neutral-200/80'
+                        ? `bg-gradient-to-r ${theme.primaryGradient} text-white border-white/80 shadow-sm`
+                        : 'bg-white text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 border-neutral-200/80'
                     }`}
                   >
                     <span>{tItem.tag}</span>

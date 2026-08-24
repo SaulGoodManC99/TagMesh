@@ -20,6 +20,7 @@ import { ClayHeader } from './ClayHeader';
 import { ClayGachaModal } from './components/ClayGachaModal';
 import { ClayReadingModal } from './ClayReadingModal';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
+import { ClayGlobalContextMenu } from './components/ClayGlobalContextMenu';
 import { ClayTypewriterHeadline } from './components/ClayTypewriterHeadline';
 import { useClayTheme } from './utils/clayThemes';
 import { playPop, playSwoosh, playChime } from './utils/soundEffects';
@@ -29,6 +30,8 @@ export interface ClayLandingPortalProps {
   onGoToEditor: () => void;
   onGoToExplore: (mode?: string, tag?: string) => void;
   onGoToEditorWithNote: (note: Note) => void;
+  transitionClass?: string;
+  slideDirection?: 'slide-left' | 'slide-right';
 }
 
 const STAMP_EMOJIS = ['🐾', '🌸', '✨', '🍡', '🍮', '💖', '🍭', '🧸'];
@@ -39,6 +42,8 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
   onGoToEditor,
   onGoToExplore,
   onGoToEditorWithNote,
+  transitionClass,
+  slideDirection = 'slide-left',
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -305,14 +310,31 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       {/* 0. Live Ambient Atmospheric Particle World (Sakura, Rain, Fireflies, Stars, Zen) */}
       <ClayAtmosphereCanvas />
 
+      {/* Universal 3D Clay Global Right-Click & Mobile Long-Press Menu */}
+      <ClayGlobalContextMenu
+        currentRoute="home"
+        onRefresh={() => {
+          playChime();
+          fetchSystemTelemetry().then((data) => {
+            if (data) {
+              if (data.systemStartTime) setSystemStartTime(data.systemStartTime);
+              if (typeof data.totalVisits === 'number') setRealVisits({ total: data.totalVisits, today: data.todayVisits ?? 0 });
+              if (typeof data.stampCount === 'number') setStampCount(data.stampCount);
+            }
+          });
+        }}
+        onTriggerGacha={() => setIsGachaOpen(true)}
+        onGoToEditor={onGoToEditor}
+      />
+
       {/* 1. Top Navigation Header */}
       <ClayHeader
         onGoToEditor={onGoToEditor}
         currentRoute="home"
       />
 
-      {/* 2. Dead-Center Immersive Center Stage Gateway */}
-      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-5xl mx-auto w-full select-none py-10 sm:py-16">
+      {/* 2. Dead-Center Immersive Center Stage Gateway (Smooth Slide/Fade/Zoom Transition below stationary Header) */}
+      <main className={`flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-5xl mx-auto w-full select-none py-10 sm:py-16 ${transitionClass || (slideDirection === 'slide-left' ? 'page-slide-in-left' : 'page-slide-in-right')}`}>
         
         {/* Cute Studio Badge (Clean without trailing version) */}
         <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/95 border border-rose-200/90 text-rose-700 font-bubble text-sm sm:text-base font-bold mb-6 shadow-sm hover:scale-102 transition-transform">
@@ -340,7 +362,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             className={`flex items-center gap-2.5 px-7 sm:px-9 py-4 rounded-[26px] bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-base sm:text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card`}
           >
             <PenTool className="w-5 h-5" />
-            <span>{locale === 'zh' ? '✍️ 开启写作' : '✍️ Start Writing'}</span>
+            <span>{locale === 'zh' ? '开启写作' : 'Start Writing'}</span>
           </button>
 
           <button
@@ -351,7 +373,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-white/95 hover:bg-pink-50 text-neutral-800 hover:text-pink-600 font-bubble text-base sm:text-lg font-bold border-2 border-neutral-200/90 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
           >
             <Layers className="w-5 h-5 text-rose-500" />
-            <span>{locale === 'zh' ? '📚 漫游笔记' : '📚 Explore Notes'}</span>
+            <span>{locale === 'zh' ? '漫游笔记' : 'Explore Notes'}</span>
           </button>
 
           <button
@@ -362,7 +384,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-amber-100 hover:bg-amber-200 text-amber-950 font-bubble text-base sm:text-lg font-bold border-2 border-amber-300/90 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
           >
             <Dices className="w-5 h-5 text-amber-700 animate-spin" style={{ animationDuration: '8s' }} />
-            <span>{locale === 'zh' ? '🎲 灵感扭蛋' : '🎲 Inspiration Gacha'}</span>
+            <span>{locale === 'zh' ? '灵感扭蛋' : 'Inspiration Gacha'}</span>
           </button>
         </div>
 
