@@ -107,8 +107,26 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   const rawLength = (note.rawMarkdown || '').length;
   const isShortQuote = rawLength > 0 && rawLength < 70 && !firstImage;
   
-  // Dynamic scaling: short note = compact, long note = tall rich text preview
-  const excerptMaxChars = rawLength > 500 ? 460 : rawLength > 280 ? 320 : rawLength > 140 ? 180 : 90;
+  // 4-tier dynamic clamping and character scaling for true Xiaohongshu / Pinterest masonry
+  let clampClass = 'line-clamp-5 text-sm sm:text-base';
+  let excerptMaxChars = 220;
+
+  if (isShortQuote) {
+    clampClass = 'line-clamp-3 text-base sm:text-lg font-bold italic py-1';
+    excerptMaxChars = 80;
+  } else if (rawLength < 110) {
+    clampClass = 'line-clamp-3 text-sm sm:text-base';
+    excerptMaxChars = 100;
+  } else if (rawLength < 240) {
+    clampClass = 'line-clamp-5 text-sm sm:text-base';
+    excerptMaxChars = 220;
+  } else if (rawLength < 450) {
+    clampClass = 'line-clamp-8 text-sm sm:text-base';
+    excerptMaxChars = 420;
+  } else {
+    clampClass = 'line-clamp-12 text-sm sm:text-base';
+    excerptMaxChars = 650;
+  }
 
   return (
     <article
@@ -182,11 +200,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
         {/* Main Content Area: Pure Rendered Markdown Stream */}
         <div 
-          className={`overflow-hidden transition-all duration-300 font-cute text-neutral-800 dark:text-neutral-100 font-medium antialiased ${
-            isShortQuote
-              ? 'text-base sm:text-lg font-bold italic line-clamp-3 leading-relaxed py-1'
-              : 'text-sm sm:text-base leading-relaxed line-clamp-5'
-          }`}
+          className={`overflow-hidden transition-all duration-300 font-cute text-neutral-800 dark:text-neutral-100 font-medium antialiased leading-relaxed ${clampClass}`}
         >
           {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
         </div>

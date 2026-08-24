@@ -20,11 +20,11 @@ export const BentoGridView: React.FC<BentoGridViewProps> = ({
   if (notes.length === 0) return null;
 
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5 sm:gap-6 w-full [column-fill:_balance] animate-in fade-in duration-200">
+    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5 sm:gap-6 w-full animate-in fade-in duration-200">
       {notes.map((note, idx) => (
         <div 
           key={note.id} 
-          className="break-inside-avoid mb-5 sm:mb-6 w-full"
+          className="break-inside-avoid inline-block mb-5 sm:mb-6 w-full"
         >
           <ClayNoteCard
             note={note}
