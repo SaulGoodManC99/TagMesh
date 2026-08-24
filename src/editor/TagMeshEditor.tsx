@@ -410,14 +410,14 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
 
         {/* 🗑️ Trash Note Preview Banner */}
         {isTrashNote && (
-          <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-stone-100 border-2 border-stone-300 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-cute text-stone-800 select-none animate-in fade-in">
+          <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-stone-100 dark:bg-neutral-800 border-2 border-stone-300 dark:border-white/10 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-cute text-stone-800 dark:text-neutral-200 select-none animate-in fade-in">
             <div className="flex items-center gap-3">
               <span className="text-3xl select-none">🗑️</span>
               <div>
-                <div className="font-bubble font-bold text-sm sm:text-base text-stone-900 flex items-center gap-1.5">
+                <div className="font-bubble font-bold text-sm sm:text-base text-stone-900 dark:text-white flex items-center gap-1.5">
                   <span>{locale === 'zh' ? '废纸篓预览 • 该笔记已被删除（只读预览中）' : 'Trash Preview • Note is in Recycle Bin'}</span>
                 </div>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-xs text-stone-600 dark:text-neutral-400 mt-0.5">
                   {locale === 'zh'
                     ? '若想继续编辑，请点击右侧「恢复放回工作台」，或点击「永久粉碎」彻底清除。'
                     : 'Click Restore to put back into active workspace, or Purge to delete permanently.'}
@@ -443,18 +443,18 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
 
         {/* 🔒 Guest Mode Protection Banner for Admin/Other Notes (when not in trash) */}
         {!isTrashNote && isNoteProtected && (
-          <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-50/95 border-2 border-amber-300 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-cute text-amber-900 select-none animate-in fade-in">
+          <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-50/95 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-700/60 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-cute text-amber-900 dark:text-amber-200 select-none animate-in fade-in">
             <div className="flex items-center gap-3">
               <span className="text-3xl select-none">🔒</span>
               <div>
-                <div className="font-bubble font-bold text-sm sm:text-base text-neutral-900 flex items-center gap-1.5">
+                <div className="font-bubble font-bold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
                   <span>
                     {note?.isOfficial || note?.author === 'admin'
                       ? (locale === 'zh' ? '👑 馆长官方精选笔记 • 只读保护生效中' : '👑 Curator Card • Read-Only Active')
                       : (locale === 'zh' ? '🔒 他人笔记 • 游客只读保护生效中' : '🔒 Protected Note • Read-Only Active')}
                   </span>
                 </div>
-                <p className="text-xs text-amber-800 mt-0.5">
+                <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
                   {locale === 'zh'
                     ? '当前为游客模式，不可修改他人笔记。请点击右上角「新建」创建属于你的专属灵感笔记！'
                     : 'Other notes are protected from editing in guest mode. Click "New" to start your own note!'}
@@ -464,7 +464,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
             <button
               type="button"
               onClick={openAuthModal}
-              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 text-neutral-900 font-bubble font-extrabold text-xs shadow-xs hover:scale-105 active:scale-95 transition shrink-0 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-amber-400 dark:bg-amber-500 hover:bg-amber-500 text-neutral-900 font-bubble font-extrabold text-xs shadow-xs hover:scale-105 active:scale-95 transition shrink-0 cursor-pointer"
             >
               {locale === 'zh' ? '👑 登录馆长解锁' : '👑 Admin Unlock'}
             </button>
@@ -472,18 +472,18 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
         )}
 
         {/* 1. Top Clean Meta Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-amber-900/10 select-none text-sm font-cute text-neutral-500">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-amber-900/10 dark:border-white/10 select-none text-sm font-cute text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-2xl select-none">✍️</span>
-            <span className="font-bubble font-bold text-neutral-800 text-base sm:text-lg">
+            <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100 text-base sm:text-lg">
               {formattedDate}
             </span>
             {note?.author === 'admin' ? (
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs">
+              <span className="px-2.5 py-0.5 rounded-xl bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs">
                 👑 馆长精选
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs">
+              <span className="px-2.5 py-0.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bubble font-bold border border-emerald-200 dark:border-emerald-800 shadow-3xs">
                 🌱 旅人笔记
               </span>
             )}
@@ -498,7 +498,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                   playPop(580);
                   setEmojiPickerOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500/10 to-amber-500/10 hover:from-pink-500/20 hover:to-amber-500/20 text-rose-600 border border-rose-200/80 text-xs font-bubble font-bold transition-all cursor-pointer active:scale-95 shadow-3xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60 text-xs font-bubble font-bold transition-all cursor-pointer active:scale-95 shadow-3xs"
                 title={locale === 'zh' ? '插入情绪表情与手势' : 'Insert Emojis & Gestures'}
               >
                 <Smile className="w-3.5 h-3.5 text-rose-500" />
@@ -529,7 +529,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                     playPop(560);
                     fileInputRef.current?.click();
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-sky-500/10 to-indigo-500/10 hover:from-sky-500/20 hover:to-indigo-500/20 text-sky-700 border border-sky-200/80 text-xs font-bubble font-bold transition-all cursor-pointer active:scale-95 shadow-3xs disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-900/60 text-xs font-bubble font-bold transition-all cursor-pointer active:scale-95 shadow-3xs disabled:opacity-50"
                   title={locale === 'zh' ? '上传图片至 R2 (支持直接 Ctrl+V 粘贴截图)' : 'Upload image to R2 (Ctrl+V supported)'}
                 >
                   {isUploadingImage ? (
@@ -548,11 +548,11 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
 
             <span className="flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-amber-500" />
-              <span className="font-mono font-bold text-neutral-700">{note?.wordCount || 0}</span> {locale === 'zh' ? '字' : 'words'}
+              <span className="font-bubble font-bold text-neutral-700 dark:text-neutral-300">{note?.wordCount || 0}</span> {locale === 'zh' ? '字' : 'words'}
             </span>
             <span>•</span>
             <span className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-neutral-700">{note?.charCount || 0}</span> {locale === 'zh' ? '字符' : 'chars'}
+              <span className="font-bubble font-bold text-neutral-700 dark:text-neutral-300">{note?.charCount || 0}</span> {locale === 'zh' ? '字符' : 'chars'}
             </span>
           </div>
         </div>
@@ -563,26 +563,26 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
         </div>
 
         {/* 4. Bottom 3D Macaron Pill Tag Dock (精美轻盈的灵感胶囊收纳盒) */}
-        <div className="mt-6 sm:mt-12 pt-4 sm:pt-6 border-t border-amber-900/10 select-none">
+        <div className="mt-6 sm:mt-12 pt-4 sm:pt-6 border-t border-amber-900/10 dark:border-white/10 select-none">
           <div className="flex items-center justify-between mb-2.5 sm:mb-3.5">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bubble font-bold text-neutral-800">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl sm:rounded-2xl bg-gradient-to-br from-pink-400 to-rose-400 text-white flex items-center justify-center shadow-xs">
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-bubble font-bold text-neutral-800 dark:text-neutral-100">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs">
                 <TagIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </div>
               <span>{locale === 'zh' ? '灵感标签收纳盒' : 'Tag Capsule Dock'}</span>
-              <span className="flex items-center gap-1 text-[11px] sm:text-xs text-rose-600 bg-rose-50 px-2 sm:px-2.5 py-0.5 rounded-full font-mono font-bold border border-rose-200">
+              <span className="flex items-center gap-1 text-[11px] sm:text-xs text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/80 px-2 sm:px-2.5 py-0.5 rounded-xl font-bubble font-bold border border-rose-200 dark:border-rose-900">
                 <ArrowDownAZ className="w-3 h-3" />
                 <span>{sortedActiveTags.length}</span>
               </span>
             </div>
 
-            <span className="text-xs font-cute text-neutral-400 hidden sm:inline">
+            <span className="text-xs font-cute text-neutral-400 dark:text-neutral-500 hidden sm:inline">
               {locale === 'zh' ? '正文中敲击 #标签 自动吸附收纳于此' : 'Type #tag in text to auto-absorb here'}
             </span>
           </div>
 
           {/* Sleek Horizontal Wrapping Macaron Candy Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             {sortedActiveTags.map((tg) => {
               const colorClass = getTagColorClass(tg);
               const tagDbInfo = allDbTags.find(t => t.tag.toLowerCase() === tg.toLowerCase());
@@ -590,7 +590,13 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
               return (
                 <div
                   key={tg}
-                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+                      document.activeElement.blur();
+                    }
+                  }}
                   onTouchStart={(e) => {
                     e.stopPropagation();
                     if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
@@ -606,14 +612,14 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                     playPop(620);
                     onTagClick?.(tg);
                   }}
-                  className={`group/tag inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border shadow-3xs cursor-pointer transition-all hover:scale-105 active:scale-95 ${colorClass}`}
+                  className={`group/tag inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border shadow-3xs cursor-pointer transition-all hover:scale-105 active:scale-95 ${colorClass}`}
                 >
                   <Hash className="w-3.5 h-3.5 opacity-60" />
                   <span className="font-mono font-bold text-xs sm:text-[13px] leading-none">
                     {tg.replace(/^#/, '')}
                   </span>
                   {tagDbInfo && tagDbInfo.count > 1 && (
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-white/70 text-neutral-700">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md bg-white/70 text-neutral-700">
                       {tagDbInfo.count}
                     </span>
                   )}
@@ -623,7 +629,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                     <button
                       type="button"
                       onClick={(e) => handleRemoveTag(tg, e)}
-                      className="ml-0.5 p-0.5 rounded-full hover:bg-black/15 text-neutral-500 hover:text-rose-700 transition cursor-pointer"
+                      className="ml-0.5 p-0.5 rounded-md hover:bg-black/15 text-neutral-500 hover:text-rose-700 transition cursor-pointer"
                       title="Remove tag"
                     >
                       <X className="w-3 h-3" />
@@ -637,7 +643,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
             {!isNoteProtected && (
               <>
                 {isAddingTag ? (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-rose-300 shadow-sm animate-in fade-in">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white dark:bg-neutral-800 border border-rose-300 dark:border-rose-700 shadow-sm animate-in fade-in">
                     <span className="text-neutral-400 font-mono text-xs font-bold">#</span>
                     <input
                       ref={tagInputRef}
@@ -649,20 +655,20 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                         if (e.key === 'Escape') setIsAddingTag(false);
                       }}
                       placeholder={locale === 'zh' ? '输入标签名...' : 'Tag name...'}
-                      className="bg-transparent font-mono text-neutral-800 text-xs focus:outline-none w-28"
+                      className="bg-transparent font-mono text-neutral-800 dark:text-neutral-100 text-xs focus:outline-none w-28"
                       autoFocus
                     />
                     <button
                       type="button"
                       onClick={(e) => handleAppendTag(newTagInput, e)}
-                      className="p-1 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition cursor-pointer"
+                      className="p-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-white transition cursor-pointer"
                     >
                       <Check className="w-3 h-3" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsAddingTag(false)}
-                      className="p-1 rounded-full bg-neutral-200 text-neutral-600 hover:bg-neutral-300 transition cursor-pointer"
+                      className="p-1 rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-300 transition cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -674,7 +680,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                       playPop(560);
                       setIsAddingTag(true);
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white hover:bg-pink-50 text-neutral-600 hover:text-rose-600 font-bubble text-xs font-bold border border-neutral-200 shadow-3xs transition cursor-pointer active:scale-95"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-pink-50 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:text-rose-600 dark:hover:text-rose-400 font-bubble text-xs font-bold border border-neutral-200 dark:border-white/10 shadow-3xs transition cursor-pointer active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5 text-rose-500" />
                     <span>{locale === 'zh' ? '加标签' : 'Add Tag'}</span>

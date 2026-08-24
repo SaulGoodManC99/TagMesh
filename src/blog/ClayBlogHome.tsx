@@ -473,13 +473,15 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       </div>
 
       {/* Searchable & Multi-Sort Interactive Tag Mesh Pills */}
-      <ClayTagCloud
-        tags={authorTagCounts}
-        totalNotesCount={authorFilter === 'admin' ? adminNotesCount : authorFilter === 'guest' ? guestNotesCount : totalNotes}
-        selectedTag={selectedTag}
-        onSelectTag={(tg) => handleSelectTagWithTransition(tg)}
-        authorFilter={authorFilter}
-      />
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 w-full select-none">
+        <ClayTagCloud
+          tags={authorTagCounts}
+          totalNotesCount={authorFilter === 'admin' ? adminNotesCount : authorFilter === 'guest' ? guestNotesCount : totalNotes}
+          selectedTag={selectedTag}
+          onSelectTag={(tg) => handleSelectTagWithTransition(tg)}
+          authorFilter={authorFilter}
+        />
+      </div>
 
       {/* Main Full-Width Immersive 5-View Showcase Canvas */}
       <main className="w-full max-w-[1750px] mx-auto px-3 sm:px-8 pl-4 sm:pl-20 md:pl-24 py-4 flex-1">
@@ -596,27 +598,31 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       />
 
       {/* Clean & Elegant Minimal Gallery Footer */}
-      <footer className="mt-12 py-8 px-4 border-t border-amber-900/10 bg-[#fdfbf7]/90 text-center select-none">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-cute text-neutral-500">
+      <footer 
+        style={{ backgroundColor: `${theme.headerBg}ee` }}
+        className="mt-12 py-8 px-4 border-t border-amber-900/10 dark:border-white/10 backdrop-blur-xl text-center select-none transition-colors duration-500"
+      >
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-cute text-neutral-600 dark:text-neutral-300">
           <div className="flex items-center gap-2.5 flex-wrap justify-center md:justify-start">
-            <span className="font-bubble font-bold text-neutral-700">TagMesh {APP_VERSION}</span>
-            <span>•</span>
+            <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100">TagMesh {APP_VERSION}</span>
+            <span className="text-neutral-400 dark:text-neutral-600">•</span>
             <span>{totalNotes} {locale === 'zh' ? '篇笔记' : 'notes'}</span>
-            <span>•</span>
+            <span className="text-neutral-400 dark:text-neutral-600">•</span>
             <span>{totalTags} {locale === 'zh' ? '个标签' : 'tags'}</span>
-            <span>•</span>
+            <span className="text-neutral-400 dark:text-neutral-600">•</span>
             <span>{totalWords.toLocaleString()} {locale === 'zh' ? '字' : 'words'}</span>
-            <span>•</span>
-            <span className="text-neutral-400">☁️ {locale === 'zh' ? '部署时间' : 'Deployed'}: {getFormattedBuildTime(locale)}</span>
+            <span className="text-neutral-400 dark:text-neutral-600">•</span>
+            <span className="text-neutral-500 dark:text-neutral-400 font-bubble">☁️ {locale === 'zh' ? '部署时间' : 'Deployed'}: {getFormattedBuildTime(locale)}</span>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 text-neutral-600 flex-wrap justify-center">
+          <div className="flex items-center gap-2.5 sm:gap-3 text-neutral-700 dark:text-neutral-200 flex-wrap justify-center font-bubble">
             {onOpenShortcuts && (
               <button
                 onClick={onOpenShortcuts}
-                className="hover:text-rose-600 transition cursor-pointer font-bold"
+                className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-rose-50 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:text-rose-600 dark:hover:text-rose-300 border border-neutral-200/80 dark:border-white/10 text-xs font-bold clay-btn shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1.5"
               >
-                {locale === 'zh' ? '⌨️ 快捷键速查 (⌘/)' : 'Shortcuts (⌘/)'}
+                <span>⌨️</span>
+                <span>{locale === 'zh' ? '快捷键速查 (⌘/)' : 'Shortcuts (⌘/)'}</span>
               </button>
             )}
 
@@ -625,9 +631,10 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
                 playPop();
                 window.location.hash = '#/';
               }}
-              className="hover:text-pink-600 transition cursor-pointer font-bold"
+              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-pink-50 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:text-pink-600 dark:hover:text-pink-300 border border-neutral-200/80 dark:border-white/10 text-xs font-bold clay-btn shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1.5"
             >
-              {locale === 'zh' ? '🏰 返回乐园首页' : '🏰 Home Portal'}
+              <span>🏰</span>
+              <span>{locale === 'zh' ? '返回乐园首页' : 'Home Portal'}</span>
             </button>
 
             <button
@@ -635,7 +642,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
                 playPop();
                 openAuthModal();
               }}
-              className="px-3 py-1 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 font-bubble font-bold text-xs shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1"
+              className="px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 border border-amber-200/80 dark:border-amber-700/60 font-bubble font-bold text-xs shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1.5 clay-btn"
             >
               <span>👑</span>
               <span>{isAdmin ? (locale === 'zh' ? '馆长数据控制台' : 'Admin Console') : (locale === 'zh' ? '馆长入口' : 'Admin Portal')}</span>

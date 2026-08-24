@@ -50,14 +50,14 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
     }
   };
 
-  let basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
-  let activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs ${theme.activeBtnClass} hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
+  let basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-bold text-xs bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+  let activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl font-bubble font-extrabold text-xs ${theme.activeBtnClass} shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
 
   if (buttonStyle === 'clay') {
-    activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r ${theme.primaryGradient} text-white border-2 border-white/90 dark:border-white/30 shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
+    activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl font-bubble font-extrabold text-xs ${theme.activeBtnClass} shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
   } else if (buttonStyle === 'glass') {
-    basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/30 dark:bg-white/5 backdrop-blur-md text-neutral-700 dark:text-neutral-200 hover:bg-white/50 dark:hover:bg-white/10 border border-white/40 dark:border-white/10 shadow-3xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
-    activePillClass = "h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs bg-white/70 dark:bg-white/20 backdrop-blur-xl text-neutral-950 dark:text-white border-2 border-white/90 dark:border-white/40 shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+    basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-bold text-xs bg-white/30 dark:bg-white/5 backdrop-blur-md text-neutral-700 dark:text-neutral-200 hover:bg-white/50 dark:hover:bg-white/10 border border-white/40 dark:border-white/10 shadow-3xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+    activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl font-bubble font-extrabold text-xs ${theme.activeBtnClass} shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
   }
 
   return (
@@ -74,7 +74,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
           }}
           className="flex items-center gap-2 sm:gap-3 cursor-pointer group select-none shrink-0"
         >
-          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br ${theme.primaryGradient} clay-btn flex items-center justify-center text-white shadow-md group-hover:rotate-12 group-hover:scale-110 transition-transform`}>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-rose-500 flex items-center justify-center text-white shadow-md group-hover:rotate-12 group-hover:scale-110 transition-transform">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
@@ -104,7 +104,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             className={currentRoute === 'home' ? activePillClass : basePillClass}
             title={locale === 'zh' ? '返回乐园首页' : 'Return Home'}
           >
-            <Home className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'home' ? 'text-white' : 'text-pink-500'}`} />
+            <Home className="w-3.5 h-3.5 text-pink-500" />
             <span>{locale === 'zh' ? '首页' : 'Home'}</span>
           </motion.button>
 
@@ -121,12 +121,12 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             className={currentRoute === 'gallery' ? activePillClass : basePillClass}
             title={locale === 'zh' ? '进入笔记' : 'Enter Notes'}
           >
-            <Layers className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'gallery' ? 'text-white' : 'text-amber-500'}`} />
+            <Layers className="w-3.5 h-3.5 text-amber-500" />
             <span>{locale === 'zh' ? '笔记' : 'Notes'}</span>
           </motion.button>
 
           {/* 3. Danmaku Plaza */}
-          {(danmakuEnabled || isAdmin) && (
+          {danmakuEnabled && (
             <motion.button
               type="button"
               whileHover={{ scale: 1.05, y: -1 }}
@@ -139,7 +139,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               className={currentRoute === 'danmaku' ? activePillClass : basePillClass}
               title={locale === 'zh' ? '前往灵感弹幕广场' : 'Enter Danmaku Plaza'}
             >
-              <MessageSquare className={`w-3.5 h-3.5 ${buttonStyle === 'clay' && currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
+              <MessageSquare className="w-3.5 h-3.5 text-cyan-500" />
               <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku'}</span>
             </motion.button>
           )}
@@ -156,8 +156,8 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             }}
             className={
               isAdmin
-                ? "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-neutral-900 border border-amber-300 shadow-sm flex items-center gap-1.5 cursor-pointer shrink-0"
-                : "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-3xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                ? "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-extrabold text-xs bg-amber-400 dark:bg-amber-500 text-neutral-900 border border-amber-300 dark:border-amber-400 shadow-3xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                : "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-bold text-xs bg-emerald-50/90 dark:bg-emerald-950/80 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-3xs flex items-center gap-1.5 cursor-pointer shrink-0"
             }
             title={isAdmin ? 'Admin' : 'Guest'}
           >
@@ -173,7 +173,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               whileTap={{ scale: 0.93 }}
               transition={SPRING_MICRO}
               onClick={handleGoEditor}
-              className={`h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-xs border border-white/60 shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer shrink-0`}
+              className="h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white font-bubble font-bold text-xs border border-rose-400/80 dark:border-rose-500/50 shadow-3xs hover:shadow-md flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <PenTool className="w-3.5 h-3.5" />
               <span>{locale === 'zh' ? '工作台 ➜' : 'Workspace ➜'}</span>
@@ -192,8 +192,8 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             }}
             className={
               isAdmin
-                ? "h-8.5 px-3 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-neutral-900 border border-amber-300 shadow-sm active:scale-90 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                : "h-8.5 px-3 rounded-full font-bubble font-bold text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-3xs active:scale-90 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                ? "h-8.5 px-3 rounded-xl font-bubble font-extrabold text-xs bg-amber-400 dark:bg-amber-500 text-neutral-900 border border-amber-300 dark:border-amber-400 shadow-3xs active:scale-90 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                : "h-8.5 px-3 rounded-xl font-bubble font-bold text-xs bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-3xs active:scale-90 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
             }
           >
             <span>{isAdmin ? '👑 馆长' : '🌱 游客'}</span>
@@ -206,7 +206,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               playPop(550);
               setIsMobileMenuOpen(true);
             }}
-            className={`h-8.5 px-3.5 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white border border-white/60 shadow-sm flex items-center gap-1.5 text-xs font-bubble font-extrabold cursor-pointer active:scale-90`}
+            className="h-8.5 px-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white border border-rose-400 shadow-3xs flex items-center gap-1.5 text-xs font-bubble font-extrabold cursor-pointer active:scale-90"
             title="Open Menu"
           >
             <Menu className="w-3.5 h-3.5" />
@@ -288,7 +288,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
                 <ChevronRight className={`w-4 h-4 ${currentRoute === 'gallery' ? 'text-white/80' : 'text-neutral-400'}`} />
               </button>
 
-              {(danmakuEnabled || isAdmin) && (
+              {danmakuEnabled && (
                 <button
                   onClick={() => {
                     playPop();

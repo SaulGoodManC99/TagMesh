@@ -53,7 +53,7 @@ export function renderInlineContent(
           src={imgMatch[2]}
           alt={imgMatch[1]}
           title={imgMatch[1]}
-          className="inline-block h-8 w-8 object-contain align-middle mx-0.5 rounded-lg border border-white/80 shadow-xs hover:scale-125 transition-transform"
+          className="inline-block h-8 w-8 object-contain align-middle mx-0.5 rounded-lg border border-white/80 dark:border-white/10 shadow-xs hover:scale-125 transition-transform"
         />
       );
     }
@@ -62,7 +62,7 @@ export function renderInlineContent(
     if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
       const inner = part.slice(2, -2);
       return (
-        <strong key={idx} className="md-bold font-bold text-neutral-950 not-italic">
+        <strong key={idx} className="md-bold font-bold text-neutral-950 dark:text-white not-italic">
           {inner}
         </strong>
       );
@@ -72,7 +72,7 @@ export function renderInlineContent(
     if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
       const inner = part.slice(1, -1);
       return (
-        <code key={idx} className="candy-inline-code font-mono">
+        <code key={idx} className="candy-inline-code font-cute">
           {inner}
         </code>
       );
@@ -87,7 +87,7 @@ export function renderInlineContent(
           href={linkMatch[2]}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-0.5 text-rose-600 font-semibold underline underline-offset-4 decoration-rose-300 hover:decoration-rose-500 transition-colors"
+          className="inline-flex items-center gap-0.5 text-rose-600 dark:text-rose-400 font-semibold underline underline-offset-4 decoration-rose-300 dark:decoration-rose-500 hover:decoration-rose-500 transition-colors"
         >
           <span>{linkMatch[1]}</span>
           <ExternalLink className="w-3.5 h-3.5 inline ml-0.5" />
@@ -119,14 +119,14 @@ export function renderInlineContent(
               onTagClick(tagTrimmed.toLowerCase());
             }
           }}
-          className="candy-inline-tag font-mono cursor-pointer"
+          className="candy-inline-tag font-bubble cursor-pointer"
         >
           {tagTrimmed}
         </span>
       );
     }
 
-    return <span key={idx} className="font-medium text-neutral-800">{part}</span>;
+    return <span key={idx} className="font-medium text-neutral-800 dark:text-neutral-200">{part}</span>;
   });
 }
 
@@ -146,21 +146,21 @@ const CodeBlockItem: React.FC<{ code: string; language?: string }> = ({ code, la
   };
 
   return (
-    <div className="my-6 sm:my-8 rounded-[28px] overflow-hidden border-3 border-neutral-800 bg-neutral-950 shadow-2xl select-text">
+    <div className="my-6 sm:my-8 rounded-[28px] overflow-hidden border-3 border-neutral-800 dark:border-white/10 bg-neutral-950 shadow-2xl select-text">
       {/* Terminal Bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-neutral-900 border-b border-neutral-800 select-none">
         <div className="flex items-center gap-2">
           <span className="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shadow-xs" />
           <span className="w-3.5 h-3.5 rounded-full bg-amber-400 inline-block shadow-xs" />
           <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 inline-block shadow-xs" />
-          <span className="ml-2 font-mono text-xs text-neutral-400 font-semibold tracking-wider">
+          <span className="ml-2 font-bubble text-xs text-neutral-400 font-semibold tracking-wider">
             {language || 'CODE / MARKDOWN'}
           </span>
         </div>
 
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-mono transition cursor-pointer border border-neutral-700"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-bubble transition cursor-pointer border border-neutral-700"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
           <span>{copied ? 'Copied!' : 'Copy'}</span>
@@ -168,7 +168,7 @@ const CodeBlockItem: React.FC<{ code: string; language?: string }> = ({ code, la
       </div>
 
       {/* Code Text */}
-      <pre className="p-5 sm:p-6 text-cyan-300 font-mono text-sm sm:text-[15px] overflow-x-auto leading-relaxed">
+      <pre className="p-5 sm:p-6 text-pink-300 dark:text-pink-200 font-cute text-sm sm:text-[15px] overflow-x-auto leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>
@@ -251,55 +251,44 @@ function parseMarkdownToBlocks(markdown: string): string[] {
 }
 
 /**
- * Rich Block-level Markdown Renderer with Ultra-Round Zen Typography and Enlarged Reading Sizes
+ * Complete rich-text Markdown Renderer for Note Detail Modal / Full Post
  */
-export function renderRichMarkdown(
+export function renderMarkdownToBlocks(
   markdown: string,
-  options?: MarkdownRenderOptions
+  options: MarkdownRenderOptions = {}
 ): React.ReactNode[] {
   if (!markdown) return [];
 
-  const onTagClick = options?.onTagClick;
-  const stripFirstHeading = options?.stripFirstHeading ?? false;
+  const { onTagClick, stripFirstHeading = false } = options;
   const blocks = parseMarkdownToBlocks(markdown);
+  let hasSkippedFirstH1 = !stripFirstHeading;
 
-  let skippedFirstHeading = false;
-
-  return blocks.map((blk, idx) => {
-    const trimmed = blk.trim();
-    if (!trimmed) return null;
-
-    // Skip the very first H1 if requested (to prevent duplicate title on top of modal)
-    if (stripFirstHeading && !skippedFirstHeading) {
-      if (trimmed.startsWith('# ')) {
-        skippedFirstHeading = true;
-        return null;
-      }
-    }
+  return blocks.map((block, idx) => {
+    const trimmed = block.trim();
 
     // H1 Heading
     if (trimmed.startsWith('# ')) {
+      if (!hasSkippedFirstH1) {
+        hasSkippedFirstH1 = true;
+        return null;
+      }
       const content = trimmed.replace(/^#\s+/, '');
       return (
-        <div key={idx} className="mt-10 mb-5">
-          <h1 className="font-bubble text-2xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight leading-tight flex items-center gap-2">
-            <span>{renderInlineContent(content, onTagClick)}</span>
-          </h1>
-          <div className="h-1.5 w-24 bg-gradient-to-r from-rose-400 to-amber-300 rounded-full mt-3" />
-        </div>
+        <h1 key={idx} className="font-bubble text-2xl sm:text-4xl font-extrabold text-neutral-950 dark:text-white mt-8 mb-4 tracking-tight leading-tight">
+          {renderInlineContent(content, onTagClick)}
+        </h1>
       );
     }
 
-    // H2 Heading (Section)
+    // H2 Heading (Section Divider)
     if (trimmed.startsWith('## ')) {
       const content = trimmed.replace(/^##\s+/, '');
       return (
         <div key={idx} className="mt-8 mb-4">
-          <h2 className="font-bubble text-xl sm:text-3xl font-extrabold text-neutral-800 tracking-tight leading-snug flex items-center gap-2">
-            <span className="text-rose-500 text-base select-none">✦</span>
+          <h2 className="font-bubble text-xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
             <span>{renderInlineContent(content, onTagClick)}</span>
           </h2>
-          <div className="h-1 w-full bg-neutral-200/70 rounded-full mt-2.5" />
+          <div className="h-1 w-full bg-neutral-200/70 dark:bg-white/10 rounded-full mt-2.5" />
         </div>
       );
     }
@@ -308,7 +297,7 @@ export function renderRichMarkdown(
     if (trimmed.startsWith('### ')) {
       const content = trimmed.replace(/^###\s+/, '');
       return (
-        <h3 key={idx} className="font-bubble text-lg sm:text-2xl font-bold text-neutral-800 mt-6 mb-3">
+        <h3 key={idx} className="font-bubble text-lg sm:text-2xl font-bold text-neutral-800 dark:text-neutral-100 mt-6 mb-3">
           {renderInlineContent(content, onTagClick)}
         </h3>
       );
@@ -320,7 +309,7 @@ export function renderRichMarkdown(
       return (
         <blockquote
           key={idx}
-          className="border-l-4 border-amber-400 bg-amber-50/60 p-5 sm:p-7 rounded-3xl my-5 text-neutral-800/95 leading-[2.0] font-medium text-[17px] sm:text-[18.5px] shadow-3xs"
+          className="border-l-4 border-amber-400 dark:border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 p-5 sm:p-7 rounded-3xl my-5 text-neutral-800/95 dark:text-neutral-200 leading-[2.0] font-medium text-[17px] sm:text-[18.5px] shadow-3xs"
         >
           <div>{renderInlineContent(content, onTagClick)}</div>
         </blockquote>
@@ -347,12 +336,12 @@ export function renderRichMarkdown(
               <li key={lidx} className="flex items-start gap-3.5 text-[17.5px] sm:text-[18.5px] leading-[2.0] font-medium">
                 <span
                   className={`w-5 h-5 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-1 transition-colors ${
-                    isChecked ? 'bg-emerald-500 text-white shadow-xs' : 'border-2 border-neutral-300 bg-white'
+                    isChecked ? 'bg-emerald-500 text-white shadow-xs' : 'border-2 border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800'
                   }`}
                 >
                   {isChecked ? '✓' : ''}
                 </span>
-                <span className={isChecked ? 'line-through text-neutral-400' : 'text-neutral-800'}>
+                <span className={isChecked ? 'line-through text-neutral-400 dark:text-neutral-500' : 'text-neutral-800 dark:text-neutral-200'}>
                   {renderInlineContent(text, onTagClick)}
                 </span>
               </li>
@@ -371,8 +360,8 @@ export function renderRichMarkdown(
             const cleanText = ln.replace(/^[-*]\s*/, '');
             return (
               <li key={lidx} className="flex items-start gap-3">
-                <span className="w-2 h-2 rounded-full bg-rose-400 mt-2.5 shrink-0 inline-block select-none" />
-                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-800 leading-[2.0] font-medium">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-400 dark:bg-rose-500 mt-2.5 shrink-0 inline-block select-none" />
+                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-800 dark:text-neutral-200 leading-[2.0] font-medium">
                   {renderInlineContent(cleanText, onTagClick)}
                 </div>
               </li>
@@ -391,10 +380,10 @@ export function renderRichMarkdown(
             const cleanText = ln.replace(/^\d+\.\s*/, '');
             return (
               <li key={lidx} className="flex items-start gap-3">
-                <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-mono text-xs font-bold shrink-0 mt-1 border border-rose-200 select-none">
+                <span className="px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-300 font-bubble text-xs font-bold shrink-0 mt-1 border border-rose-200 dark:border-rose-900 select-none">
                   {lidx + 1}
                 </span>
-                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-800 leading-[2.0] font-medium">
+                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-800 dark:text-neutral-200 leading-[2.0] font-medium">
                   {renderInlineContent(cleanText, onTagClick)}
                 </div>
               </li>
@@ -408,7 +397,7 @@ export function renderRichMarkdown(
     if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
       return (
         <div key={idx} className="my-8 flex items-center justify-center">
-          <div className="w-full border-t-2 border-dashed border-rose-200" />
+          <div className="w-full border-t-2 border-dashed border-rose-200 dark:border-white/10" />
         </div>
       );
     }
@@ -417,10 +406,10 @@ export function renderRichMarkdown(
     const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
     if (imgMatch) {
       return (
-        <div key={idx} className="my-8 rounded-[32px] overflow-hidden shadow-2xl border-4 border-white">
+        <div key={idx} className="my-8 rounded-[32px] overflow-hidden shadow-2xl border-4 border-white dark:border-white/10">
           <img src={imgMatch[2]} alt={imgMatch[1]} className="w-full h-auto object-cover" />
           {imgMatch[1] && (
-            <p className="text-center text-xs text-neutral-500 py-3 bg-neutral-50 border-t border-neutral-100 font-medium">
+            <p className="text-center text-xs text-neutral-500 dark:text-neutral-400 py-3 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-100 dark:border-white/10 font-medium">
               {imgMatch[1]}
             </p>
           )}
@@ -430,7 +419,7 @@ export function renderRichMarkdown(
 
     // Standard Paragraph with 2.0x line-height and comfortable 18px ~ 19px sizing
     return (
-      <p key={idx} className="text-[17.5px] sm:text-[18.5px] text-neutral-800 leading-[2.0] font-medium my-4.5">
+      <p key={idx} className="text-[17.5px] sm:text-[18.5px] text-neutral-800 dark:text-neutral-200 leading-[2.0] font-medium my-4.5">
         {renderInlineContent(trimmed, onTagClick)}
       </p>
     );
@@ -453,7 +442,7 @@ export function renderCardMarkdownSnippet(
     .slice(0, maxLines);
 
   return (
-    <div className="space-y-1.5 text-[13.5px] sm:text-[14.5px] text-neutral-700 font-cute leading-[1.8]">
+    <div className="space-y-1.5 text-[13.5px] sm:text-[14.5px] text-neutral-700 dark:text-neutral-200 font-cute leading-[1.8]">
       {clean.map((ln, idx) => {
         const trimmed = ln.trim();
         if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('- [x] ')) {
@@ -461,7 +450,7 @@ export function renderCardMarkdownSnippet(
           const text = trimmed.replace(/^- \[[ x]\]\s*/, '');
           return (
             <div key={idx} className="flex items-center gap-2 truncate">
-              <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 ${isChecked ? 'bg-emerald-500 text-white' : 'border border-neutral-300 bg-white'}`}>
+              <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 ${isChecked ? 'bg-emerald-500 text-white' : 'border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800'}`}>
                 {isChecked ? '✓' : ''}
               </span>
               <span className={isChecked ? 'line-through opacity-50 truncate' : 'truncate'}>
@@ -474,7 +463,7 @@ export function renderCardMarkdownSnippet(
           const text = trimmed.replace(/^[-*]\s*/, '');
           return (
             <div key={idx} className="flex items-center gap-2 truncate">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 dark:bg-rose-500 shrink-0" />
               <span className="truncate">{renderInlineContent(text)}</span>
             </div>
           );
@@ -482,7 +471,7 @@ export function renderCardMarkdownSnippet(
         if (trimmed.startsWith('> ')) {
           const text = trimmed.replace(/^>\s*/, '');
           return (
-            <div key={idx} className="italic text-neutral-600 pl-2 border-l-2 border-amber-300 truncate">
+            <div key={idx} className="italic text-neutral-600 dark:text-neutral-300 pl-2 border-l-2 border-amber-300 dark:border-amber-500 truncate">
               {renderInlineContent(text)}
             </div>
           );
@@ -496,3 +485,5 @@ export function renderCardMarkdownSnippet(
     </div>
   );
 }
+
+export const renderRichMarkdown = renderMarkdownToBlocks;

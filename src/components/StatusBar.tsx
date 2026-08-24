@@ -8,10 +8,12 @@ import {
   Sidebar, 
   Server,
   Sparkles,
-  Keyboard
+  Search,
+  BookOpen
 } from 'lucide-react';
 import { Note, SyncState } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
+import { useClayTheme } from '../blog/utils/clayThemes';
 import { playPop } from '../blog/utils/soundEffects';
 
 export interface StatusBarProps {
@@ -34,6 +36,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onTagClick,
 }) => {
   const { t, locale } = useI18n();
+  const { theme } = useClayTheme();
 
   const readingTimeMinutes = Math.max(1, Math.ceil((note?.wordCount || 0) / 200));
 
@@ -41,21 +44,21 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     switch (syncState) {
       case 'syncing':
         return (
-          <div className="flex items-center gap-1.5 text-amber-600 text-xs font-cute font-bold">
+          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-cute font-bold">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
             <span>{t.editor.saving}</span>
           </div>
         );
       case 'offline':
         return (
-          <div className="flex items-center gap-1.5 text-neutral-500 text-xs font-cute">
+          <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400 text-xs font-cute">
             <WifiOff className="w-3.5 h-3.5" />
             <span>{t.editor.offline}</span>
           </div>
         );
       case 'error':
         return (
-          <div className="flex items-center gap-1.5 text-rose-600 text-xs font-cute font-bold">
+          <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 text-xs font-cute font-bold">
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>Sync Error</span>
           </div>
@@ -63,7 +66,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       case 'synced':
       default:
         return (
-          <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-cute font-bold">
+          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-cute font-bold">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             <span>{t.editor.synced}</span>
           </div>
@@ -72,14 +75,17 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   };
 
   return (
-    <footer className="hidden md:flex fixed bottom-0 left-0 right-0 h-10 border-t border-amber-900/10 bg-[#fdfbf7]/90 backdrop-blur-md px-4 sm:px-6 items-center justify-between z-30 select-none text-neutral-600 text-xs font-cute">
+    <footer 
+      style={{ backgroundColor: `${theme.headerBg}ee` }}
+      className="hidden md:flex fixed bottom-0 left-0 right-0 h-10 border-t border-amber-900/10 dark:border-white/10 backdrop-blur-xl px-4 sm:px-6 items-center justify-between z-30 select-none text-neutral-600 dark:text-neutral-300 text-xs font-cute transition-colors duration-500"
+    >
       {/* Left side: Sync indicator & Word statistics */}
       <div className="flex items-center gap-3 sm:gap-4">
         {renderSyncIndicator()}
 
-        <span className="w-px h-3.5 bg-amber-900/15 hidden sm:block" />
+        <span className="w-px h-3.5 bg-amber-900/15 dark:bg-white/10 hidden sm:block" />
 
-        <div className="hidden sm:flex items-center gap-2 text-neutral-500">
+        <div className="hidden sm:flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
           <span>{note?.wordCount || 0} {t.editor.words}</span>
           <span>·</span>
           <span>{note?.charCount || 0} {t.editor.characters}</span>
@@ -90,7 +96,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         {/* Note's Tag Badges */}
         {note?.tags && note.tags.length > 0 && (
           <>
-            <span className="w-px h-3.5 bg-amber-900/15 hidden md:block" />
+            <span className="w-px h-3.5 bg-amber-900/15 dark:bg-white/10 hidden md:block" />
             <div className="hidden md:flex items-center gap-1.5 overflow-hidden max-w-[280px]">
               {note.tags.slice(0, 3).map((tag) => (
                 <button
@@ -99,13 +105,13 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                     playPop(620);
                     onTagClick(tag);
                   }}
-                  className="px-2 py-0.5 rounded-full bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 text-[10px] font-mono truncate cursor-pointer transition"
+                  className="px-2.5 py-0.5 rounded-xl bg-pink-50/90 dark:bg-white/10 hover:bg-pink-100 dark:hover:bg-white/20 border border-pink-200 dark:border-white/15 text-pink-700 dark:text-pink-300 text-xs font-bubble font-bold truncate cursor-pointer transition"
                 >
                   {tag}
                 </button>
               ))}
               {note.tags.length > 3 && (
-                <span className="text-[10px] text-neutral-400">+{note.tags.length - 3}</span>
+                <span className="text-xs text-neutral-400">+{note.tags.length - 3}</span>
               )}
             </div>
           </>
@@ -120,7 +126,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             playPop();
             onToggleSidebar();
           }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-pink-50 border border-neutral-200/80 text-neutral-700 hover:text-pink-600 transition cursor-pointer text-xs shadow-xs"
+          className="flex items-center gap-1 px-3 py-1 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-pink-50 dark:hover:bg-white/20 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 hover:text-pink-600 dark:hover:text-pink-400 transition cursor-pointer text-xs font-bubble font-bold shadow-xs active:scale-95"
           title="Tag Mesh Sidebar (⌘\)"
         >
           <Sidebar className="w-3.5 h-3.5 text-pink-500" />
@@ -133,11 +139,11 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             playPop();
             onOpenMcpSettings();
           }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-amber-50 border border-neutral-200/80 text-neutral-700 hover:text-amber-600 transition cursor-pointer text-xs shadow-xs"
+          className="flex items-center gap-1 px-3 py-1 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-amber-50 dark:hover:bg-white/20 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 hover:text-amber-600 dark:hover:text-amber-400 transition cursor-pointer text-xs font-bubble font-bold shadow-xs active:scale-95"
           title="MCP Service"
         >
           <Server className="w-3 h-3 text-amber-500" />
-          <span className="hidden md:inline">MCP</span>
+          <span className="hidden md:inline">{locale === 'zh' ? 'MCP密钥' : 'MCP'}</span>
         </button>
 
         {/* Language switch */}
@@ -146,22 +152,23 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             playPop();
             onToggleLanguage();
           }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white hover:bg-cyan-50 border border-neutral-200/80 text-neutral-700 hover:text-cyan-600 transition cursor-pointer text-xs shadow-xs"
+          className="flex items-center gap-1 px-3 py-1 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-cyan-50 dark:hover:bg-white/20 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition cursor-pointer text-xs font-bubble font-bold shadow-xs active:scale-95"
           title="Toggle Language (⇧⌘L)"
         >
           <Globe className="w-3 h-3 text-cyan-500" />
-          <span className="font-bold">{locale === 'zh' ? '中' : 'EN'}</span>
+          <span>{locale === 'zh' ? '中' : 'EN'}</span>
         </button>
 
-        {/* Command Palette button */}
+        {/* Search / Command Palette button */}
         <button
           onClick={() => {
             playPop();
             onOpenCommandPalette();
           }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-neutral-900 text-cyan-300 transition cursor-pointer text-xs font-mono font-bold shadow-xs hover:bg-neutral-800"
+          className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/20 text-neutral-700 dark:text-neutral-200 border border-neutral-200/80 dark:border-white/10 transition cursor-pointer text-xs font-bubble font-bold shadow-xs active:scale-95"
         >
-          <span>⌘K</span>
+          <Search className="w-3 h-3 text-neutral-400" />
+          <span>{locale === 'zh' ? '搜索 (⌘K)' : 'Search (⌘K)'}</span>
         </button>
       </div>
     </footer>

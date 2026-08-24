@@ -256,22 +256,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       />
 
       {/* Command Dialog Box */}
-      <div className="relative w-full max-w-2xl bg-[#fdfbf7] border-4 border-white shadow-2xl rounded-[36px] clay-card overflow-hidden modal-card-enter text-neutral-800 flex flex-col max-h-[84vh]">
+      <div className="relative w-full max-w-2xl bg-[#fdfbf7] dark:bg-neutral-900 border-4 border-white dark:border-white/10 shadow-2xl rounded-[36px] clay-card overflow-hidden modal-card-enter text-neutral-800 dark:text-neutral-100 flex flex-col max-h-[84vh]">
         <Command label="TagMesh Command Palette" shouldFilter={false} className="flex flex-col h-full overflow-hidden">
           {/* Top Search Bar */}
-          <div className="flex items-center gap-3 px-6 py-4.5 border-b border-amber-900/10 bg-white/70 shrink-0">
+          <div className="flex items-center gap-3 px-6 py-4.5 border-b border-amber-900/10 dark:border-white/10 bg-white/70 dark:bg-neutral-800/80 shrink-0">
             <Search className="w-5 h-5 text-rose-500 shrink-0" />
             <Command.Input
               value={search}
               onValueChange={setSearch}
               placeholder={locale === 'zh' ? '搜索笔记、标签或输入指令...' : t.commandPalette.placeholder}
-              className="w-full bg-transparent text-neutral-800 placeholder:text-neutral-400 text-base sm:text-lg font-cute font-medium focus:outline-none"
+              className="w-full bg-transparent text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-base sm:text-lg font-cute font-medium focus:outline-none"
               autoFocus
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="text-xs text-neutral-500 hover:text-neutral-800 px-2.5 py-1 rounded-xl bg-neutral-100 hover:bg-neutral-200 cursor-pointer font-cute font-bold transition"
+                className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-100 px-2.5 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer font-cute font-bold transition"
               >
                 Clear
               </button>
@@ -279,14 +279,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           </div>
 
           {/* Quick Filter Tabs: All / Commands / Notes / Tags */}
-          <div className="px-5 py-2.5 border-b border-amber-900/10 flex items-center gap-2 bg-white/40 text-xs sm:text-sm font-cute font-bold select-none shrink-0">
+          <div className="px-5 py-2.5 border-b border-amber-900/10 dark:border-white/10 flex items-center gap-2 bg-white/40 dark:bg-neutral-800/40 text-xs sm:text-sm font-cute font-bold select-none shrink-0">
             <button
               onClick={() => {
                 playPop(520);
                 setActiveTab('all');
               }}
               className={`px-3.5 py-1.5 rounded-full transition cursor-pointer ${
-                activeTab === 'all' ? 'bg-neutral-900 text-white shadow-xs' : 'text-neutral-600 hover:bg-white/80'
+                activeTab === 'all' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs' : 'text-neutral-600 dark:text-neutral-300 hover:bg-white/80 dark:hover:bg-neutral-700'
               }`}
             >
               全部 (All)
@@ -297,7 +297,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 setActiveTab('tags');
               }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition cursor-pointer ${
-                activeTab === 'tags' ? 'bg-neutral-900 text-white shadow-xs' : 'text-neutral-600 hover:bg-white/80'
+                activeTab === 'tags' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs' : 'text-neutral-600 dark:text-neutral-300 hover:bg-white/80 dark:hover:bg-neutral-700'
               }`}
             >
               <Hash className="w-3.5 h-3.5 text-pink-500" />
@@ -309,7 +309,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 setActiveTab('notes');
               }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition cursor-pointer ${
-                activeTab === 'notes' ? 'bg-neutral-900 text-white shadow-xs' : 'text-neutral-600 hover:bg-white/80'
+                activeTab === 'notes' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs' : 'text-neutral-600 dark:text-neutral-300 hover:bg-white/80 dark:hover:bg-neutral-700'
               }`}
             >
               <FileText className="w-3.5 h-3.5 text-amber-500" />
@@ -321,7 +321,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 setActiveTab('commands');
               }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition cursor-pointer ${
-                activeTab === 'commands' ? 'bg-neutral-900 text-white shadow-xs' : 'text-neutral-600 hover:bg-white/80'
+                activeTab === 'commands' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs' : 'text-neutral-600 dark:text-neutral-300 hover:bg-white/80 dark:hover:bg-neutral-700'
               }`}
             >
               <Terminal className="w-3.5 h-3.5 text-cyan-400" />
@@ -346,17 +346,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     onCreateNote(search);
                     onClose();
                   }}
-                  className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white hover:bg-pink-50 border border-neutral-200/80 hover:border-pink-300 text-neutral-800 text-sm cursor-pointer transition shadow-3xs group"
+                  className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white dark:bg-neutral-800/90 hover:bg-pink-50 dark:hover:bg-pink-950/40 border border-neutral-200/80 dark:border-white/10 hover:border-pink-300 dark:hover:border-pink-700 text-neutral-800 dark:text-neutral-100 text-sm cursor-pointer transition shadow-3xs group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-pink-100 text-pink-600 group-hover:scale-105 transition-transform">
+                    <div className="p-2 rounded-xl bg-pink-100 dark:bg-pink-950/80 text-pink-600 dark:text-pink-300 group-hover:scale-105 transition-transform">
                       <Plus className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="font-bubble font-bold text-neutral-900">
+                      <span className="font-bubble font-bold text-neutral-900 dark:text-neutral-100">
                         {locale === 'zh' ? `以 “${search}” 为标题新建笔记` : `Create note "${search}"`}
                       </span>
-                      <span className="text-xs text-neutral-400 block -mt-0.5">
+                      <span className="text-xs text-neutral-400 dark:text-neutral-500 block -mt-0.5">
                         {locale === 'zh' ? '立即新建空白并以此作为笔记标题' : 'Create a fresh note with this title'}
                       </span>
                     </div>
@@ -371,17 +371,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     onFilterTag(`#${searchWithoutHash}`);
                     onClose();
                   }}
-                  className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white hover:bg-pink-50 border border-neutral-200/80 hover:border-pink-300 text-neutral-800 text-sm cursor-pointer transition shadow-3xs group mt-1.5"
+                  className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white dark:bg-neutral-800/90 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-neutral-200/80 dark:border-white/10 hover:border-amber-300 dark:hover:border-amber-700 text-neutral-800 dark:text-neutral-100 text-sm cursor-pointer transition shadow-3xs group mt-1.5"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700 group-hover:scale-105 transition-transform">
+                    <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 group-hover:scale-105 transition-transform">
                       <Hash className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="font-bubble font-bold text-neutral-900">
+                      <span className="font-bubble font-bold text-neutral-900 dark:text-neutral-100">
                         {locale === 'zh' ? `在笔记库中筛选 #${searchWithoutHash} 标签` : `Filter by #${searchWithoutHash}`}
                       </span>
-                      <span className="text-xs text-neutral-400 block -mt-0.5">
+                      <span className="text-xs text-neutral-400 dark:text-neutral-500 block -mt-0.5">
                         {locale === 'zh' ? '在左侧边栏高亮定位该标签' : 'Locate this tag in sidebar'}
                       </span>
                     </div>
@@ -394,12 +394,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             {/* REAL-TIME DYNAMIC TAGS SECTION - ENLARGED COMFORTABLE SIZING */}
             {(activeTab === 'all' || activeTab === 'tags') && filteredTags.length > 0 && (
               <Command.Group heading={
-                <div className="px-3 py-2 text-xs font-bubble font-bold text-neutral-500 uppercase tracking-wider flex items-center justify-between">
+                <div className="px-3 py-2 text-xs font-bubble font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <TagIcon className="w-3.5 h-3.5 text-pink-500" />
                     <span>{locale === 'zh' ? '🏷️ 灵感标签分类 (实时动态聚合)' : 'Tags Mesh (Live Aggregated)'}</span>
                   </span>
-                  <span className="text-[11px] font-mono text-neutral-400">点击直接筛选</span>
+                  <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500">点击直接筛选</span>
                 </div>
               }>
                 <div className="flex flex-wrap gap-2 px-3 py-1 mb-3">
@@ -411,11 +411,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         onFilterTag(tg.tag);
                         onClose();
                       }}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-pink-100 border border-neutral-200/80 hover:border-pink-300 text-neutral-800 hover:text-pink-700 text-xs sm:text-sm font-mono font-bold transition cursor-pointer shadow-3xs active:scale-95"
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-neutral-800 hover:bg-pink-100 dark:hover:bg-pink-950/60 border border-neutral-200/80 dark:border-white/10 hover:border-pink-300 dark:hover:border-pink-700 text-neutral-800 dark:text-neutral-100 hover:text-pink-700 dark:hover:text-pink-300 text-xs sm:text-sm font-mono font-bold transition cursor-pointer shadow-3xs active:scale-95"
                     >
                       <Hash className="w-3.5 h-3.5 text-pink-500" />
                       <span>{tg.tag}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 font-bold">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-pink-50 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 font-bold">
                         {tg.count}
                       </span>
                     </button>
@@ -427,7 +427,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             {/* NOTES SECTION */}
             {(activeTab === 'all' || activeTab === 'notes') && searchedNotes.length > 0 && (
               <Command.Group heading={
-                <div className="px-3 py-2 text-xs font-bubble font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="px-3 py-2 text-xs font-bubble font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5 text-amber-500" />
                   <span>{locale === 'zh' ? '📑 匹配笔记清单' : 'Notes Found'}</span>
                 </div>
@@ -440,17 +440,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       onSelectNote(note);
                       onClose();
                     }}
-                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white hover:bg-pink-50/70 text-neutral-800 text-sm cursor-pointer transition group border border-neutral-200/70 hover:border-pink-300 shadow-3xs mb-1.5"
+                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-pink-50/70 dark:hover:bg-pink-950/40 text-neutral-800 dark:text-neutral-100 text-sm cursor-pointer transition group border border-neutral-200/70 dark:border-white/10 hover:border-pink-300 dark:hover:border-pink-700 shadow-3xs mb-1.5"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 rounded-xl bg-amber-50 text-amber-600 shrink-0">
+                      <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shrink-0">
                         <FileText className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bubble font-bold text-sm sm:text-base text-neutral-800 truncate group-hover:text-rose-600">
+                        <p className="font-bubble font-bold text-sm sm:text-base text-neutral-800 dark:text-neutral-100 truncate group-hover:text-rose-600 dark:group-hover:text-rose-400">
                           {note.excerpt || '空白笔记'}
                         </p>
-                        <p className="text-xs text-neutral-400 truncate">
+                        <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
                           {(note.tags || []).length > 0 ? note.tags.join(' ') : '无标签'} • {note.wordCount || 0} 字
                         </p>
                       </div>
@@ -466,7 +466,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             {/* SYSTEM COMMANDS SECTION - NEVER DISAPPEARS */}
             {(activeTab === 'all' || activeTab === 'commands') && filteredCommands.length > 0 && (
               <Command.Group heading={
-                <div className="px-3 py-2 text-xs font-bubble font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="px-3 py-2 text-xs font-bubble font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Terminal className="w-3.5 h-3.5 text-cyan-500" />
                   <span>{locale === 'zh' ? '⚡ 快捷指令' : 'System Commands'}</span>
                 </div>
@@ -478,19 +478,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       playPop();
                       cmd.action();
                     }}
-                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white hover:bg-neutral-100 text-neutral-800 text-sm cursor-pointer transition group border border-neutral-200/70 shadow-3xs mb-1.5"
+                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-100 text-sm cursor-pointer transition group border border-neutral-200/70 dark:border-white/10 shadow-3xs mb-1.5"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-neutral-100 text-neutral-700">
+                      <div className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200">
                         {cmd.icon}
                       </div>
-                      <span className="font-bubble font-bold text-sm text-neutral-800 group-hover:text-rose-600">
+                      <span className="font-bubble font-bold text-sm text-neutral-800 dark:text-neutral-100 group-hover:text-rose-600 dark:group-hover:text-rose-400">
                         {cmd.title}
                       </span>
                     </div>
 
                     {cmd.shortcut && (
-                      <kbd className="px-2.5 py-1 rounded-xl bg-neutral-100 text-neutral-500 font-mono text-xs font-bold border border-neutral-200">
+                      <kbd className="px-2.5 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300 font-mono text-xs font-bold border border-neutral-200 dark:border-neutral-600">
                         {cmd.shortcut}
                       </kbd>
                     )}
@@ -501,7 +501,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           </Command.List>
 
           {/* Bottom Footer Info */}
-          <div className="px-5 py-3 border-t border-amber-900/10 bg-white/60 flex items-center justify-between text-xs font-cute text-neutral-400 select-none shrink-0">
+          <div className="px-5 py-3 border-t border-amber-900/10 dark:border-white/10 bg-white/60 dark:bg-neutral-800/80 flex items-center justify-between text-xs font-cute text-neutral-400 dark:text-neutral-500 select-none shrink-0">
             <div className="flex items-center gap-3">
               <span>↑↓ 选择</span>
               <span>•</span>
@@ -509,7 +509,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               <span>•</span>
               <span>ESC 关闭</span>
             </div>
-            <div className="font-bubble font-bold text-pink-600">
+            <div className="font-bubble font-bold text-pink-600 dark:text-pink-400">
               {locale === 'zh' ? '✨ 极速灵感枢纽' : '✨ Command Hub'}
             </div>
           </div>

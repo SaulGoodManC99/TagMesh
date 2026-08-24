@@ -350,41 +350,74 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             : 'Zero folder anxiety. Type #hashtags anywhere to weave a thought mesh, and roam across 5 immersive note views.'}
         </p>
 
-        {/* Chunky Center Action Candy Buttons */}
+        {/* Chunky Center Action Candy Buttons (Uiverse.io Kinetic Animated Flow) */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-12 sm:mb-16">
+          {/* Button 1: Start Writing */}
           {(guestNotesEnabled || isAdmin) && (
             <button
               onClick={() => {
                 playPop();
                 onGoToEditor();
               }}
-              className={`flex items-center gap-2.5 px-7 sm:px-9 py-4 rounded-[26px] bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-base sm:text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card`}
+              className="uiverse-animated-btn bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white font-bubble text-base sm:text-lg border-rose-400/80 dark:border-rose-500/50"
             >
-              <PenTool className="w-5 h-5" />
-              <span>{locale === 'zh' ? '开启写作' : 'Start Writing'}</span>
+              {/* Expanding Circle Wave */}
+              <span className="btn-circle bg-white/25 dark:bg-white/20 backdrop-blur-xs" />
+              
+              {/* Main Content Wrap with shift */}
+              <span className="btn-text-wrap">
+                <PenTool className="w-5 h-5" />
+                <span>{locale === 'zh' ? '开启写作' : 'Start Writing'}</span>
+              </span>
+
+              {/* Dual Kinetic Arrows */}
+              <ArrowRight className="w-5 h-5 arr-1 text-white/90" />
+              <ArrowRight className="w-5 h-5 arr-2 text-white/90" />
             </button>
           )}
 
+          {/* Button 2: Explore Notes */}
           <button
             onClick={() => {
               playPop();
               onGoToExplore('grid');
             }}
-            className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-white/95 dark:bg-neutral-900/90 hover:bg-pink-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-100 hover:text-pink-600 dark:hover:text-pink-400 font-bubble text-base sm:text-lg font-bold border-2 border-neutral-200/90 dark:border-white/10 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
+            className="uiverse-animated-btn bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-750 text-neutral-800 dark:text-neutral-100 hover:text-rose-600 dark:hover:text-rose-400 font-bubble text-base sm:text-lg border-neutral-200/90 dark:border-white/10"
           >
-            <Layers className="w-5 h-5 text-rose-500" />
-            <span>{locale === 'zh' ? '漫游笔记' : 'Explore Notes'}</span>
+            {/* Expanding Circle Wave */}
+            <span className="btn-circle bg-rose-50 dark:bg-rose-950/40" />
+
+            {/* Main Content Wrap with shift */}
+            <span className="btn-text-wrap">
+              <Layers className="w-5 h-5 text-rose-500" />
+              <span>{locale === 'zh' ? '漫游笔记' : 'Explore Notes'}</span>
+            </span>
+
+            {/* Dual Kinetic Arrows */}
+            <ArrowRight className="w-5 h-5 arr-1 text-rose-500" />
+            <ArrowRight className="w-5 h-5 arr-2 text-rose-500" />
           </button>
 
+          {/* Button 3: Inspiration Gacha */}
           <button
             onClick={() => {
               playPop();
               setIsGachaOpen(true);
             }}
-            className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-950 dark:text-amber-200 font-bubble text-base sm:text-lg font-bold border-2 border-amber-300/90 dark:border-amber-700/60 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
+            className="uiverse-animated-btn bg-amber-50 dark:bg-neutral-800 hover:bg-amber-100/70 dark:hover:bg-neutral-750 text-amber-900 dark:text-amber-200 font-bubble text-base sm:text-lg border-amber-200/90 dark:border-white/10"
           >
-            <Dices className="w-5 h-5 text-amber-700 dark:text-amber-400 animate-spin" style={{ animationDuration: '8s' }} />
-            <span>{locale === 'zh' ? '灵感扭蛋' : 'Inspiration Gacha'}</span>
+            {/* Expanding Circle Wave */}
+            <span className="btn-circle bg-amber-100 dark:bg-amber-950/40" />
+
+            {/* Main Content Wrap with shift */}
+            <span className="btn-text-wrap">
+              <Dices className="w-5 h-5 text-amber-600 dark:text-amber-400 group-hover:rotate-180 transition-transform duration-500" />
+              <span>{locale === 'zh' ? '灵感扭蛋' : 'Inspiration Gacha'}</span>
+            </span>
+
+            {/* Dual Kinetic Arrows */}
+            <ArrowRight className="w-5 h-5 arr-1 text-amber-600 dark:text-amber-400" />
+            <ArrowRight className="w-5 h-5 arr-2 text-amber-600 dark:text-amber-400" />
           </button>
         </div>
 
@@ -470,7 +503,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/80 dark:bg-neutral-900/80 border border-neutral-200/70 dark:border-white/10 shadow-3xs backdrop-blur-xs">
           <span className="text-amber-600 dark:text-amber-400">☁️</span>
           <span className="font-medium text-neutral-600 dark:text-neutral-300">{locale === 'zh' ? 'Cloudflare 最新部署时间' : 'Cloudflare Deployed'}:</span>
-          <span className="font-mono font-bold text-neutral-800 dark:text-neutral-100">{getFormattedBuildTime(locale)}</span>
+          <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100">{getFormattedBuildTime(locale)}</span>
         </div>
 
         <span className="text-neutral-300 dark:text-neutral-600 hidden sm:inline">•</span>

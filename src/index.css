@@ -4,7 +4,9 @@
 
 @font-face {
   font-family: 'ChaoXiaoSheZhongYuan';
-  src: url('/fonts/ChaoXiaoSheZhongYuan.ttf') format('truetype');
+  src: url('/fonts/ChaoXiaoSheZhongYuan.ttf') format('truetype'),
+       local('ChaoXiaoSheZhongYuan'),
+       local('潮小社中圆');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -12,7 +14,7 @@
 
 @theme {
   --font-sans: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
-  --font-mono: "Geist Mono", "JetBrains Mono", "SF Mono", monospace;
+  --font-mono: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", monospace;
   --font-cute: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
   --font-bubble: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "Baloo 2", "YouYuan", "幼圆", cursive, sans-serif;
 }
@@ -20,7 +22,7 @@
 @layer base {
   :root {
     --font-sans: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
-    --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+    --font-mono: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", monospace;
     --font-cute: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "YouYuan", "幼圆", sans-serif;
     --font-bubble: "ChaoXiaoSheZhongYuan", "Comfortaa", "Nunito", "Baloo 2", "YouYuan", "幼圆", cursive, sans-serif;
 
@@ -43,12 +45,12 @@
     will-change: transform, opacity;
   }
 
-  *, ::before, ::after {
-    font-family: var(--font-cute);
+  *, ::before, ::after, html, body, #root, button, input, textarea, select, .font-bubble, .font-cute, .font-sans {
+    font-family: var(--font-cute) !important;
   }
 
   body {
-    font-family: var(--font-cute);
+    font-family: var(--font-cute) !important;
     margin: 0;
     padding: 0;
     color: #262626;
@@ -59,7 +61,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-bubble);
+    font-family: var(--font-bubble) !important;
   }
 
   code, pre, kbd, samp {
@@ -854,16 +856,20 @@ html.dark .ProseMirror {
   color: #f3f4f6 !important;
 }
 
-html.dark .ProseMirror h1 {
+html.dark .ProseMirror h1,
+html.dark .ProseMirror h2,
+html.dark .ProseMirror h3,
+html.dark .ProseMirror h4,
+html.dark .ProseMirror strong {
   color: #ffffff !important;
 }
 
-html.dark .ProseMirror h2 {
-  color: #f8fafc !important;
-}
-
-html.dark .ProseMirror h3 {
-  color: #e2e8f0 !important;
+html.dark .ProseMirror p,
+html.dark .ProseMirror ul,
+html.dark .ProseMirror ol,
+html.dark .ProseMirror li,
+html.dark .ProseMirror span {
+  color: #f3f4f6 !important;
 }
 
 html.dark .ProseMirror blockquote {
@@ -1125,4 +1131,279 @@ html.dark .inline-hashtag-badge {
   animation: floatOrb3 15s ease-in-out infinite alternate;
   will-change: transform;
 }
+
+/* ==========================================================================
+   UIVERSE.IO KINETIC ANIMATED BUTTON SYSTEM (Refined 14px Radius & Dual Arrow)
+   ========================================================================== */
+.uiverse-animated-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 38px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 14px;
+  cursor: pointer;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  user-select: none;
+}
+
+html.dark .uiverse-animated-btn {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.uiverse-animated-btn .btn-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1), height 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease;
+  z-index: 0;
+}
+
+.uiverse-animated-btn .btn-text-wrap {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-8px);
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.uiverse-animated-btn .arr-1 {
+  position: absolute;
+  right: 16px;
+  z-index: 2;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.uiverse-animated-btn .arr-2 {
+  position: absolute;
+  left: -35%;
+  z-index: 2;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Hover States */
+.uiverse-animated-btn:hover {
+  border-radius: 14px;
+  box-shadow: 0 8px 22px -4px rgba(0, 0, 0, 0.14);
+}
+
+.uiverse-animated-btn:hover .btn-circle {
+  width: 320px;
+  height: 320px;
+  opacity: 1;
+}
+
+.uiverse-animated-btn:hover .arr-1 {
+  right: -35%;
+  opacity: 0;
+}
+
+.uiverse-animated-btn:hover .arr-2 {
+  left: 16px;
+  opacity: 1;
+}
+
+.uiverse-animated-btn:hover .btn-text-wrap {
+  transform: translateX(8px);
+}
+
+.uiverse-animated-btn:active {
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   THREE GLOBAL UIVERSE BUTTON STYLES (Exempting Homepage Hero Buttons & Modals)
+   ========================================================================== */
+
+/* 1. Style: 'neon' (From Uiverse.io by alexreyes091 - Cyber Multi-Shadow Layered) */
+html[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
+html[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
+  border-bottom: 2px solid #8b5cf6 !important;
+  border-right: 2px solid #8b5cf6 !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.9) !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.9) !important;
+  transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+html[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
+html[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
+  border-top: 2px solid #8b5cf6 !important;
+  border-left: 2px solid #8b5cf6 !important;
+  border-bottom: 2px solid #ec4899 !important;
+  border-right: 2px solid #ec4899 !important;
+  box-shadow: rgba(240, 46, 170, 0.35) 3px 3px, rgba(240, 46, 170, 0.25) 6px 6px, rgba(240, 46, 170, 0.15) 9px 9px !important;
+  transform: translate(-2px, -2px) !important;
+}
+
+html.dark[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
+html.dark[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
+  border-bottom: 2px solid #a855f7 !important;
+  border-right: 2px solid #a855f7 !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.15) !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
+  border-top: 2px solid #a855f7 !important;
+  border-left: 2px solid #a855f7 !important;
+  border-bottom: 2px solid #f472b6 !important;
+  border-right: 2px solid #f472b6 !important;
+  box-shadow: rgba(217, 70, 239, 0.45) 3px 3px, rgba(168, 85, 247, 0.3) 6px 6px, rgba(147, 51, 234, 0.15) 9px 9px !important;
+}
+
+/* 2. Style: 'laser' (From Uiverse.io by marcelodolza - Conic Laser Outline & Depth) */
+html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
+html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
+  position: relative !important;
+  box-shadow: 0 0.5px 0.5px 1px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
+html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
+  transform: scale(1.04) translateY(-1px) !important;
+  box-shadow: 0 0 1px 2px rgba(255, 85, 105, 0.4), 0 8px 20px rgba(244, 63, 94, 0.25) !important;
+}
+
+html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):active,
+html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):active {
+  transform: scale(0.97) !important;
+}
+
+html.dark[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
+html.dark[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
+  box-shadow: 0 0 1px 2px rgba(251, 113, 133, 0.5), 0 8px 24px rgba(225, 29, 72, 0.35) !important;
+}
+
+/* 3. Style: 'blob' (From Uiverse.io by adamgiebl - Fluid Colorful Blobs Glass) */
+html[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
+html[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
+  position: relative !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  background-image: radial-gradient(circle at 10% 20%, rgba(255, 147, 15, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(0, 97, 255, 0.18) 0%, transparent 40%),
+                    radial-gradient(circle at 50% 50%, rgba(255, 27, 107, 0.15) 0%, transparent 50%) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.35s ease !important;
+}
+
+html[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
+html[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
+  background-image: radial-gradient(circle at 10% 20%, rgba(0, 97, 255, 0.28) 0%, transparent 45%),
+                    radial-gradient(circle at 90% 80%, rgba(255, 147, 15, 0.28) 0%, transparent 45%),
+                    radial-gradient(circle at 50% 50%, rgba(191, 15, 255, 0.25) 0%, transparent 55%) !important;
+  transform: scale(1.04) translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(191, 15, 255, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
+}
+
+html.dark[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
+html.dark[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
+  background-image: radial-gradient(circle at 10% 20%, rgba(255, 147, 15, 0.25) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(0, 97, 255, 0.25) 0%, transparent 40%),
+                    radial-gradient(circle at 50% 50%, rgba(255, 27, 107, 0.2) 0%, transparent 50%) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
+  background-image: radial-gradient(circle at 10% 20%, rgba(0, 97, 255, 0.38) 0%, transparent 45%),
+                    radial-gradient(circle at 90% 80%, rgba(255, 147, 15, 0.38) 0%, transparent 45%),
+                    radial-gradient(circle at 50% 50%, rgba(191, 15, 255, 0.35) 0%, transparent 55%) !important;
+  box-shadow: 0 8px 28px rgba(191, 15, 255, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.25) !important;
+}
+
+/* ==========================================================================
+   UIVERSE.IO LIQUID FLUID TOGGLE SWITCH (Bodyhc)
+   ========================================================================== */
+.liquid-switch-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.liquid-switch {
+  --primary: #10b981;
+  --bg-track: #e2e8f0;
+  --thumb-color: #ffffff;
+  --time: 0.5s;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  cursor: pointer;
+  width: 54px;
+  height: 28px;
+  background: var(--bg-track);
+  border-radius: 9999px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  transition: background var(--time) cubic-bezier(0.75, 0, 0.75, 1.3), box-shadow 0.3s ease, transform 0.2s ease;
+  overflow: hidden;
+  outline: none;
+  border: none;
+  flex-shrink: 0;
+}
+
+html.dark .liquid-switch {
+  --bg-track: #27272a;
+  --thumb-color: #f4f4f5;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.liquid-switch::before {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  background: var(--thumb-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  transition: transform var(--time) cubic-bezier(0.68, -0.55, 0.265, 1.55), width 0.3s ease, background var(--time) ease;
+}
+
+.liquid-switch:checked {
+  background: var(--primary);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 12px rgba(16, 185, 129, 0.35);
+}
+
+.liquid-switch:checked::before {
+  transform: translateX(26px);
+}
+
+.liquid-switch:active::before {
+  width: 28px;
+}
+
+.liquid-switch.danmaku-switch {
+  --primary: #06b6d4;
+}
+
+.liquid-switch.danmaku-switch:checked {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 12px rgba(6, 182, 212, 0.35);
+}
+
 

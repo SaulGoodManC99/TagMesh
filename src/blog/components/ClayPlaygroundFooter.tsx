@@ -12,9 +12,11 @@ import {
   ArrowUp
 } from 'lucide-react';
 import { useI18n } from '../../hooks/useI18n';
+import { useClayTheme } from '../utils/clayThemes';
 import { playPop, playChime } from '../utils/soundEffects';
 import { triggerParticleBurst, triggerConfettiShower } from '../utils/confetti';
 import { db } from '../../db/dexie';
+import { useAuth } from '../../hooks/useAuth';
 import { APP_VERSION, getFormattedBuildTime } from '../../constants/version';
 
 export interface ClayPlaygroundFooterProps {
@@ -35,6 +37,8 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
   onOpenGacha,
 }) => {
   const { locale } = useI18n();
+  const { theme } = useClayTheme();
+  const { isAdmin, openAuthModal } = useAuth();
   const [stampCount, setStampCount] = useState(128);
   const [stamps, setStamps] = useState<{ id: number; x: number; y: number; emoji: string }[]>([]);
 
@@ -60,6 +64,11 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
 
   const handleExportAllJson = async () => {
     playPop(620);
+    if (!isAdmin) {
+      alert(locale === 'zh' ? '🔒 全量知识库备份为馆长专属权限，请先验证馆长身份！' : '🔒 Full knowledge base backup is restricted to Curator/Admin!');
+      openAuthModal();
+      return;
+    }
     const allNotes = await db.notes.toArray();
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(allNotes, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -76,7 +85,10 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
   };
 
   return (
-    <footer className="mt-16 border-t border-amber-900/10 dark:border-white/10 bg-[#fdfbf7]/90 dark:bg-neutral-950/90 backdrop-blur-md pt-12 pb-16 px-4 sm:px-8 select-none relative overflow-hidden">
+    <footer 
+      style={{ backgroundColor: `${theme.headerBg}ee` }}
+      className="mt-16 border-t border-amber-900/10 dark:border-white/10 backdrop-blur-xl pt-12 pb-16 px-4 sm:px-8 select-none relative overflow-hidden transition-colors duration-500"
+    >
       {/* Decorative Rainbow Line at Top */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pink-400 via-rose-400 via-amber-300 via-emerald-300 to-cyan-400" />
 
@@ -86,7 +98,7 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
           {/* Card 1: Interactive Stamp Easter Egg */}
           <div 
             onClick={handleLeaveStamp}
-            className="relative p-6 rounded-[32px] bg-white dark:bg-neutral-900 border-3 border-white dark:border-white/10 shadow-md hover:shadow-xl transition cursor-pointer clay-card overflow-hidden group flex flex-col justify-between min-h-[140px]"
+            className="relative p-6 rounded-[32px] bg-white/90 dark:bg-neutral-900/90 border-3 border-white dark:border-white/10 shadow-md hover:shadow-xl transition cursor-pointer clay-card overflow-hidden group flex flex-col justify-between min-h-[140px]"
           >
             {/* Animated Floating Stamps */}
             {stamps.map((st) => (
@@ -101,7 +113,7 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
 
             <div className="flex items-center justify-between">
               <span className="text-3xl select-none group-hover:scale-110 transition-transform">🐾</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-900 text-xs font-mono font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-900 text-xs font-bubble font-bold">
                 {stampCount} {locale === 'zh' ? '个乐园手印' : 'stamps'}
               </span>
             </div>
@@ -124,7 +136,7 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
                 onOpenGacha();
               }
             }}
-            className="p-6 rounded-[32px] bg-gradient-to-br from-amber-50 to-pink-50 dark:from-amber-950/40 dark:to-pink-950/40 border-3 border-white dark:border-white/10 shadow-md hover:shadow-xl transition cursor-pointer clay-card flex flex-col justify-between min-h-[140px] group"
+            className="p-6 rounded-[32px] bg-gradient-to-br from-white/90 to-white/70 dark:from-white/10 dark:to-white/5 border-3 border-white dark:border-white/10 shadow-md hover:shadow-xl transition cursor-pointer clay-card flex flex-col justify-between min-h-[140px] group"
           >
             <div className="flex items-center justify-between">
               <span className="text-3xl select-none group-hover:rotate-12 transition-transform">🎲</span>
@@ -146,12 +158,16 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
           {/* Card 3: Full Backup & Data Portability */}
           <div 
             onClick={handleExportAllJson}
-            className="p-6 rounded-[32px] bg-white dark:bg-neutral-900 border-3 border-white dark:border-white/10 shadow-md hover:shadow-xl transition cursor-pointer clay-card flex flex-col justify-between min-h-[140px] group"
+            className="p-6 rounded-[32px] bg-white/90 dark:bg-neutral-900/90 border-3 border-white dark:border-white/10 shadow-md hover:shadow-xl transition cursor-pointer clay-card flex flex-col justify-between min-h-[140px] group"
           >
             <div className="flex items-center justify-between">
-              <span className="text-3xl">📦</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-900 text-xs font-mono font-bold">
-                JSON Backup
+              <span className="text-3xl">{isAdmin ? '📦' : '🔒'}</span>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bubble font-bold ${
+                isAdmin 
+                  ? 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-900' 
+                  : 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900'
+              }`}>
+                {isAdmin ? (locale === 'zh' ? '一键导出' : 'Backup') : (locale === 'zh' ? '👑 馆长专属' : 'Admin Only')}
               </span>
             </div>
 
@@ -160,14 +176,16 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
                 {locale === 'zh' ? '全量笔记数据备份 💾' : 'Export Full Backup 💾'}
               </h4>
               <p className="text-xs font-cute text-neutral-400 dark:text-neutral-500">
-                {locale === 'zh' ? '100% 本地优先，随时一键导出全库' : '100% Local-First data ownership'}
+                {isAdmin 
+                  ? (locale === 'zh' ? '100% 本地优先，随时一键导出全库' : '100% Local-First data ownership')
+                  : (locale === 'zh' ? '全量知识库备份受保护，点击验证馆长' : 'Protected database backup (Admin only)')}
               </p>
             </div>
           </div>
         </div>
 
         {/* Middle Stats Bar */}
-        <div className="p-5 rounded-3xl bg-white/70 dark:bg-neutral-900/70 border border-neutral-200/80 dark:border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs font-cute text-neutral-600 dark:text-neutral-300 shadow-3xs">
+        <div className="p-5 rounded-3xl bg-white/70 dark:bg-black/30 backdrop-blur-md border border-neutral-200/80 dark:border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs font-cute text-neutral-600 dark:text-neutral-300 shadow-3xs">
           <div className="flex items-center gap-4 flex-wrap">
             <span className="flex items-center gap-1.5 font-bubble font-bold text-neutral-800 dark:text-neutral-100">
               <Database className="w-4 h-4 text-rose-500" />
@@ -179,22 +197,22 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
             <span className="font-bold text-amber-600 dark:text-amber-400">{totalWords} {locale === 'zh' ? '字总产出' : 'words'}</span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             {onOpenShortcuts && (
               <button
                 onClick={onOpenShortcuts}
-                className="flex items-center gap-1 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer font-bold"
+                className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-rose-50 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:text-rose-600 dark:hover:text-rose-300 border border-neutral-200/80 dark:border-white/10 text-xs font-bold clay-btn shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1.5"
               >
-                <Keyboard className="w-3.5 h-3.5" />
-                <span>{locale === 'zh' ? '全键盘快捷键' : 'Shortcuts (⌘/)'}</span>
+                <Keyboard className="w-3.5 h-3.5 text-rose-500" />
+                <span>{locale === 'zh' ? '全键盘快捷键 (⌘/)' : 'Shortcuts (⌘/)'}</span>
               </button>
             )}
 
             <button
               onClick={scrollToTop}
-              className="flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-200/60 dark:border-white/10 transition cursor-pointer font-bubble font-bold active:scale-95"
+              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-200/80 dark:border-white/10 text-xs font-bubble font-bold clay-btn shadow-3xs cursor-pointer transition active:scale-95 flex items-center gap-1.5"
             >
-              <ArrowUp className="w-3.5 h-3.5" />
+              <ArrowUp className="w-3.5 h-3.5 text-amber-500" />
               <span>{locale === 'zh' ? '回到顶部' : 'Top'}</span>
             </button>
           </div>
@@ -206,7 +224,7 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
             <p className="font-bubble font-extrabold text-sm sm:text-base text-neutral-800 dark:text-neutral-100">
               TagMesh • 纯标签驱动的 3D 黏土趣味知识笔记系统
             </p>
-            <span className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white font-mono text-xs font-bold shadow-3xs">
+            <span className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white font-bubble text-xs font-bold shadow-3xs">
               {APP_VERSION}
             </span>
           </div>

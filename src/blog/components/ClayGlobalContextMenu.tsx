@@ -57,7 +57,7 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
   const { locale, toggleLocale } = useI18n();
   const { theme, switchNextTheme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
-  const { guestNotesEnabled, colorMode, toggleColorMode } = useSiteConfig();
+  const { guestNotesEnabled, danmakuEnabled, colorMode, toggleColorMode } = useSiteConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<ContextMenuPosition>({ x: 0, y: 0 });
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
@@ -362,18 +362,20 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
                 </button>
 
                 {/* 5. Quick Nav: Danmaku */}
-                <button
-                  onClick={(e) => handleActionNav('#/danmaku', e)}
-                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer text-left text-neutral-600 dark:text-neutral-300"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                      <MessageSquare className="w-3.5 h-3.5 text-cyan-500" />
+                {danmakuEnabled && (
+                  <button
+                    onClick={(e) => handleActionNav('#/danmaku', e)}
+                    className="w-full flex items-center justify-between px-3 py-1.5 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer text-left text-neutral-600 dark:text-neutral-300"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-3.5 h-3.5 text-cyan-500" />
+                      </div>
+                      <span>{locale === 'zh' ? '弹幕星河广场' : 'Danmaku Plaza'}</span>
                     </div>
-                    <span>{locale === 'zh' ? '弹幕星河广场' : 'Danmaku Plaza'}</span>
-                  </div>
-                  <span className="text-[10px] text-neutral-400">➜</span>
-                </button>
+                    <span className="text-[10px] text-neutral-400">➜</span>
+                  </button>
+                )}
               </>
             )}
 

@@ -382,7 +382,7 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
             <div className="font-cute text-sm sm:text-base text-neutral-800 dark:text-neutral-100 leading-relaxed space-y-2">
               {renderRichMarkdown(activeNote.rawMarkdown || '', {
                 stripFirstHeading: false,
-                onTagClick: (tg) => onTagClick(tg),
+                onTagClick: (tg: string) => onTagClick(tg),
               })}
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ShieldCheck, 
   Lock, 
@@ -54,7 +54,6 @@ export const ClayAdminAuthModal: React.FC = () => {
 
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Tab for changing password
   const [activeTab, setActiveTab] = useState<'login' | 'changePwd'>('login');
@@ -69,14 +68,7 @@ export const ClayAdminAuthModal: React.FC = () => {
   const [showBackupsList, setShowBackupsList] = useState(true);
   const [isLoadingR2, setIsLoadingR2] = useState(false);
 
-  // Load R2 status & backups when admin modal is opened
-  useEffect(() => {
-    if (isAuthModalOpen && isAdmin) {
-      loadR2Info();
-    }
-  }, [isAuthModalOpen, isAdmin]);
-
-  const loadR2Info = async () => {
+  const loadR2Info = useCallback(async () => {
     setIsLoadingR2(true);
     try {
       const [status, backups] = await Promise.all([
@@ -90,7 +82,14 @@ export const ClayAdminAuthModal: React.FC = () => {
     } finally {
       setIsLoadingR2(false);
     }
-  };
+  }, []);
+
+  // Load R2 status & backups when admin modal is opened
+  useEffect(() => {
+    if (isAuthModalOpen && isAdmin) {
+      loadR2Info();
+    }
+  }, [isAuthModalOpen, isAdmin, loadR2Info]);
 
   const handleCreateBackup = async () => {
     setIsBackingUp(true);
@@ -99,11 +98,9 @@ export const ClayAdminAuthModal: React.FC = () => {
       const allNotes = await db.notes.toArray();
       const res = await createR2SnapshotBackup(allNotes, 'admin');
       if (res.success) {
-        playChime();
         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 30);
-        setSuccessMsg(locale === 'zh' ? `📦 成功创建 R2 云端快照！已备份 ${res.totalNotes} 篇笔记` : `📦 Snapshot created! ${res.totalNotes} notes backed up`);
+        triggerAdminToast(locale === 'zh' ? `📦 成功创建 R2 云端快照！已备份 ${res.totalNotes} 篇笔记` : `📦 Snapshot created! ${res.totalNotes} notes backed up`);
         loadR2Info();
-        setTimeout(() => setSuccessMsg(null), 4000);
       } else {
         setErrorMsg(res.error || 'Failed to create backup');
       }
@@ -125,10 +122,8 @@ export const ClayAdminAuthModal: React.FC = () => {
       const res = await restoreR2Snapshot(key);
       if (res.success && res.notes && res.notes.length > 0) {
         await db.notes.bulkPut(res.notes);
-        playChime();
         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
-        setSuccessMsg(locale === 'zh' ? `📥 成功从快照恢复 ${res.notes.length} 篇笔记！` : `📥 Successfully restored ${res.notes.length} notes!`);
-        setTimeout(() => setSuccessMsg(null), 4000);
+        triggerAdminToast(locale === 'zh' ? `📥 成功从快照恢复 ${res.notes.length} 篇笔记！` : `📥 Successfully restored ${res.notes.length} notes!`);
       } else {
         setErrorMsg(res.error || 'No notes found in snapshot');
       }
@@ -136,6 +131,13 @@ export const ClayAdminAuthModal: React.FC = () => {
       setErrorMsg(err instanceof Error ? err.message : 'Restore error');
     } finally {
       setIsRestoringKey(null);
+    }
+  };
+
+  const triggerAdminToast = (msg: string) => {
+    playChime();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('tagmesh_toast_notify', { detail: { message: msg } }));
     }
   };
 
@@ -151,6 +153,7 @@ export const ClayAdminAuthModal: React.FC = () => {
       triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
       setPassword('');
       closeAuthModal();
+      triggerAdminToast(locale === 'zh' ? '👑 欢迎回来，馆长！' : '👑 Welcome back, Curator!');
     } else {
       playPop(300);
       setErrorMsg(locale === 'zh' ? '口令错误！默认馆长口令为：admin888' : 'Incorrect password! Default is: admin888');
@@ -160,7 +163,6 @@ export const ClayAdminAuthModal: React.FC = () => {
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
-    setSuccessMsg(null);
 
     if (newPwd.trim().length < 4) {
       setErrorMsg(locale === 'zh' ? '新口令长度至少需 4 位！' : 'Password must be at least 4 chars!');
@@ -169,13 +171,11 @@ export const ClayAdminAuthModal: React.FC = () => {
 
     const success = updateAdminPassword(oldPwd, newPwd);
     if (success) {
-      playChime();
       triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
-      setSuccessMsg(locale === 'zh' ? '馆长口令修改成功！' : 'Password updated successfully!');
+      triggerAdminToast(locale === 'zh' ? '🔑 馆长口令修改成功！' : '🔑 Password updated successfully!');
       setOldPwd('');
       setNewPwd('');
       setActiveTab('login');
-      setTimeout(() => setSuccessMsg(null), 3000);
     } else {
       playPop(300);
       setErrorMsg(locale === 'zh' ? '原口令错误！' : 'Incorrect old password!');
@@ -224,14 +224,6 @@ export const ClayAdminAuthModal: React.FC = () => {
           </button>
         </div>
 
-        {/* Global Toast Alerts */}
-        {successMsg && (
-          <div className="mt-4 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 text-xs sm:text-sm animate-in fade-in">
-            <Check className="w-4 h-4 shrink-0" />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
         {errorMsg && (
           <div className="mt-4 p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-900 flex items-center gap-2 text-xs sm:text-sm animate-in fade-in">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -248,20 +240,17 @@ export const ClayAdminAuthModal: React.FC = () => {
               {/* Left Column (7 Cols): 站点总控、展示开关与风格 */}
               <div className="lg:col-span-7 space-y-4">
                 
-                {/* ⚙️ 站点展示与权限总控 (Site & Access Control) */}
-                <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-amber-900/10 dark:border-white/10 pb-2.5">
-                    <span className="font-bubble font-extrabold text-neutral-800 dark:text-neutral-100 text-sm sm:text-base flex items-center gap-2">
-                      <Sliders className="w-4 h-4 text-amber-500" />
-                      <span>{locale === 'zh' ? '站点展示与模块总控' : 'Site & Module Control'}</span>
-                    </span>
-                    <span className="text-xs text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                      {locale === 'zh' ? '实时生效' : 'Live Sync'}
+                {/* Site Configuration Group */}
+                <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-sm space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-amber-900/10 dark:border-white/10 pb-2">
+                    <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100 text-xs sm:text-sm flex items-center gap-1.5">
+                      <span>⚙️</span>
+                      <span>{locale === 'zh' ? '站点全局交互与显示总控' : 'Global Site Interaction Controls'}</span>
                     </span>
                   </div>
 
                   {/* 1. Guest Notes & Access Toggle */}
-                  <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10">
+                  <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10">
                     <div>
                       <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
                         <span>🌱</span>
@@ -273,26 +262,27 @@ export const ClayAdminAuthModal: React.FC = () => {
                           : (guestNotesEnabled ? 'Guests can explore & write notes' : 'Closed: Guests only see Curator notes')}
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPop(guestNotesEnabled ? 350 : 650);
-                        setGuestNotesEnabled(!guestNotesEnabled);
-                        setSuccessMsg(locale === 'zh' ? (guestNotesEnabled ? '🔒 旅人笔记已关闭，仅开放馆长内容' : '🌱 旅人笔记展示与工作台已向游客开放！') : 'Settings updated!');
-                        setTimeout(() => setSuccessMsg(null), 3000);
-                      }}
-                      className={`px-3.5 py-1.5 rounded-xl font-bubble font-bold text-xs sm:text-sm shadow-3xs cursor-pointer transition active:scale-95 shrink-0 ${
-                        guestNotesEnabled
-                          ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                          : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300'
-                      }`}
-                    >
-                      {guestNotesEnabled ? (locale === 'zh' ? '✅ 已开启' : 'Enabled') : (locale === 'zh' ? '🚫 已关闭' : 'Disabled')}
-                    </button>
+                    <label className="liquid-switch-wrap shrink-0">
+                      <span className="font-bubble font-bold text-xs text-neutral-600 dark:text-neutral-300">
+                        {guestNotesEnabled ? (locale === 'zh' ? '已开启' : 'ON') : (locale === 'zh' ? '已关闭' : 'OFF')}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={guestNotesEnabled}
+                        onChange={() => {
+                          const next = !guestNotesEnabled;
+                          setGuestNotesEnabled(next);
+                          triggerAdminToast(next 
+                            ? (locale === 'zh' ? '🌱 已开放旅人笔记展示与工作台创作！' : '🌱 Guest notes & workspace enabled!') 
+                            : (locale === 'zh' ? '🔒 旅人笔记与工作台已对游客隐藏' : '🔒 Guest notes & workspace closed'));
+                        }}
+                        className="liquid-switch"
+                      />
+                    </label>
                   </div>
 
                   {/* 2. Danmaku Plaza Toggle */}
-                  <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10">
+                  <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10">
                     <div>
                       <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
                         <span>💌</span>
@@ -304,59 +294,73 @@ export const ClayAdminAuthModal: React.FC = () => {
                           : (danmakuEnabled ? 'Danmaku plaza is active for all visitors' : 'Closed: Header hidden & direct route paused')}
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPop(danmakuEnabled ? 350 : 650);
-                        setDanmakuEnabled(!danmakuEnabled);
-                        setSuccessMsg(locale === 'zh' ? (danmakuEnabled ? '🔒 弹幕广场已暂停开放' : '💌 灵感弹幕广场已恢复全员开放！') : 'Danmaku updated!');
-                        setTimeout(() => setSuccessMsg(null), 3000);
-                      }}
-                      className={`px-3.5 py-1.5 rounded-xl font-bubble font-bold text-xs sm:text-sm shadow-3xs cursor-pointer transition active:scale-95 shrink-0 ${
-                        danmakuEnabled
-                          ? 'bg-cyan-500 text-white hover:bg-cyan-600'
-                          : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300'
-                      }`}
-                    >
-                      {danmakuEnabled ? (locale === 'zh' ? '✅ 已开启' : 'Enabled') : (locale === 'zh' ? '🚫 已关闭' : 'Disabled')}
-                    </button>
+                    <label className="liquid-switch-wrap shrink-0">
+                      <span className="font-bubble font-bold text-xs text-neutral-600 dark:text-neutral-300">
+                        {danmakuEnabled ? (locale === 'zh' ? '已开启' : 'ON') : (locale === 'zh' ? '已关闭' : 'OFF')}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={danmakuEnabled}
+                        onChange={() => {
+                          const next = !danmakuEnabled;
+                          setDanmakuEnabled(next);
+                          triggerAdminToast(next 
+                            ? (locale === 'zh' ? '💌 灵感弹幕广场互动通道已正式开放！' : '💌 Danmaku plaza active!') 
+                            : (locale === 'zh' ? '🔒 灵感弹幕广场互动通道已暂停开放' : '🔒 Danmaku plaza paused'));
+                        }}
+                        className="liquid-switch danmaku-switch"
+                      />
+                    </label>
                   </div>
 
-                  {/* 3. Button Style Selector */}
-                  <div className="space-y-2">
-                    <span className="font-bubble font-bold text-neutral-700 dark:text-neutral-300 text-xs sm:text-sm block">
-                      🎨 {locale === 'zh' ? '前台交互按钮风格' : 'Button Aesthetic Style'}
-                    </span>
+                  {/* 3. Button Style Selector Card */}
+                  <div className="p-3.5 rounded-2xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
+                        <span>🎨</span>
+                        <span>{locale === 'zh' ? '前台交互按钮风格' : 'Button Aesthetic Style'}</span>
+                      </div>
+                      <span className="text-[11px] font-cute text-neutral-500 dark:text-neutral-400">
+                        {locale === 'zh' ? '实时全站生效' : 'Live Sync'}
+                      </span>
+                    </div>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { id: 'tint', labelZh: '主题半透微光', labelEn: 'Theme Tint' },
-                        { id: 'clay', labelZh: '3D 空间黏土', labelEn: '3D Clay' },
-                        { id: 'glass', labelZh: 'Vision 磨砂玻璃', labelEn: 'Frosted Glass' },
+                        { id: 'neon', emoji: '🔮', labelZh: '错位霓虹', labelEn: 'Neon Shadow' },
+                        { id: 'laser', emoji: '⚡', labelZh: '极光流刃', labelEn: 'Laser Border' },
+                        { id: 'blob', emoji: '🫧', labelZh: '流体彩斑', labelEn: 'Fluid Glass' },
                       ].map((b) => (
                         <button
                           key={b.id}
                           type="button"
                           onClick={() => {
-                            playPop(520);
                             setButtonStyle(b.id as any);
+                            triggerAdminToast(locale === 'zh' ? `🎨 按钮风格已更新为【${b.labelZh}】！` : `🎨 Button style set to ${b.labelEn}!`);
                           }}
-                          className={`p-2.5 rounded-2xl text-center text-xs sm:text-sm font-bubble font-bold border transition cursor-pointer active:scale-95 ${
+                          className={`p-2.5 rounded-xl text-center text-xs font-bubble font-bold border transition cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 ${
                             buttonStyle === b.id
-                              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-600 shadow-xs'
-                              : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
+                              ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-500/60 shadow-xs'
+                              : 'bg-white dark:bg-neutral-800/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
                           }`}
                         >
-                          {locale === 'zh' ? b.labelZh : b.labelEn}
+                          <span className="text-sm">{b.emoji}</span>
+                          <span className="truncate">{locale === 'zh' ? b.labelZh : b.labelEn}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* 4. Color Mode Selector */}
-                  <div className="space-y-2">
-                    <span className="font-bubble font-bold text-neutral-700 dark:text-neutral-300 text-xs sm:text-sm block">
-                      🌙 {locale === 'zh' ? '色彩模式 (支持自动跟随系统)' : 'Color Theme Mode'}
-                    </span>
+                  {/* 4. Color Mode Selector Card */}
+                  <div className="p-3.5 rounded-2xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
+                        <span>🌙</span>
+                        <span>{locale === 'zh' ? '色彩主题模式' : 'Color Theme Mode'}</span>
+                      </div>
+                      <span className="text-[11px] font-cute text-neutral-500 dark:text-neutral-400">
+                        {locale === 'zh' ? '自动响应跟随' : 'Auto Sync'}
+                      </span>
+                    </div>
                     <div className="grid grid-cols-3 gap-2">
                       {[
                         { id: 'auto', emoji: '⚙️', labelZh: '跟随系统', labelEn: 'Auto System' },
@@ -367,17 +371,17 @@ export const ClayAdminAuthModal: React.FC = () => {
                           key={c.id}
                           type="button"
                           onClick={() => {
-                            playPop(580);
                             setColorMode(c.id as any);
+                            triggerAdminToast(locale === 'zh' ? `🌙 色彩模式已切换为【${c.labelZh}】！` : `🌙 Color mode set to ${c.labelEn}!`);
                           }}
-                          className={`p-2.5 rounded-2xl text-center text-xs sm:text-sm font-bubble font-bold border transition cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 ${
+                          className={`p-2.5 rounded-xl text-center text-xs font-bubble font-bold border transition cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 ${
                             colorMode === c.id
-                              ? 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-200 border-indigo-300 dark:border-indigo-600 shadow-xs'
-                              : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
+                              ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-900 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/60 shadow-xs'
+                              : 'bg-white dark:bg-neutral-800/80 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
                           }`}
                         >
-                          <span>{c.emoji}</span>
-                          <span>{locale === 'zh' ? c.labelZh : c.labelEn}</span>
+                          <span className="text-sm">{c.emoji}</span>
+                          <span className="truncate">{locale === 'zh' ? c.labelZh : c.labelEn}</span>
                         </button>
                       ))}
                     </div>
@@ -405,11 +409,10 @@ export const ClayAdminAuthModal: React.FC = () => {
                           window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: res }));
                           playChime();
                           triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
-                          setSuccessMsg(locale === 'zh' ? '⚡ 稳定运行时长已重置为从现在起重新计时！' : '⚡ Stable uptime counter reset to now!');
-                          setTimeout(() => setSuccessMsg(null), 3500);
+                          triggerAdminToast(locale === 'zh' ? '⚡ 稳定运行时长已重置为从现在起重新计时！' : '⚡ Stable uptime counter reset to now!');
                         }
                       }}
-                      className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 text-amber-900 dark:text-amber-200 font-bubble font-bold text-xs border border-amber-200 dark:border-amber-800 shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
+                      className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-300 font-bubble font-bold text-xs border border-amber-200 dark:border-amber-800/60 shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
                     >
                       <span>⏱️</span>
                       <span>{locale === 'zh' ? '重置时长' : 'Reset Uptime'}</span>
@@ -429,11 +432,10 @@ export const ClayAdminAuthModal: React.FC = () => {
                           window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: { ...res, totalVisits: 1, todayVisits: 1 } }));
                           playChime();
                           triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
-                          setSuccessMsg(locale === 'zh' ? '👥 访客统计已重置，从当前会话 1 重新起步！' : '👥 Visitor stats reset to 1 for current session!');
-                          setTimeout(() => setSuccessMsg(null), 3500);
+                          triggerAdminToast(locale === 'zh' ? '👥 访客统计已重置，从当前会话 1 重新起步！' : '👥 Visitor stats reset to 1 for current session!');
                         }
                       }}
-                      className="p-2 rounded-xl bg-pink-50 dark:bg-pink-950/60 hover:bg-pink-100 text-pink-900 dark:text-pink-200 font-bubble font-bold text-xs border border-pink-200 dark:border-pink-800 shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
+                      className="p-2 rounded-xl bg-pink-50 dark:bg-pink-950/50 hover:bg-pink-100 dark:hover:bg-pink-900/60 text-pink-900 dark:text-pink-300 font-bubble font-bold text-xs border border-pink-200 dark:border-pink-800/60 shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
                     >
                       <span>👥</span>
                       <span>{locale === 'zh' ? '重置访客' : 'Reset Visits'}</span>
@@ -453,11 +455,10 @@ export const ClayAdminAuthModal: React.FC = () => {
                           window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: { ...res, stampCount: 0 } }));
                           playChime();
                           triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
-                          setSuccessMsg(locale === 'zh' ? '🐾 爪印手印计数已清零！' : '🐾 Stamp counts have been reset to 0!');
-                          setTimeout(() => setSuccessMsg(null), 3500);
+                          triggerAdminToast(locale === 'zh' ? '🐾 爪印手印计数已清零！' : '🐾 Stamp counts have been reset to 0!');
                         }
                       }}
-                      className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-900 dark:text-emerald-200 font-bubble font-bold text-xs border border-emerald-200 dark:border-emerald-800 shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
+                      className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-300 font-bubble font-bold text-xs border border-emerald-200 dark:border-emerald-800/60 shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
                     >
                       <span>🐾</span>
                       <span>{locale === 'zh' ? '清零爪印' : 'Reset Stamps'}</span>
@@ -487,11 +488,10 @@ export const ClayAdminAuthModal: React.FC = () => {
                           }));
                           playChime();
                           triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
-                          setSuccessMsg(locale === 'zh' ? '✨ 运行时间、访客与爪印数据已一键全量重置生效！' : '✨ All uptime, visits and stamp data have been reset!');
-                          setTimeout(() => setSuccessMsg(null), 4000);
+                          triggerAdminToast(locale === 'zh' ? '💥 全量统计数据已重置为初始状态！' : '💥 All telemetry reset to initial state!');
                         }
                       }}
-                      className="p-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bubble font-bold text-xs shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
+                      className="p-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bubble font-bold text-xs shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
                     >
                       <span>⚡</span>
                       <span>{locale === 'zh' ? '全量重置' : 'Reset All'}</span>
@@ -565,15 +565,15 @@ export const ClayAdminAuthModal: React.FC = () => {
               <div className="lg:col-span-5 space-y-4">
                 
                 {/* Cloudflare R2 Object Storage & Cloud Snapshot Backups */}
-                <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-sky-50 to-indigo-50/80 dark:from-sky-950/40 dark:to-indigo-950/40 border border-sky-200/80 dark:border-sky-800/50 text-neutral-800 dark:text-neutral-100 space-y-3.5 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-sky-200/60 dark:border-sky-800/40 pb-2.5">
-                    <div className="flex items-center gap-2 font-bubble font-extrabold text-sm sm:text-base text-sky-900 dark:text-sky-200">
+                <div className="p-4 sm:p-5 rounded-3xl bg-neutral-50/90 dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 text-neutral-800 dark:text-neutral-100 space-y-3.5 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-white/10 pb-2.5">
+                    <div className="flex items-center gap-2 font-bubble font-extrabold text-sm sm:text-base text-sky-700 dark:text-sky-300">
                       <Cloud className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                       <span>{locale === 'zh' ? 'R2 云端快照备份' : 'R2 Cloud Snapshots'}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bubble font-bold ${
-                        r2Status?.connected ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                        r2Status?.connected ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
                       }`}>
                         <span className={`w-2 h-2 rounded-full ${r2Status?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'}`}></span>
                         <span>{r2Status?.connected ? (r2Status.bucketName || 'tagmesh-bucket') : (locale === 'zh' ? '未连接' : 'Disconnected')}</span>
@@ -590,7 +590,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                     </div>
                   </div>
 
-                  <p className="font-cute text-xs text-sky-900/80 dark:text-sky-200/80 leading-relaxed">
+                  <p className="font-cute text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
                     {locale === 'zh'
                       ? 'R2 专属存储桶已启用，提供 Markdown 截图秒传（零出口流量费）及全库云端快照备份。'
                       : 'R2 bucket active: Zero-egress screenshot hosting & full database snapshot backups.'}
@@ -601,7 +601,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                       type="button"
                       onClick={handleCreateBackup}
                       disabled={isBackingUp}
-                      className="w-full p-2.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bubble font-bold text-xs sm:text-sm shadow-3xs flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer disabled:opacity-50"
+                      className="w-full p-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bubble font-bold text-xs sm:text-sm shadow-3xs flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer disabled:opacity-50"
                     >
                       {isBackingUp ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
                       <span>{isBackingUp ? (locale === 'zh' ? '打包上传快照中...' : 'Backing up...') : (locale === 'zh' ? '📦 立即创建全库云端快照' : '📦 Create R2 Snapshot')}</span>
@@ -609,15 +609,15 @@ export const ClayAdminAuthModal: React.FC = () => {
                   </div>
 
                   {/* Snapshots List */}
-                  <div className="pt-2 border-t border-sky-200/60 dark:border-sky-800/40 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-bubble font-bold text-sky-900 dark:text-sky-200">
+                  <div className="pt-2 border-t border-neutral-200/80 dark:border-white/10 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bubble font-bold text-neutral-800 dark:text-neutral-200">
                       <span>{locale === 'zh' ? '历史快照时光机' : 'Snapshot History'}</span>
                       <span>({backupsList.length})</span>
                     </div>
 
                     <div className="max-h-56 overflow-y-auto space-y-2 custom-scrollbar pr-1">
                       {backupsList.length === 0 ? (
-                        <p className="text-center py-4 text-xs font-cute text-sky-700/70 dark:text-sky-300/70">
+                        <p className="text-center py-4 text-xs font-cute text-neutral-400 dark:text-neutral-500">
                           {locale === 'zh' ? '暂无云端快照，点击上方按钮即可创建第一份备份。' : 'No snapshots yet. Click above to create one.'}
                         </p>
                       ) : (
@@ -627,7 +627,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                           const isRestoring = isRestoringKey === bk.key;
 
                           return (
-                            <div key={bk.key} className="flex items-center justify-between p-2.5 rounded-2xl bg-white/90 dark:bg-neutral-900/90 border border-sky-100 dark:border-white/10 text-xs shadow-3xs">
+                            <div key={bk.key} className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-white/10 text-xs shadow-3xs">
                               <div className="min-w-0 pr-2">
                                 <div className="font-mono font-bold text-neutral-800 dark:text-neutral-100 truncate text-xs">
                                   📑 {bk.key.replace('backups/', '')}
@@ -640,7 +640,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                                 type="button"
                                 disabled={isRestoring}
                                 onClick={() => handleRestoreBackup(bk.key)}
-                                className="px-3 py-1.5 rounded-xl bg-sky-100 dark:bg-sky-900 hover:bg-sky-200 dark:hover:bg-sky-800 text-sky-800 dark:text-sky-200 font-bubble font-bold text-xs shrink-0 transition active:scale-95 cursor-pointer disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-bubble font-bold text-xs shrink-0 transition active:scale-95 cursor-pointer disabled:opacity-50"
                               >
                                 {isRestoring ? (
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

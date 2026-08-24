@@ -227,12 +227,12 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
           {/* 1. Sidebar Top Header */}
           <div className="h-16 border-b border-amber-900/10 dark:border-white/10 px-3.5 sm:px-4 flex items-center justify-between shrink-0 bg-white/80 dark:bg-neutral-900/90 backdrop-blur-md gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className={`w-9 h-9 rounded-2xl flex items-center justify-center shadow-md text-white shrink-0 ${
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-md text-white shrink-0 ${
                 sidebarTab === 'trash'
-                  ? 'bg-gradient-to-br from-neutral-600 to-stone-800'
+                  ? 'bg-neutral-700 dark:bg-neutral-800'
                   : isBatchMode
-                  ? 'bg-gradient-to-br from-rose-500 to-pink-600'
-                  : 'bg-gradient-to-br from-pink-400 via-rose-400 to-amber-300'
+                  ? 'bg-rose-500'
+                  : 'bg-rose-500'
               }`}>
                 {sidebarTab === 'trash' ? <Trash2 className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
               </div>
@@ -266,10 +266,10 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                       setSelectedIds(new Set());
                     }
                   }}
-                  className={`h-8 px-2.5 rounded-full font-bubble font-bold text-xs border transition cursor-pointer flex items-center gap-1 shrink-0 ${
+                  className={`h-8 px-2.5 rounded-xl font-bubble font-bold text-xs border transition cursor-pointer flex items-center gap-1 shrink-0 ${
                     isBatchMode
                       ? 'bg-rose-500 text-white border-rose-600 shadow-sm'
-                      : 'bg-white hover:bg-neutral-100 text-neutral-700 border-neutral-200/90 shadow-3xs'
+                      : 'bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-neutral-200/90 dark:border-white/10 shadow-3xs'
                   }`}
                   title={locale === 'zh' ? '切换批量管理' : 'Toggle Batch Mode'}
                 >
@@ -286,7 +286,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                     playPop();
                     onNewNote();
                   }}
-                  className={`h-8 flex items-center gap-1 px-3 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-xs font-bold shadow-sm hover:shadow-md transition cursor-pointer active:scale-95 shrink-0 border border-white`}
+                  className="h-8 flex items-center gap-1 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white font-bubble text-xs font-bold shadow-sm hover:shadow-md transition cursor-pointer active:scale-95 shrink-0 border border-rose-400/80 dark:border-rose-500/50"
                   title="New Note (⌘N)"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -301,7 +301,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                   playPop();
                   onToggleSidebar();
                 }}
-                className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition cursor-pointer shrink-0 border border-transparent hover:border-neutral-200"
+                className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 transition cursor-pointer shrink-0 border border-transparent hover:border-neutral-200 dark:hover:border-white/10"
                 title="Collapse Sidebar (⌘\)"
               >
                 <PanelLeftClose className="w-4 h-4" />
@@ -311,22 +311,22 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
 
           {/* 2. Top View Switcher: [全部笔记] vs [🗑️ 废纸篓 (N)] */}
           {!isBatchMode && (
-            <div className="p-2.5 bg-amber-50/40 border-b border-amber-900/10 flex items-center gap-1.5">
+            <div className="p-2.5 bg-amber-50/40 dark:bg-neutral-900 border-b border-amber-900/10 dark:border-white/10 flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => {
                   playPop();
                   setSidebarTab('notes');
                 }}
-                className={`flex-1 py-2 px-3 rounded-2xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                className={`flex-1 py-2 px-3 rounded-xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
                   sidebarTab === 'notes'
-                    ? 'bg-white text-rose-700 shadow-xs border border-rose-200'
-                    : 'text-neutral-600 hover:bg-white/60'
+                    ? 'bg-white dark:bg-neutral-800 text-rose-700 dark:text-rose-300 shadow-xs border border-rose-200 dark:border-white/10'
+                    : 'text-neutral-600 dark:text-neutral-300 hover:bg-white/60 dark:hover:bg-neutral-800/60'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5 text-pink-500" />
                 <span>{locale === 'zh' ? '全部笔记' : 'All Notes'}</span>
-                <span className="px-2 py-0.2 rounded-full bg-rose-50 text-rose-600 text-[11px] font-mono font-bold">
+                <span className="px-2 py-0.2 rounded-lg bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-300 text-[11px] font-bubble font-bold">
                   {totalCount}
                 </span>
               </button>
@@ -340,16 +340,16 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                     setSidebarTab('trash');
                     onSelectTag('#all');
                   }}
-                  className={`flex-1 py-2 px-3 rounded-2xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
                     sidebarTab === 'trash'
-                      ? 'bg-stone-800 text-white shadow-xs border border-stone-900'
-                      : 'text-neutral-600 hover:bg-stone-100'
+                      ? 'bg-stone-800 dark:bg-neutral-800 text-white shadow-xs border border-stone-900 dark:border-white/10'
+                      : 'text-neutral-600 dark:text-neutral-300 hover:bg-stone-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <Trash2 className="w-3.5 h-3.5 text-stone-400" />
                   <span>{locale === 'zh' ? '废纸篓' : 'Trash'}</span>
-                  <span className={`px-2 py-0.2 rounded-full text-[11px] font-mono font-bold ${
-                    sidebarTab === 'trash' ? 'bg-stone-700 text-stone-200' : 'bg-neutral-200 text-neutral-700'
+                  <span className={`px-2 py-0.2 rounded-lg text-[11px] font-bubble font-bold ${
+                    sidebarTab === 'trash' ? 'bg-stone-700 dark:bg-neutral-700 text-stone-200' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
                   }`}>
                     {deletedCount}
                   </span>
@@ -405,8 +405,8 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
 
         {/* 4. Trash View Top Action Bar */}
         {sidebarTab === 'trash' && (
-          <div className="px-3 py-2.5 bg-stone-100 border-b border-stone-200 flex items-center justify-between text-xs font-bubble">
-            <span className="text-stone-600 font-bold">
+          <div className="px-3 py-2.5 bg-stone-100 dark:bg-neutral-900 border-b border-stone-200 dark:border-white/10 flex items-center justify-between text-xs font-bubble">
+            <span className="text-stone-600 dark:text-neutral-300 font-bold">
               {deletedCount === 0 ? (locale === 'zh' ? '废纸篓空空如也' : 'Trash is empty') : `共 ${deletedCount} 篇已删笔记`}
             </span>
             {deletedCount > 0 && (
@@ -414,7 +414,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                 <button
                   type="button"
                   onClick={handleRestoreAllTrash}
-                  className="px-2.5 py-1 rounded-xl bg-white border border-emerald-300 text-emerald-700 font-bold hover:bg-emerald-50 transition shadow-3xs flex items-center gap-1 cursor-pointer active:scale-95"
+                  className="px-2.5 py-1 rounded-xl bg-white dark:bg-neutral-800 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition shadow-3xs flex items-center gap-1 cursor-pointer active:scale-95"
                   title="Restore All Notes"
                 >
                   <RotateCcw className="w-3 h-3" />
@@ -632,23 +632,23 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                     <div
                       key={note.id}
                       onClick={() => onSelectNote(note)}
-                      className="p-4.5 rounded-[26px] border border-stone-200 bg-stone-50/95 hover:bg-white transition cursor-pointer group flex flex-col justify-between shadow-3xs"
+                      className="p-4.5 rounded-[26px] border border-stone-200 dark:border-white/10 bg-stone-50/95 dark:bg-neutral-900 hover:bg-white dark:hover:bg-neutral-800 transition cursor-pointer group flex flex-col justify-between shadow-3xs"
                     >
                       <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <h4 className="font-bubble text-base font-bold text-stone-700 line-clamp-1 group-hover:text-stone-900">
+                        <h4 className="font-bubble text-base font-bold text-stone-700 dark:text-neutral-100 line-clamp-1 group-hover:text-stone-900 dark:group-hover:text-white">
                           {note.excerpt || (locale === 'zh' ? '已删笔记' : 'Deleted Note')}
                         </h4>
-                        <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 text-[10px] font-bold shrink-0">
+                        <span className="px-2 py-0.5 rounded-full bg-stone-200 dark:bg-neutral-800 text-stone-600 dark:text-neutral-300 text-[10px] font-bubble font-bold shrink-0">
                           {locale === 'zh' ? '已删除' : 'Trash'}
                         </span>
                       </div>
 
-                      <p className="font-cute text-xs text-stone-500 line-clamp-2 leading-relaxed mb-3 opacity-90">
+                      <p className="font-cute text-xs text-stone-500 dark:text-neutral-400 line-clamp-2 leading-relaxed mb-3 opacity-90">
                         {(note.rawMarkdown || '').replace(/^[#>*`\-\d.]+\s*/gm, '').substring(0, 80) || (locale === 'zh' ? '暂无内容...' : 'No content...')}
                       </p>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-stone-200/80 text-xs font-cute">
-                        <span className="text-stone-400 text-[11px]">{formattedDate}</span>
+                      <div className="flex items-center justify-between pt-2 border-t border-stone-200/80 dark:border-white/10 text-xs font-cute">
+                        <span className="text-stone-400 dark:text-neutral-500 text-[11px]">{formattedDate}</span>
 
                         <div className="flex items-center gap-1.5">
                           <button
@@ -657,7 +657,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                               e.stopPropagation();
                               handleRestoreNote(note);
                             }}
-                            className="px-2.5 py-1 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bubble font-bold transition flex items-center gap-1 shadow-3xs cursor-pointer active:scale-95"
+                            className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 text-xs font-bubble font-bold transition flex items-center gap-1 shadow-3xs cursor-pointer active:scale-95"
                             title="Restore Note"
                           >
                             <RotateCcw className="w-3 h-3" />
@@ -667,7 +667,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                           <button
                             type="button"
                             onClick={(e) => handlePermanentlyDeleteNote(note.id, e)}
-                            className="px-2 py-1 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bubble font-bold transition flex items-center gap-1 shadow-3xs cursor-pointer active:scale-95"
+                            className="px-2 py-1 rounded-xl bg-rose-100 dark:bg-rose-950/80 hover:bg-rose-200 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700 text-xs font-bubble font-bold transition flex items-center gap-1 shadow-3xs cursor-pointer active:scale-95"
                             title="Delete Permanently"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -684,17 +684,17 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
         </div>
 
         {/* 7. Bottom Sidebar Action Footer: 👑 馆长后台控制台 / 🌱 游客 */}
-        <div className="p-2.5 border-t border-amber-900/10 bg-white/80 backdrop-blur-xs flex items-center justify-between gap-2 shrink-0">
+        <div className="p-2.5 border-t border-amber-900/10 dark:border-white/10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xs flex items-center justify-between gap-2 shrink-0">
           <button
             type="button"
             onClick={() => {
               playPop();
               openAuthModal();
             }}
-            className={`w-full py-2 px-3 rounded-2xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border shadow-3xs hover:scale-[1.02] active:scale-95 ${
+            className={`w-full py-2.5 px-3 rounded-xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border shadow-3xs hover:scale-[1.02] active:scale-95 ${
               isAdmin
-                ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-neutral-900 border-amber-300 shadow-sm'
-                : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                ? 'bg-amber-400 dark:bg-amber-500 text-neutral-900 border-amber-300 dark:border-amber-400 shadow-3xs'
+                : 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
             }`}
           >
             <span>{isAdmin ? '👑' : '🌱'}</span>

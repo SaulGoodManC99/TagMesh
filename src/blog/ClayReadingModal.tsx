@@ -283,7 +283,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
           <div className="font-cute text-base sm:text-[17px] text-neutral-800 dark:text-neutral-100 leading-relaxed space-y-3">
             {renderRichMarkdown(note.rawMarkdown || '', {
               stripFirstHeading: false,
-              onTagClick: (tg) => {
+              onTagClick: (tg: string) => {
                 handleDirectClose();
                 onTagClick(tg);
               },

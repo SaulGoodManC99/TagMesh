@@ -1,4 +1,4 @@
-export type ButtonStyle = 'tint' | 'clay' | 'glass';
+export type ButtonStyle = 'neon' | 'laser' | 'blob' | 'tint' | 'clay' | 'glass';
 export type ColorMode = 'auto' | 'light' | 'dark';
 
 export interface SiteConfig {
@@ -13,7 +13,7 @@ const STORAGE_KEY = 'tagmesh_site_config_v1';
 const DEFAULT_CONFIG: SiteConfig = {
   guestNotesEnabled: true,
   danmakuEnabled: true,
-  buttonStyle: 'tint',
+  buttonStyle: 'neon',
   colorMode: 'auto',
 };
 
@@ -25,7 +25,7 @@ export function getStoredSiteConfig(): SiteConfig {
     return {
       guestNotesEnabled: typeof parsed.guestNotesEnabled === 'boolean' ? parsed.guestNotesEnabled : true,
       danmakuEnabled: typeof parsed.danmakuEnabled === 'boolean' ? parsed.danmakuEnabled : true,
-      buttonStyle: ['tint', 'clay', 'glass'].includes(parsed.buttonStyle) ? parsed.buttonStyle : 'tint',
+      buttonStyle: ['neon', 'laser', 'blob', 'tint', 'clay', 'glass'].includes(parsed.buttonStyle) ? parsed.buttonStyle : 'neon',
       colorMode: ['auto', 'light', 'dark'].includes(parsed.colorMode) ? parsed.colorMode : 'auto',
     };
   } catch {

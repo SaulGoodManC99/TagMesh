@@ -89,7 +89,13 @@ export const App: React.FC = () => {
       if (hash.startsWith('#/editor')) {
         nextRoute = 'editor';
       } else if (hash.startsWith('#/danmaku') || hash.startsWith('#/barrage') || hash.startsWith('#/chat')) {
-        nextRoute = 'danmaku';
+        if (!danmakuEnabled) {
+          showToast(locale === 'zh' ? '💌 弹幕广场已暂停开放，已返回首页' : '💌 Danmaku Plaza is closed, returned to home');
+          window.location.hash = '#/';
+          nextRoute = 'home';
+        } else {
+          nextRoute = 'danmaku';
+        }
       } else if (hash.startsWith('#/gallery') || hash.startsWith('#/explore') || hash.startsWith('#/blog') || hash.startsWith('#/notes') || hash.startsWith('#/post')) {
         nextRoute = 'gallery';
       } else {
@@ -101,7 +107,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
-  }, []);
+  }, [danmakuEnabled, locale, showToast]);
 
   // Guard against unauthorized editor access when guest notes mode is disabled
   useEffect(() => {
@@ -113,6 +119,27 @@ export const App: React.FC = () => {
       window.location.hash = '#/';
     }
   }, [route, guestNotesEnabled, isAdmin, openAuthModal, locale, showToast]);
+
+  // Listen to Global Custom Toast Events (from Admin Modal, Context Menu, etc.)
+  useEffect(() => {
+    const handleGlobalToast = (e: any) => {
+      if (e.detail?.message) {
+        showToast(e.detail.message);
+      }
+    };
+    window.addEventListener('tagmesh_toast_notify' as any, handleGlobalToast);
+    return () => window.removeEventListener('tagmesh_toast_notify' as any, handleGlobalToast);
+  }, [showToast]);
+
+  // Guard against danmaku plaza access when danmaku mode is disabled (auto-return home smoothly)
+  useEffect(() => {
+    if (route === 'danmaku' && !danmakuEnabled) {
+      playPop(300);
+      showToast(locale === 'zh' ? '💌 弹幕广场已暂停开放，已自动返回首页' : '💌 Danmaku Plaza is closed, returning home');
+      setRoute('home');
+      window.location.hash = '#/';
+    }
+  }, [route, danmakuEnabled, locale, showToast]);
 
   // Initialize DB, load initial note, seed guest sample notes, and ensure author separation
   useEffect(() => {
@@ -269,8 +296,13 @@ export const App: React.FC = () => {
     showToast('💾 Exported Markdown');
   }, [activeNote, showToast]);
 
-  // Export all notes as JSON backup
+  // Export all notes as JSON backup (Restricted to Admin/Curator)
   const handleExportJson = useCallback(async () => {
+    if (!isAdmin) {
+      showToast(locale === 'zh' ? '🔒 全量知识库备份为馆长专属权限，请先验证馆长身份！' : '🔒 Full knowledge base backup is restricted to Curator/Admin!');
+      openAuthModal();
+      return;
+    }
     const allNotes = await db.notes.toArray();
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(allNotes, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -279,8 +311,8 @@ export const App: React.FC = () => {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showToast('📦 Exported JSON Backup');
-  }, [showToast]);
+    showToast(locale === 'zh' ? '📦 成功导出全量笔记数据备份' : '📦 Exported JSON Backup');
+  }, [isAdmin, openAuthModal, locale, showToast]);
 
   // Register Global Keyboard Shortcuts
   useEffect(() => {
@@ -661,28 +693,30 @@ export const App: React.FC = () => {
         )}
 
         {route === 'danmaku' && (
-          (!danmakuEnabled && !isAdmin) ? (
-            <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center select-none animate-in fade-in duration-300">
+          !danmakuEnabled ? (
+            <div className="min-h-screen flex flex-col w-full relative select-none animate-in fade-in duration-300">
               <ClayHeader currentRoute="danmaku" onGoToEditor={() => { window.location.hash = '#/editor'; }} />
-              <div className="my-auto max-w-md p-8 sm:p-10 rounded-[38px] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-3 border-white dark:border-white/10 shadow-2xl clay-card flex flex-col items-center gap-4">
-                <span className="text-5xl select-none animate-bounce">💌</span>
-                <h3 className="font-bubble font-extrabold text-xl sm:text-2xl text-neutral-900 dark:text-neutral-100">
-                  {locale === 'zh' ? '弹幕广场暂停开放' : 'Danmaku Plaza is Closed'}
-                </h3>
-                <p className="font-cute text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                  {locale === 'zh' 
-                    ? '馆长当前关闭了弹幕广场互动通道，请漫游笔记或稍后再来！' 
-                    : 'The Curator has temporarily paused public Danmaku messages. Enjoy reading notes or check back later!'}
-                </p>
-                <button
-                  onClick={() => {
-                    playPop();
-                    window.location.hash = '#/';
-                  }}
-                  className={`mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-sm clay-btn shadow-md hover:scale-105 active:scale-95 transition cursor-pointer`}
-                >
-                  {locale === 'zh' ? '🎈 返回乐园首页' : '🎈 Back to Home'}
-                </button>
+              <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+                <div className="w-full max-w-md p-8 sm:p-10 rounded-[38px] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-3 border-white dark:border-white/10 shadow-2xl clay-card flex flex-col items-center text-center gap-4">
+                  <span className="text-5xl select-none animate-bounce">💌</span>
+                  <h3 className="font-bubble font-extrabold text-xl sm:text-2xl text-neutral-900 dark:text-neutral-100">
+                    {locale === 'zh' ? '弹幕广场暂停开放' : 'Danmaku Plaza is Closed'}
+                  </h3>
+                  <p className="font-cute text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                    {locale === 'zh' 
+                      ? '馆长当前关闭了弹幕广场互动通道，请漫游笔记或稍后再来！' 
+                      : 'The Curator has temporarily paused public Danmaku messages. Enjoy reading notes or check back later!'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      playPop();
+                      window.location.hash = '#/';
+                    }}
+                    className={`mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-sm clay-btn shadow-md hover:scale-105 active:scale-95 transition cursor-pointer`}
+                  >
+                    {locale === 'zh' ? '🎈 返回乐园首页' : '🎈 Back to Home'}
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -705,7 +739,7 @@ export const App: React.FC = () => {
 
       {/* Toast Notification Pill */}
       {toastMessage && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[350] animate-in fade-in slide-in-from-top-2 duration-150 px-4 py-2 rounded-full bg-neutral-900/90 border border-cyan-500/40 text-neutral-100 text-xs font-mono shadow-2xl backdrop-blur-md flex items-center gap-2">
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[400] animate-in fade-in slide-in-from-top-3 duration-200 px-5 py-2.5 rounded-2xl bg-neutral-900/95 dark:bg-neutral-800/95 border border-white/20 dark:border-white/10 text-white text-xs sm:text-sm font-bubble font-bold shadow-2xl backdrop-blur-xl flex items-center gap-2 select-none pointer-events-none">
           <span>{toastMessage}</span>
         </div>
       )}
