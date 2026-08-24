@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../hooks/useI18n';
+import { useSiteConfig } from '../hooks/useSiteConfig';
 import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
 import { triggerParticleBurst } from '../blog/utils/confetti';
 import { 
@@ -35,6 +36,14 @@ import { db } from '../db/dexie';
 export const ClayAdminAuthModal: React.FC = () => {
   const { role, isAdmin, loginAsAdmin, logoutToGuest, updateAdminPassword, isAuthModalOpen, closeAuthModal } = useAuth();
   const { locale } = useI18n();
+  const { 
+    guestNotesEnabled, 
+    buttonStyle, 
+    colorMode, 
+    setGuestNotesEnabled, 
+    setButtonStyle, 
+    setColorMode 
+  } = useSiteConfig();
 
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -219,6 +228,111 @@ export const ClayAdminAuthModal: React.FC = () => {
                       ? '• 解锁所有卡片编辑与官方置顶\n• 解锁 MCP Token 与 Cloudflare 边缘同步密钥\n• 解锁弹幕广场总控管理与敏感词违规下架'
                       : '• Full note editing & official pinning\n• View & configure MCP keys & Cloudflare sync\n• Danmaku moderation & bad words cleanup'}
                   </p>
+                </div>
+              </div>
+
+              {/* ⚙️ 站点全局配置与权限总控 (Admin Exclusive Controls) */}
+              <div className="p-3.5 rounded-2xl bg-white border border-neutral-200/80 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-amber-900/10 pb-2">
+                  <span className="font-bubble font-bold text-neutral-800 text-xs flex items-center gap-1.5">
+                    <span>⚙️</span>
+                    <span>{locale === 'zh' ? '站点展示与权限总控' : 'Site & Access Control'}</span>
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    {locale === 'zh' ? '实时生效' : 'Live Sync'}
+                  </span>
+                </div>
+
+                {/* 1. Guest Notes & Access Toggle */}
+                <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-50/80 border border-neutral-200/60">
+                  <div>
+                    <div className="font-bubble font-bold text-neutral-900 text-xs flex items-center gap-1">
+                      <span>🌱</span>
+                      <span>{locale === 'zh' ? '开放旅人笔记展示与编辑' : 'Allow Guest Notes & Memos'}</span>
+                    </div>
+                    <div className="text-[10px] text-neutral-500 font-cute">
+                      {locale === 'zh' 
+                        ? (guestNotesEnabled ? '当前允许游客浏览旅人笔记并使用工作台' : '已关闭：游客仅能浏览馆长笔记，隐藏工作台入口')
+                        : (guestNotesEnabled ? 'Guests can view notes and write memos' : 'Closed: Guests only see Curator notes, workspace locked')}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPop(guestNotesEnabled ? 350 : 650);
+                      setGuestNotesEnabled(!guestNotesEnabled);
+                      setSuccessMsg(locale === 'zh' ? (guestNotesEnabled ? '🔒 旅人笔记已关闭，仅开放馆长内容' : '🌱 旅人笔记展示与工作台已向游客开放！') : 'Settings updated!');
+                      setTimeout(() => setSuccessMsg(null), 3000);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bubble font-bold text-xs shadow-3xs cursor-pointer transition active:scale-95 shrink-0 ${
+                      guestNotesEnabled
+                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                        : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
+                    }`}
+                  >
+                    {guestNotesEnabled ? (locale === 'zh' ? '✅ 已开启' : 'Enabled') : (locale === 'zh' ? '🚫 已关闭' : 'Disabled')}
+                  </button>
+                </div>
+
+                {/* 2. Button Style Selector */}
+                <div className="space-y-1.5">
+                  <span className="font-bubble font-bold text-neutral-700 text-xs block">
+                    🎨 {locale === 'zh' ? '前台交互按钮风格' : 'Button Aesthetic Style'}
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'clay', labelZh: '3D 空间黏土', labelEn: '3D Clay' },
+                      { id: 'glass', labelZh: 'Vision 磨砂玻璃', labelEn: 'Frosted Glass' },
+                      { id: 'minimal', labelZh: '极简胶囊微光', labelEn: 'Minimal Pill' },
+                    ].map((b) => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          playPop(520);
+                          setButtonStyle(b.id as any);
+                        }}
+                        className={`p-1.5 rounded-xl text-center text-xs font-bubble font-bold border transition cursor-pointer active:scale-95 ${
+                          buttonStyle === b.id
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-xs'
+                            : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border-neutral-200/80'
+                        }`}
+                      >
+                        {locale === 'zh' ? b.labelZh : b.labelEn}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Color Mode Selector */}
+                <div className="space-y-1.5">
+                  <span className="font-bubble font-bold text-neutral-700 text-xs block">
+                    🌙 {locale === 'zh' ? '色彩模式 (支持自动跟随系统)' : 'Color Theme Mode'}
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'auto', emoji: '⚙️', labelZh: '跟随系统', labelEn: 'Auto System' },
+                      { id: 'light', emoji: '☀️', labelZh: '浅色明亮', labelEn: 'Light' },
+                      { id: 'dark', emoji: '🌙', labelZh: '深度暗黑', labelEn: 'Dark' },
+                    ].map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          playPop(580);
+                          setColorMode(c.id as any);
+                        }}
+                        className={`p-1.5 rounded-xl text-center text-xs font-bubble font-bold border transition cursor-pointer active:scale-95 flex items-center justify-center gap-1 ${
+                          colorMode === c.id
+                            ? 'bg-indigo-100 text-indigo-900 border-indigo-300 shadow-xs'
+                            : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border-neutral-200/80'
+                        }`}
+                      >
+                        <span>{c.emoji}</span>
+                        <span>{locale === 'zh' ? c.labelZh : c.labelEn}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

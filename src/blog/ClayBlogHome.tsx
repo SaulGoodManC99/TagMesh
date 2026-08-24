@@ -5,6 +5,7 @@ import { Note } from '../types/note';
 import { db, getAllTagCounts, getActiveNotes, ensureNotesAuthorSeparation } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
+import { useSiteConfig } from '../hooks/useSiteConfig';
 import { deleteNoteRemote, fetchRemoteNotes } from '../services/api';
 import { APP_VERSION, getFormattedBuildTime } from '../constants/version';
 
@@ -41,6 +42,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   const { locale } = useI18n();
   const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
+  const { guestNotesEnabled } = useSiteConfig();
 
   const [selectedTag, setSelectedTag] = useState<string>('#all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -227,14 +229,16 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     });
   }, [allNotes]);
 
-  // Dynamic Real-time Tag counts scoped strictly to active authorFilter
+  const effectiveAuthorFilter = guestNotesEnabled ? authorFilter : 'admin';
+
+  // Dynamic Real-time Tag counts scoped strictly to active effectiveAuthorFilter
   const authorTagCounts = useMemo(() => {
     const targetNotes = publicNotes.filter((note) => {
       if (!note) return false;
-      if (authorFilter === 'admin') {
+      if (effectiveAuthorFilter === 'admin') {
         return note.isOfficial === true || note.author === 'admin';
       }
-      if (authorFilter === 'guest') {
+      if (effectiveAuthorFilter === 'guest') {
         return note.isOfficial !== true && note.author !== 'admin';
       }
       return true;
@@ -256,16 +260,17 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     return Array.from(map.entries())
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count);
-  }, [publicNotes, authorFilter]);
+  }, [publicNotes, effectiveAuthorFilter]);
 
   // Calculate live stats
-  const totalNotes = publicNotes.length;
+  const totalNotes = guestNotesEnabled ? publicNotes.length : publicNotes.filter(n => n.isOfficial === true || n.author === 'admin').length;
   const totalTags = authorTagCounts.length;
   const adminNotesCount = useMemo(() => publicNotes.filter(n => n.isOfficial === true || n.author === 'admin').length, [publicNotes]);
   const guestNotesCount = useMemo(() => publicNotes.filter(n => n.isOfficial !== true && n.author !== 'admin').length, [publicNotes]);
   const totalWords = useMemo(() => {
-    return publicNotes.reduce((acc, curr) => acc + (curr?.wordCount || 0), 0);
-  }, [publicNotes]);
+    const activeList = guestNotesEnabled ? publicNotes : publicNotes.filter(n => n.isOfficial === true || n.author === 'admin');
+    return activeList.reduce((acc, curr) => acc + (curr?.wordCount || 0), 0);
+  }, [publicNotes, guestNotesEnabled]);
 
   // Filter notes by selected tag and author
   const filteredNotes = useMemo(() => {
@@ -275,10 +280,10 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         const tags = Array.isArray(note.tags) ? note.tags : [];
 
         // Author filter
-        if (authorFilter === 'admin' && note.isOfficial !== true && note.author !== 'admin') {
+        if (effectiveAuthorFilter === 'admin' && note.isOfficial !== true && note.author !== 'admin') {
           return false;
         }
-        if (authorFilter === 'guest' && (note.isOfficial === true || note.author === 'admin')) {
+        if (effectiveAuthorFilter === 'guest' && (note.isOfficial === true || note.author === 'admin')) {
           return false;
         }
 
@@ -406,7 +411,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-bubble text-lg sm:text-2xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 bg-clip-text text-transparent">
-                {locale === 'zh' ? '旅人笔记' : 'Notes Space'}
+                {locale === 'zh' ? (guestNotesEnabled ? '笔记' : '馆长精选笔记') : (guestNotesEnabled ? 'Notes Space' : 'Curator Notes')}
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[11px] font-bubble font-bold border border-pink-200 shadow-3xs">
                 <Sparkles className="w-3 h-3 text-pink-500" />
@@ -421,47 +426,54 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           </div>
         </div>
 
-        {/* Author Dimension Filter Pills */}
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end overflow-x-auto no-scrollbar">
-          {/* Author Switcher */}
-          <div className="inline-flex p-1 rounded-2xl bg-white/95 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold shrink-0">
-            <button
-              type="button"
-              onClick={() => handleAuthorFilterChange('all', 520)}
-              className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 hover:scale-105 ${
-                authorFilter === 'all'
-                  ? 'bg-neutral-900 text-white shadow-xs'
-                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
-              }`}
-            >
-              <span>🌟 {locale === 'zh' ? '全部' : 'All'} ({publicNotes.length})</span>
-            </button>
+        {/* Author Dimension Filter Pills (Only shown when Guest notes are enabled) */}
+        {guestNotesEnabled ? (
+          <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end overflow-x-auto no-scrollbar">
+            {/* Author Switcher */}
+            <div className="inline-flex p-1 rounded-2xl bg-white/95 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold shrink-0">
+              <button
+                type="button"
+                onClick={() => handleAuthorFilterChange('all', 520)}
+                className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 hover:scale-105 ${
+                  authorFilter === 'all'
+                    ? 'bg-neutral-900 text-white shadow-xs'
+                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+                }`}
+              >
+                <span>🌟 {locale === 'zh' ? '全部' : 'All'} ({publicNotes.length})</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handleAuthorFilterChange('admin', 540)}
-              className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
-                authorFilter === 'admin'
-                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-neutral-900 shadow-xs'
-                  : 'text-amber-700 hover:bg-amber-50'
-              }`}
-            >
-              <span>👑 {locale === 'zh' ? '馆长精选' : 'Curator'} ({adminNotesCount})</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => handleAuthorFilterChange('admin', 540)}
+                className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
+                  authorFilter === 'admin'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-neutral-900 shadow-xs'
+                    : 'text-amber-700 hover:bg-amber-50'
+                }`}
+              >
+                <span>👑 {locale === 'zh' ? '馆长精选' : 'Curator'} ({adminNotesCount})</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handleAuthorFilterChange('guest', 560)}
-              className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
-                authorFilter === 'guest'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs'
-                  : 'text-emerald-700 hover:bg-emerald-50'
-              }`}
-            >
-              <span>🌱 {locale === 'zh' ? '旅人笔记' : 'Guests'} ({guestNotesCount})</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => handleAuthorFilterChange('guest', 560)}
+                className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
+                  authorFilter === 'guest'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs'
+                    : 'text-emerald-700 hover:bg-emerald-50'
+                }`}
+              >
+                <span>🌱 {locale === 'zh' ? '旅人笔记' : 'Guests'} ({guestNotesCount})</span>
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bubble font-bold text-xs border border-amber-200 shadow-3xs shrink-0">
+            <span>👑</span>
+            <span>{locale === 'zh' ? '已开启馆长精选专属展台' : 'Curator Exclusive Exhibition'}</span>
+          </div>
+        )}
       </div>
 
       {/* Searchable & Multi-Sort Interactive Tag Mesh Pills */}

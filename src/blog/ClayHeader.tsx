@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
+import { useSiteConfig } from '../hooks/useSiteConfig';
 import { isSoundEnabled, toggleSound, playPop, playSoftTick } from './utils/soundEffects';
 import { useClayTheme } from './utils/clayThemes';
 import { SPRING_MICRO, HOVER_BUTTON_PRESS } from './utils/motionSystem';
@@ -31,6 +32,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
   const { locale, toggleLocale } = useI18n();
   const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
+  const { guestNotesEnabled } = useSiteConfig();
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -110,10 +112,10 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               window.location.hash = '#/gallery';
             }}
             className={currentRoute === 'gallery' ? activePillClass : basePillClass}
-            title={locale === 'zh' ? '进入旅人笔记' : 'Enter Notes'}
+            title={locale === 'zh' ? '进入笔记' : 'Enter Notes'}
           >
             <Layers className={`w-3.5 h-3.5 ${currentRoute === 'gallery' ? 'text-white' : 'text-amber-500'}`} />
-            <span>{locale === 'zh' ? '旅人笔记' : 'Notes'}</span>
+            <span>{locale === 'zh' ? '笔记' : 'Notes'}</span>
           </motion.button>
 
           {/* 3. Danmaku Plaza */}
@@ -154,18 +156,20 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             <span>{isAdmin ? (locale === 'zh' ? '馆长' : 'Admin') : (locale === 'zh' ? '游客' : 'Guest')}</span>
           </motion.button>
 
-          {/* 5. Jump to Workspace CTA */}
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.06, y: -1 }}
-            whileTap={{ scale: 0.93 }}
-            transition={SPRING_MICRO}
-            onClick={handleGoEditor}
-            className={`h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-xs border border-white/60 shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer shrink-0`}
-          >
-            <PenTool className="w-3.5 h-3.5" />
-            <span>{locale === 'zh' ? '工作台 ➜' : 'Workspace ➜'}</span>
-          </motion.button>
+          {/* 5. Jump to Workspace CTA (Visible if Admin or Guest mode is open) */}
+          {(guestNotesEnabled || isAdmin) && (
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.06, y: -1 }}
+              whileTap={{ scale: 0.93 }}
+              transition={SPRING_MICRO}
+              onClick={handleGoEditor}
+              className={`h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-xs border border-white/60 shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer shrink-0`}
+            >
+              <PenTool className="w-3.5 h-3.5" />
+              <span>{locale === 'zh' ? '工作台 ➜' : 'Workspace ➜'}</span>
+            </motion.button>
+          )}
         </div>
 
         {/* Mobile Navigation Header (< 1024px) */}
@@ -270,7 +274,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               >
                 <div className="flex items-center gap-2.5">
                   <Layers className={`w-4 h-4 shrink-0 ${currentRoute === 'gallery' ? 'text-white' : 'text-amber-500'}`} />
-                  <span>{locale === 'zh' ? '旅人笔记' : 'Notes'}</span>
+                  <span>{locale === 'zh' ? '笔记' : 'Notes'}</span>
                 </div>
                 <ChevronRight className={`w-4 h-4 ${currentRoute === 'gallery' ? 'text-white/80' : 'text-neutral-400'}`} />
               </button>
@@ -294,20 +298,22 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
                 <ChevronRight className={`w-4 h-4 ${currentRoute === 'danmaku' ? 'text-white/80' : 'text-neutral-400'}`} />
               </button>
 
-              <button
-                onClick={() => {
-                  playPop();
-                  setIsMobileMenuOpen(false);
-                  handleGoEditor();
-                }}
-                className={`w-full p-3 rounded-2xl flex items-center justify-between font-bubble font-extrabold text-sm text-white bg-gradient-to-r ${theme.primaryGradient} shadow-md transition cursor-pointer active:scale-95`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <PenTool className="w-4 h-4 shrink-0" />
-                  <span>{locale === 'zh' ? '进入写作工作台' : 'Open Workspace'}</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-white/80" />
-              </button>
+              {(guestNotesEnabled || isAdmin) && (
+                <button
+                  onClick={() => {
+                    playPop();
+                    setIsMobileMenuOpen(false);
+                    handleGoEditor();
+                  }}
+                  className={`w-full p-3 rounded-2xl flex items-center justify-between font-bubble font-extrabold text-sm text-white bg-gradient-to-r ${theme.primaryGradient} shadow-md transition cursor-pointer active:scale-95`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <PenTool className="w-4 h-4 shrink-0" />
+                    <span>{locale === 'zh' ? '进入写作工作台' : 'Open Workspace'}</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/80" />
+                </button>
+              )}
             </div>
 
             {/* Preferences */}

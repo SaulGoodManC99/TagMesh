@@ -14,6 +14,7 @@ import { Note } from '../types/note';
 import { db, getAllTagCounts, getActiveNotes } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
+import { useSiteConfig } from '../hooks/useSiteConfig';
 import { fetchSystemTelemetry, recordVisitSession, submitGlobalStamp, deleteNoteRemote } from '../services/api';
 import { APP_VERSION, getFormattedBuildTime } from '../constants/version';
 import { ClayHeader } from './ClayHeader';
@@ -48,6 +49,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
   const { locale } = useI18n();
   const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
+  const { guestNotesEnabled } = useSiteConfig();
   const [isGachaOpen, setIsGachaOpen] = useState(false);
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
 
@@ -352,18 +354,20 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             : 'Zero folder anxiety. Type #hashtags anywhere to weave a thought mesh, and roam across 5 immersive note views.'}
         </p>
 
-        {/* 3 Chunky Center Action Candy Buttons */}
+        {/* Chunky Center Action Candy Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-12 sm:mb-16">
-          <button
-            onClick={() => {
-              playPop();
-              onGoToEditor();
-            }}
-            className={`flex items-center gap-2.5 px-7 sm:px-9 py-4 rounded-[26px] bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-base sm:text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card`}
-          >
-            <PenTool className="w-5 h-5" />
-            <span>{locale === 'zh' ? '开启写作' : 'Start Writing'}</span>
-          </button>
+          {(guestNotesEnabled || isAdmin) && (
+            <button
+              onClick={() => {
+                playPop();
+                onGoToEditor();
+              }}
+              className={`flex items-center gap-2.5 px-7 sm:px-9 py-4 rounded-[26px] bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-base sm:text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card`}
+            >
+              <PenTool className="w-5 h-5" />
+              <span>{locale === 'zh' ? '开启写作' : 'Start Writing'}</span>
+            </button>
+          )}
 
           <button
             onClick={() => {

@@ -238,6 +238,100 @@
   box-shadow: 0 22px 42px -10px rgba(249, 115, 22, 0.35), 0 8px 18px -4px rgba(249, 115, 22, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.98) !important;
 }
 
+/* ==========================================================================
+   🌙 OBSIDIAN DEEP DARK MODE STYLING & NEON BIOLUMINESCENCE
+   ========================================================================== */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0d0e15 !important;
+  color: #f3f4f6 !important;
+}
+
+html.dark .clay-card,
+html.dark .clay-card-interactive {
+  background-color: rgba(22, 23, 34, 0.82) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f3f4f6 !important;
+  box-shadow: 
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 8px 24px -4px rgba(0, 0, 0, 0.45),
+    0 18px 42px -8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .clay-sheen::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%) !important;
+}
+
+html.dark .clay-theme-pink {
+  background: linear-gradient(145deg, #18141c 0%, #201319 100%) !important;
+  border-color: rgba(244, 114, 182, 0.25) !important;
+}
+html.dark .clay-theme-pink:hover {
+  box-shadow: 0 22px 42px -10px rgba(244, 114, 182, 0.25), 0 8px 18px -4px rgba(244, 114, 182, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .clay-theme-cyan {
+  background: linear-gradient(145deg, #101924 0%, #0d1e28 100%) !important;
+  border-color: rgba(6, 182, 212, 0.25) !important;
+}
+html.dark .clay-theme-cyan:hover {
+  box-shadow: 0 22px 42px -10px rgba(6, 182, 212, 0.25), 0 8px 18px -4px rgba(6, 182, 212, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .clay-theme-amber {
+  background: linear-gradient(145deg, #1d1810 0%, #221b0e 100%) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+}
+html.dark .clay-theme-amber:hover {
+  box-shadow: 0 22px 42px -10px rgba(245, 158, 11, 0.25), 0 8px 18px -4px rgba(245, 158, 11, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .clay-theme-emerald {
+  background: linear-gradient(145deg, #0e1d16 0%, #0c2018 100%) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+html.dark .clay-theme-emerald:hover {
+  box-shadow: 0 22px 42px -10px rgba(16, 185, 129, 0.25), 0 8px 18px -4px rgba(16, 185, 129, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .clay-theme-purple {
+  background: linear-gradient(145deg, #171224 0%, #1c1328 100%) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+}
+html.dark .clay-theme-purple:hover {
+  box-shadow: 0 22px 42px -10px rgba(168, 85, 247, 0.25), 0 8px 18px -4px rgba(168, 85, 247, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .clay-theme-orange {
+  background: linear-gradient(145deg, #201510 0%, #26170d 100%) !important;
+  border-color: rgba(249, 115, 22, 0.25) !important;
+}
+html.dark .clay-theme-orange:hover {
+  box-shadow: 0 22px 42px -10px rgba(249, 115, 22, 0.25), 0 8px 18px -4px rgba(249, 115, 22, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ==========================================================================
+   🎛️ BUTTON STYLE VARIANTS: [clay | glass | minimal]
+   ========================================================================== */
+html[data-button-style="glass"] .clay-btn,
+html[data-button-style="glass"] button.rounded-full,
+html[data-button-style="glass"] button.rounded-2xl {
+  backdrop-filter: blur(12px) !important;
+  border-width: 1px !important;
+}
+
+html[data-button-style="minimal"] .clay-btn,
+html[data-button-style="minimal"] button.rounded-full,
+html[data-button-style="minimal"] button.rounded-2xl {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  border-width: 1px !important;
+}
+
 .clay-btn {
   transition: transform 0.25s var(--ease-spring), box-shadow 0.25s var(--ease-smooth), background-color 0.2s ease;
   will-change: transform;

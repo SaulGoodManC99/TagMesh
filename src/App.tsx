@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   PanelLeft, 
   Sparkles, 
@@ -24,6 +25,7 @@ import { db, getActiveNotes, createNewNote, getOrCreateActiveNote, ensureNotesAu
 import { fetchRemoteNotes, deleteNoteRemote } from './services/api';
 import { useZeroSync } from './hooks/useZeroSync';
 import { useI18n } from './hooks/useI18n';
+import { useSiteConfig } from './hooks/useSiteConfig';
 import { TagMeshEditor } from './editor/TagMeshEditor';
 import { StatusBar } from './components/StatusBar';
 import { CommandPalette } from './components/CommandPalette';
@@ -39,8 +41,7 @@ import { playPop, playChime } from './blog/utils/soundEffects';
 import { useClayTheme } from './blog/utils/clayThemes';
 import { useAuth } from './hooks/useAuth';
 import { ClayAtmosphereCanvas } from './blog/components/ClayAtmosphereCanvas';
-
-import { PageTransitionStyle, getStoredTransitionStyle } from './blog/utils/pageTransition';
+import { PageTransitionStyle, getStoredTransitionStyle, PAGE_TRANSITION_VARIANTS } from './blog/utils/pageTransition';
 
 type AppRoute = 'home' | 'gallery' | 'danmaku' | 'editor';
 
@@ -48,6 +49,7 @@ export const App: React.FC = () => {
   const { t, locale, toggleLocale } = useI18n();
   const { theme, switchNextTheme } = useClayTheme();
   const { isAdmin, isGuest, openAuthModal } = useAuth();
+  const { guestNotesEnabled } = useSiteConfig();
 
   // Route state: 'home' (Landing Portal) | 'gallery' (5 View Exhibition Hall) | 'danmaku' (Danmaku Plaza) | 'editor' (Workspace)
   const [route, setRoute] = useState<AppRoute>(() => {
@@ -127,6 +129,17 @@ export const App: React.FC = () => {
     window.addEventListener('tagmesh_transition_style_changed', handleStyleChange);
     return () => window.removeEventListener('tagmesh_transition_style_changed', handleStyleChange);
   }, []);
+
+  // Guard against unauthorized editor access when guest notes mode is disabled
+  useEffect(() => {
+    if (route === 'editor' && !guestNotesEnabled && !isAdmin) {
+      playPop(300);
+      showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+      openAuthModal();
+      setRoute('home');
+      window.location.hash = '#/';
+    }
+  }, [route, guestNotesEnabled, isAdmin, openAuthModal, locale, showToast]);
 
   const transitionClass = transitionStyle === 'fade'
     ? 'page-fade-glow'
@@ -340,188 +353,7 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleCreateNote]);
 
-  // 1. Render Dedicated Clay Paradise Landing Portal (Route #/)
-  if (route === 'home') {
-    return (
-      <>
-        <ClayLandingPortal
-          onGoToEditor={() => {
-            setRoute('editor');
-            window.location.hash = '#/editor';
-          }}
-          onGoToExplore={(mode, tag) => {
-            const queryParams = new URLSearchParams();
-            if (mode) queryParams.set('mode', mode);
-            if (tag) queryParams.set('tag', tag);
-            const queryStr = queryParams.toString();
-            window.location.hash = queryStr ? `#/gallery?${queryStr}` : '#/gallery';
-          }}
-          onGoToEditorWithNote={(note) => {
-            setActiveNote(note);
-            setRoute('editor');
-            window.location.hash = '#/editor';
-          }}
-          transitionClass={transitionClass}
-          slideDirection={slideDirection}
-        />
-
-        {/* Command Palette available via Cmd+K */}
-        <CommandPalette
-          isOpen={isCommandPaletteOpen}
-          activeNote={activeNote}
-          onClose={() => setIsCommandPaletteOpen(false)}
-          onSelectNote={(note) => {
-            setActiveNote(note);
-            window.location.hash = `#/post/${note.id}`;
-          }}
-          onCreateNote={handleCreateNote}
-          onToggleSidebar={() => {
-            window.location.hash = '#/editor';
-            setIsSidebarOpen(true);
-          }}
-          onToggleLanguage={toggleLocale}
-          onExportMarkdown={handleExportMarkdown}
-          onExportJson={handleExportJson}
-          onCopyMcpToken={() => setIsSettingsOpen(true)}
-          onTogglePin={handleTogglePin}
-          onDeleteNote={handleDeleteCurrentNote}
-          onOpenShortcuts={() => setIsShortcutsOpen(true)}
-          onFilterTag={handleTagClick}
-          onGoToBlog={() => {
-            window.location.hash = '#/';
-          }}
-        />
-
-        {/* Settings & Shortcuts & Admin Auth Modals */}
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-        <KeyboardHelpModal
-          isOpen={isShortcutsOpen}
-          onClose={() => setIsShortcutsOpen(false)}
-        />
-        <ClayAdminAuthModal />
-      </>
-    );
-  }
-
-  // 2. Render Full-Screen 5 Display Universes Notes Gallery (Route #/gallery)
-  if (route === 'gallery') {
-    return (
-      <>
-        <ClayBlogHome
-          onGoToEditor={() => {
-            setRoute('editor');
-            window.location.hash = '#/editor';
-          }}
-          onGoToEditorWithNote={(note) => {
-            setActiveNote(note);
-            setRoute('editor');
-            window.location.hash = '#/editor';
-          }}
-          onOpenShortcuts={() => setIsShortcutsOpen(true)}
-          transitionClass={transitionClass}
-          slideDirection={slideDirection}
-        />
-
-        {/* Command Palette available via Cmd+K */}
-        <CommandPalette
-          isOpen={isCommandPaletteOpen}
-          activeNote={activeNote}
-          onClose={() => setIsCommandPaletteOpen(false)}
-          onSelectNote={(note) => {
-            setActiveNote(note);
-            window.location.hash = `#/post/${note.id}`;
-          }}
-          onCreateNote={handleCreateNote}
-          onToggleSidebar={() => {
-            window.location.hash = '#/editor';
-            setIsSidebarOpen(true);
-          }}
-          onToggleLanguage={toggleLocale}
-          onExportMarkdown={handleExportMarkdown}
-          onExportJson={handleExportJson}
-          onCopyMcpToken={() => setIsSettingsOpen(true)}
-          onTogglePin={handleTogglePin}
-          onDeleteNote={handleDeleteCurrentNote}
-          onOpenShortcuts={() => setIsShortcutsOpen(true)}
-          onFilterTag={handleTagClick}
-          onGoToBlog={() => {
-            window.location.hash = '#/';
-          }}
-        />
-
-        {/* Settings & Shortcuts Modals */}
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-        <KeyboardHelpModal
-          isOpen={isShortcutsOpen}
-          onClose={() => setIsShortcutsOpen(false)}
-        />
-        <ClayAdminAuthModal />
-      </>
-    );
-  }
-
-  // 3. Render Dedicated Full-Screen Danmaku Plaza (Route #/danmaku)
-  if (route === 'danmaku') {
-    return (
-      <>
-        <ClayDanmakuPlaza
-          onGoToEditor={() => {
-            setRoute('editor');
-            window.location.hash = '#/editor';
-          }}
-          transitionClass={transitionClass}
-          slideDirection={slideDirection}
-        />
-
-        {/* Command Palette available via Cmd+K */}
-        <CommandPalette
-          isOpen={isCommandPaletteOpen}
-          activeNote={activeNote}
-          onClose={() => setIsCommandPaletteOpen(false)}
-          onSelectNote={(note) => {
-            setActiveNote(note);
-            window.location.hash = `#/post/${note.id}`;
-          }}
-          onCreateNote={handleCreateNote}
-          onToggleSidebar={() => {
-            window.location.hash = '#/editor';
-            setIsSidebarOpen(true);
-          }}
-          onToggleLanguage={toggleLocale}
-          onExportMarkdown={handleExportMarkdown}
-          onExportJson={handleExportJson}
-          onCopyMcpToken={() => setIsSettingsOpen(true)}
-          onTogglePin={handleTogglePin}
-          onDeleteNote={handleDeleteCurrentNote}
-          onOpenShortcuts={() => setIsShortcutsOpen(true)}
-          onFilterTag={handleTagClick}
-          onGoToBlog={() => {
-            window.location.hash = '#/';
-          }}
-        />
-
-        {/* Settings & Shortcuts Modals */}
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-        <KeyboardHelpModal
-          isOpen={isShortcutsOpen}
-          onClose={() => setIsShortcutsOpen(false)}
-        />
-        <ClayAdminAuthModal />
-      </>
-    );
-  }
-
-  // 4. Render Clay Workspace (Route #/editor)
-  return (
+  const renderEditorView = () => (
     <div 
       style={{ backgroundColor: theme.editorBg }}
       className="h-screen w-screen overflow-hidden text-neutral-800 flex flex-col selection:bg-pink-300 selection:text-pink-900 font-sans transition-colors duration-500 relative"
@@ -801,10 +633,104 @@ export const App: React.FC = () => {
         onOpenMcpSettings={() => setIsSettingsOpen(true)}
         onTagClick={handleTagClick}
       />
+    </div>
+  );
+
+  return (
+    <>
+      <AnimatePresence mode="wait" custom={slideDirection}>
+        <motion.div
+          key={route}
+          custom={slideDirection}
+          variants={PAGE_TRANSITION_VARIANTS[transitionStyle]}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="w-full min-h-screen relative"
+        >
+          {route === 'home' && (
+            <ClayLandingPortal
+              onGoToEditor={() => {
+                if (!guestNotesEnabled && !isAdmin) {
+                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                  openAuthModal();
+                  return;
+                }
+                setRoute('editor');
+                window.location.hash = '#/editor';
+              }}
+              onGoToExplore={(mode, tag) => {
+                const queryParams = new URLSearchParams();
+                if (mode) queryParams.set('mode', mode);
+                if (tag) queryParams.set('tag', tag);
+                const queryStr = queryParams.toString();
+                window.location.hash = queryStr ? `#/gallery?${queryStr}` : '#/gallery';
+              }}
+              onGoToEditorWithNote={(note) => {
+                if (!guestNotesEnabled && !isAdmin) {
+                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                  openAuthModal();
+                  return;
+                }
+                setActiveNote(note);
+                setRoute('editor');
+                window.location.hash = '#/editor';
+              }}
+              transitionClass={transitionClass}
+              slideDirection={slideDirection}
+            />
+          )}
+
+          {route === 'gallery' && (
+            <ClayBlogHome
+              onGoToEditor={() => {
+                if (!guestNotesEnabled && !isAdmin) {
+                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                  openAuthModal();
+                  return;
+                }
+                setRoute('editor');
+                window.location.hash = '#/editor';
+              }}
+              onGoToEditorWithNote={(note) => {
+                if (!guestNotesEnabled && !isAdmin) {
+                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                  openAuthModal();
+                  return;
+                }
+                setActiveNote(note);
+                setRoute('editor');
+                window.location.hash = '#/editor';
+              }}
+              onOpenShortcuts={() => setIsShortcutsOpen(true)}
+              transitionClass={transitionClass}
+              slideDirection={slideDirection}
+            />
+          )}
+
+          {route === 'danmaku' && (
+            <ClayDanmakuPlaza
+              onGoToEditor={() => {
+                if (!guestNotesEnabled && !isAdmin) {
+                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                  openAuthModal();
+                  return;
+                }
+                setRoute('editor');
+                window.location.hash = '#/editor';
+              }}
+              transitionClass={transitionClass}
+              slideDirection={slideDirection}
+            />
+          )}
+
+          {route === 'editor' && renderEditorView()}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Toast Notification Pill */}
       {toastMessage && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 px-4 py-2 rounded-full bg-neutral-900/90 border border-cyan-500/40 text-neutral-100 text-xs font-mono shadow-2xl backdrop-blur-md flex items-center gap-2">
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[350] animate-in fade-in slide-in-from-top-2 duration-150 px-4 py-2 rounded-full bg-neutral-900/90 border border-cyan-500/40 text-neutral-100 text-xs font-mono shadow-2xl backdrop-blur-md flex items-center gap-2">
           <span>{toastMessage}</span>
         </div>
       )}
@@ -856,6 +782,6 @@ export const App: React.FC = () => {
 
       {/* Admin Auth Modal */}
       <ClayAdminAuthModal />
-    </div>
+    </>
   );
 };

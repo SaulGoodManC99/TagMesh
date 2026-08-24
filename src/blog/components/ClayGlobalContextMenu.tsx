@@ -13,9 +13,13 @@ import {
   Layers, 
   MessageSquare,
   Dices,
-  Wand2
+  Wand2,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useI18n } from '../../hooks/useI18n';
+import { useAuth } from '../../hooks/useAuth';
+import { useSiteConfig } from '../../hooks/useSiteConfig';
 import { useClayTheme } from '../utils/clayThemes';
 import { isSoundEnabled, toggleSound, playPop, playSoftTick } from '../utils/soundEffects';
 import { ViewMode } from '../ClayModeDock';
@@ -54,6 +58,8 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
 }) => {
   const { locale, toggleLocale } = useI18n();
   const { theme, switchNextTheme } = useClayTheme();
+  const { isAdmin, openAuthModal } = useAuth();
+  const { guestNotesEnabled, colorMode, toggleColorMode } = useSiteConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<ContextMenuPosition>({ x: 0, y: 0 });
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
@@ -389,7 +395,7 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
                     <div className="w-5 h-5 flex items-center justify-center shrink-0">
                       <Layers className="w-3.5 h-3.5 text-amber-500" />
                     </div>
-                    <span>{locale === 'zh' ? '漫游旅人笔记' : 'Notes Space'}</span>
+                    <span>{locale === 'zh' ? '漫游笔记' : 'Notes Space'}</span>
                   </div>
                   <span className="text-[10px] text-neutral-400">➜</span>
                 </button>
@@ -570,7 +576,7 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
                     <div className="w-5 h-5 flex items-center justify-center shrink-0">
                       <Layers className="w-3.5 h-3.5 text-amber-500" />
                     </div>
-                    <span>{locale === 'zh' ? '旅人笔记' : 'Notes Space'}</span>
+                    <span>{locale === 'zh' ? '笔记' : 'Notes Space'}</span>
                   </div>
                   <span className="text-[10px] text-neutral-400">➜</span>
                 </button>
@@ -579,8 +585,8 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
 
             <div className="h-px bg-amber-900/10 my-1" />
 
-            {/* Shared Global Settings: Language & Sound */}
-            <div className="grid grid-cols-2 gap-1 px-1">
+            {/* Shared Global Settings: Language, Sound & Color Mode (3-Columns) */}
+            <div className="grid grid-cols-3 gap-1 px-1">
               <button
                 onClick={handleActionLocale}
                 className="p-1.5 rounded-xl bg-white/80 hover:bg-pink-50 text-neutral-700 font-bubble text-[11px] font-bold flex items-center justify-center gap-1 border border-neutral-200/80 shadow-3xs cursor-pointer active:scale-95 transition"
@@ -589,7 +595,7 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
                 <div className="w-4 h-4 flex items-center justify-center shrink-0">
                   <Globe className="w-3 h-3 text-amber-500" />
                 </div>
-                <span>{locale === 'zh' ? '中 / EN' : 'EN / 中'}</span>
+                <span>{locale === 'zh' ? '语言' : 'Lang'}</span>
               </button>
 
               <button
@@ -600,32 +606,54 @@ export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
                 <div className="w-4 h-4 flex items-center justify-center shrink-0">
                   {soundOn ? <Volume2 className="w-3 h-3 text-pink-500" /> : <VolumeX className="w-3 h-3 text-neutral-400" />}
                 </div>
-                <span>{soundOn ? (locale === 'zh' ? '音效开' : 'SFX ON') : (locale === 'zh' ? '静音' : 'Muted')}</span>
+                <span>{soundOn ? (locale === 'zh' ? '音效' : 'SFX') : (locale === 'zh' ? '静音' : 'Mute')}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  playPop(540);
+                  toggleColorMode();
+                }}
+                className="p-1.5 rounded-xl bg-white/80 hover:bg-indigo-50 text-neutral-700 font-bubble text-[11px] font-bold flex items-center justify-center gap-1 border border-neutral-200/80 shadow-3xs cursor-pointer active:scale-95 transition"
+                title={locale === 'zh' ? `当前色彩模式: ${colorMode}` : `Color Mode: ${colorMode}`}
+              >
+                <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                  {colorMode === 'dark' ? (
+                    <Moon className="w-3 h-3 text-indigo-500" />
+                  ) : colorMode === 'light' ? (
+                    <Sun className="w-3 h-3 text-amber-500" />
+                  ) : (
+                    <Sparkles className="w-3 h-3 text-emerald-500" />
+                  )}
+                </div>
+                <span>{colorMode === 'dark' ? (locale === 'zh' ? '暗黑' : 'Dark') : colorMode === 'light' ? (locale === 'zh' ? '亮色' : 'Light') : (locale === 'zh' ? '自动' : 'Auto')}</span>
               </button>
             </div>
 
-            {/* Bottom Primary CTA: Enter Workspace */}
-            <button
-              onClick={(e) => {
-                if (onGoToEditor) {
-                  e.stopPropagation();
-                  playPop();
-                  onGoToEditor();
-                  setIsOpen(false);
-                } else {
-                  handleActionNav('#/editor', e);
-                }
-              }}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-xs shadow-md transition cursor-pointer active:scale-95 mt-1.5`}
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                  <PenTool className="w-3.5 h-3.5" />
+            {/* Bottom Primary CTA: Enter Workspace (Admin or Guest mode enabled) */}
+            {(guestNotesEnabled || isAdmin) && (
+              <button
+                onClick={(e) => {
+                  if (onGoToEditor) {
+                    e.stopPropagation();
+                    playPop();
+                    onGoToEditor();
+                    setIsOpen(false);
+                  } else {
+                    handleActionNav('#/editor', e);
+                  }
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-xs shadow-md transition cursor-pointer active:scale-95 mt-1.5`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <PenTool className="w-3.5 h-3.5" />
+                  </div>
+                  <span>{locale === 'zh' ? '进入写作工作台' : 'Open Workspace'}</span>
                 </div>
-                <span>{locale === 'zh' ? '进入写作工作台' : 'Open Workspace'}</span>
-              </div>
-              <span>➜</span>
-            </button>
+                <span>➜</span>
+              </button>
+            )}
           </div>
         </motion.div>,
         document.body
