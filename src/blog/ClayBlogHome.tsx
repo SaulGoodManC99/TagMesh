@@ -52,6 +52,22 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     const newOrder = filterOrder[newFilter];
     setTransitionType(newOrder >= currentOrder ? 'slide-right' : 'slide-left');
     setAuthorFilter(newFilter);
+
+    // Smooth auto-fallback: If selected tag does not exist under target role, reset to #all
+    if (selectedTag && selectedTag !== '#all' && selectedTag !== '#untagged') {
+      const targetNotes = publicNotes.filter((note) => {
+        if (!note) return false;
+        if (newFilter === 'admin') return note.isOfficial === true || note.author === 'admin';
+        if (newFilter === 'guest') return note.isOfficial !== true && note.author !== 'admin';
+        return true;
+      });
+      const hasTag = targetNotes.some((n) =>
+        (n.tags || []).some((t) => typeof t === 'string' && t.toLowerCase() === selectedTag.toLowerCase())
+      );
+      if (!hasTag) {
+        setSelectedTag('#all');
+      }
+    }
   };
 
   const handleViewModeChange = (newMode: ViewMode) => {
@@ -71,12 +87,6 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   );
 
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
-
-  // Live Query all tag counts
-  const allTagCounts = useLiveQuery(
-    () => getAllTagCounts(),
-    [refreshTick]
-  ) || [];
 
   // Dynamic Manual & Auto Refresh Handler
   const handleDynamicRefresh = useCallback(async () => {
@@ -194,9 +204,40 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     });
   }, [allNotes]);
 
+  // Dynamic Real-time Tag counts scoped strictly to active authorFilter
+  const authorTagCounts = useMemo(() => {
+    const targetNotes = publicNotes.filter((note) => {
+      if (!note) return false;
+      if (authorFilter === 'admin') {
+        return note.isOfficial === true || note.author === 'admin';
+      }
+      if (authorFilter === 'guest') {
+        return note.isOfficial !== true && note.author !== 'admin';
+      }
+      return true;
+    });
+
+    const map = new Map<string, number>();
+    targetNotes.forEach((note) => {
+      const tags = Array.isArray(note.tags) ? note.tags : [];
+      tags.forEach((tag) => {
+        if (typeof tag === 'string') {
+          const clean = tag.trim().toLowerCase();
+          if (clean) {
+            map.set(clean, (map.get(clean) || 0) + 1);
+          }
+        }
+      });
+    });
+
+    return Array.from(map.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [publicNotes, authorFilter]);
+
   // Calculate live stats
   const totalNotes = publicNotes.length;
-  const totalTags = allTagCounts.length;
+  const totalTags = authorTagCounts.length;
   const adminNotesCount = useMemo(() => publicNotes.filter(n => n.isOfficial === true || n.author === 'admin').length, [publicNotes]);
   const guestNotesCount = useMemo(() => publicNotes.filter(n => n.isOfficial !== true && n.author !== 'admin').length, [publicNotes]);
   const totalWords = useMemo(() => {
@@ -395,10 +436,11 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 
       {/* Searchable & Multi-Sort Interactive Tag Mesh Pills */}
       <ClayTagCloud
-        tags={allTagCounts}
-        totalNotesCount={totalNotes}
+        tags={authorTagCounts}
+        totalNotesCount={authorFilter === 'admin' ? adminNotesCount : authorFilter === 'guest' ? guestNotesCount : totalNotes}
         selectedTag={selectedTag}
         onSelectTag={(tg) => handleSelectTagWithTransition(tg)}
+        authorFilter={authorFilter}
       />
 
       {/* Main Full-Width Immersive 5-View Showcase Canvas */}

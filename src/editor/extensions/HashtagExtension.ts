@@ -10,6 +10,7 @@ export const HashtagPluginKey = new PluginKey('hashtagSuggestion');
 export interface HashtagOptions {
   onTagClick?: (tag: string) => void;
   onTagAbsorb?: (tag: string) => void;
+  filterRole?: 'admin' | 'guest';
   suggestion: Omit<SuggestionOptions, 'editor'>;
 }
 
@@ -20,12 +21,14 @@ export const HashtagExtension = Extension.create<HashtagOptions>({
     return {
       onTagClick: undefined,
       onTagAbsorb: undefined,
+      filterRole: undefined,
       suggestion: {
         char: '#',
         allowSpaces: false,
         startOfLine: false,
-        items: async ({ query }) => {
-          const allTags = await getAllTagCounts();
+        items: async ({ query, editor }) => {
+          const filterRole = (editor.extensionManager.extensions.find(e => e.name === 'hashtag')?.options as HashtagOptions)?.filterRole;
+          const allTags = await getAllTagCounts(filterRole);
           const q = query.toLowerCase();
           const filtered = allTags
             .filter(t => t.tag.replace(/^#/, '').toLowerCase().includes(q))

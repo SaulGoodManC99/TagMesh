@@ -22,6 +22,7 @@ export interface ClayTagCloudProps {
   totalNotesCount: number;
   selectedTag: string;
   onSelectTag: (tag: string) => void;
+  authorFilter?: 'all' | 'admin' | 'guest';
 }
 
 export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
@@ -29,6 +30,7 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
   totalNotesCount,
   selectedTag,
   onSelectTag,
+  authorFilter = 'all',
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -37,6 +39,33 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const safeTags = Array.isArray(tags) ? tags : [];
+
+  const getHeaderStyle = () => {
+    if (authorFilter === 'admin') {
+      return {
+        icon: '👑',
+        title: locale === 'zh' ? '馆长精选标签网' : 'Curator Tags Mesh',
+        badgeBg: 'bg-amber-100/90 text-amber-900 border-amber-300/80',
+        sparkleColor: 'text-amber-500',
+      };
+    }
+    if (authorFilter === 'guest') {
+      return {
+        icon: '🌱',
+        title: locale === 'zh' ? '旅人灵感标签网' : 'Traveler Tags Mesh',
+        badgeBg: 'bg-emerald-100/90 text-emerald-900 border-emerald-300/80',
+        sparkleColor: 'text-emerald-500',
+      };
+    }
+    return {
+      icon: '🌈',
+      title: locale === 'zh' ? '灵感标签分类网' : 'Tag Mesh Explorer',
+      badgeBg: 'bg-white/95 text-neutral-800 border-rose-200/80',
+      sparkleColor: 'text-rose-500',
+    };
+  };
+
+  const headerStyle = getHeaderStyle();
 
   // Filter and sort tags
   const processedTags = useMemo(() => {
@@ -86,12 +115,12 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
         
         {/* Left Title & Active Filter Chip */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 border border-rose-200/80 shadow-3xs">
-            <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-            <span className="font-bubble font-extrabold text-xs sm:text-sm text-neutral-800">
-              {locale === 'zh' ? '🌈 灵感标签分类网' : '🌈 Tag Mesh Explorer'}
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border shadow-3xs transition-all duration-300 ${headerStyle.badgeBg}`}>
+            <span className="text-sm select-none">{headerStyle.icon}</span>
+            <span className="font-bubble font-extrabold text-xs sm:text-sm">
+              {headerStyle.title}
             </span>
-            <span className="text-xs font-cute text-neutral-400">
+            <span className="text-xs font-cute opacity-70">
               ({safeTags.length})
             </span>
           </div>

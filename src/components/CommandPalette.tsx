@@ -70,8 +70,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [searchedNotes, setSearchedNotes] = useState<Note[]>([]);
 
-  // 100% Real-time dynamic live query for all tags in Dexie DB
-  const liveTags = useLiveQuery(() => getAllTagCounts(), []) || [];
+  // 100% Real-time dynamic live query for all tags in Dexie DB (role-scoped)
+  const liveTags = useLiveQuery(() => getAllTagCounts(isAdmin ? undefined : 'guest'), [isAdmin]) || [];
 
   // Reset search when opening palette
   useEffect(() => {
@@ -88,7 +88,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     let mounted = true;
     const load = async () => {
       try {
-        const found = await searchNotesLocal(search);
+        const found = await searchNotesLocal(search, undefined, isAdmin ? undefined : 'guest');
         if (mounted) {
           setSearchedNotes(found.slice(0, 15));
         }

@@ -243,6 +243,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
       CharacterCount,
       Image.configure({ inline: true, allowBase64: true }),
       HashtagExtension.configure({
+        filterRole: isAdmin ? undefined : 'guest',
         onTagAbsorb: (tag) => {
           handleDirectTagAbsorb(tag);
         },

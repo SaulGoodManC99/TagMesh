@@ -105,7 +105,7 @@ uploadRouter.post('/backup', async (c) => {
 
     const snapshotPayload = {
       app: 'TagMesh',
-      version: '1.7.0',
+      version: '1.7.1',
       createdAt: timestamp,
       createdIso: new Date(timestamp).toISOString(),
       triggerBy: body.triggerBy || 'admin',
