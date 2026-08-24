@@ -111,7 +111,7 @@ export const ClayTypewriterHeadline: React.FC = () => {
       const visibleHighlight = visibleFull.slice(prefixLen);
       return (
         <span className="whitespace-pre-line">
-          <span className="text-neutral-900">{prefixText}</span>
+          <span className="text-neutral-900 dark:text-white">{prefixText}</span>
           <span className={`bg-gradient-to-r ${theme.primaryGradient} bg-clip-text text-transparent`}>
             {visibleHighlight}
           </span>
@@ -121,11 +121,11 @@ export const ClayTypewriterHeadline: React.FC = () => {
       const visibleSuffix = visibleFull.slice(prefixLen + highlightLen);
       return (
         <span className="whitespace-pre-line">
-          <span className="text-neutral-900">{prefixText}</span>
+          <span className="text-neutral-900 dark:text-white">{prefixText}</span>
           <span className={`bg-gradient-to-r ${theme.primaryGradient} bg-clip-text text-transparent`}>
             {highlightText}
           </span>
-          <span className="text-neutral-900">{visibleSuffix}</span>
+          <span className="text-neutral-900 dark:text-white">{visibleSuffix}</span>
         </span>
       );
     }
@@ -133,7 +133,7 @@ export const ClayTypewriterHeadline: React.FC = () => {
 
   return (
     <div className="min-h-[7.5rem] sm:min-h-[9.5rem] lg:min-h-[12rem] flex items-center justify-center text-center mb-4 sm:mb-6">
-      <h1 className="font-bubble text-3xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 leading-[1.15] tracking-tight text-center drop-shadow-sm">
+      <h1 className="font-bubble text-3xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 dark:text-white leading-[1.15] tracking-tight text-center drop-shadow-sm">
         {renderStyledText()}
         <span className="inline-block w-1.5 sm:w-2 h-8 sm:h-12 lg:h-14 ml-2 bg-gradient-to-b from-pink-500 to-rose-500 rounded-full animate-pulse align-middle shadow-md" />
       </h1>

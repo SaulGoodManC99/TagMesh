@@ -190,25 +190,25 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
         {/* Pure Markdown Stream Content (Organic Length Scaling) */}
         {isShortQuote ? (
-          <div className="font-bubble text-base sm:text-lg font-black text-neutral-800 leading-snug py-1 mb-2 tracking-tight flex items-start gap-1.5">
+          <div className="font-bubble text-base sm:text-lg font-black text-neutral-800 dark:text-neutral-100 leading-snug py-1 mb-2 tracking-tight flex items-start gap-1.5">
             <Quote className="w-4 h-4 text-pink-400 shrink-0 rotate-180 opacity-70 mt-0.5" />
             <span className="italic">“{note.rawMarkdown.replace(/^#+\s*/, '').slice(0, 80)}”</span>
           </div>
         ) : (
-          <div className="font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed opacity-95 mb-2.5">
+          <div className="font-cute text-xs sm:text-sm text-neutral-800 dark:text-neutral-100 leading-relaxed opacity-95 mb-2.5">
             {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
           </div>
         )}
 
         {/* Dedicated Date Badge Below Content */}
-        <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-cute font-bold text-neutral-500/90 select-none mb-1">
+        <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-cute font-bold text-neutral-500/90 dark:text-neutral-400 select-none mb-1">
           <span className="text-xs">📅</span>
           <span>{formattedDate}</span>
         </div>
       </div>
 
       {/* Bottom Footer: Enlarged Hashtag Pills & Emoji Reactions */}
-      <div className="relative z-10 pt-2.5 border-t border-black/5 flex flex-col gap-2.5 mt-auto">
+      <div className="relative z-10 pt-2.5 border-t border-black/5 dark:border-white/5 flex flex-col gap-2.5 mt-auto">
         {/* Enlarged Hashtags with Haptic Spring Touch */}
         {note.tags && note.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
@@ -252,14 +252,14 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             whileHover={{ scale: 1.14 }}
             whileTap={{ scale: 0.86 }}
             transition={SPRING_MICRO}
-            className="px-2.5 py-1 rounded-xl bg-white/85 hover:bg-white text-rose-600 hover:text-rose-700 text-xs font-cute font-bold flex items-center gap-1.5 shadow-3xs border border-pink-100 cursor-pointer"
+            className="px-2.5 py-1 rounded-xl bg-white/85 dark:bg-neutral-800 hover:bg-white text-rose-600 hover:text-rose-700 dark:text-rose-400 text-xs font-cute font-bold flex items-center gap-1.5 shadow-3xs border border-pink-100 dark:border-white/10 cursor-pointer"
             title={locale === 'zh' ? '点赞这篇笔记' : 'Like this note'}
           >
             <span className="text-sm leading-none select-none">❤️</span>
             <span className="text-xs font-bubble font-bold leading-none">{likes}</span>
           </motion.button>
 
-          <div className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs shrink-0">
+          <div className="w-7 h-7 rounded-full bg-white/80 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 dark:text-neutral-300 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs shrink-0">
             <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </div>
         </div>

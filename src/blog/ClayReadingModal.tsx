@@ -149,14 +149,14 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
         <div className={`h-2.5 w-full bg-gradient-to-r ${theme.primaryGradient} shrink-0`} />
 
         {/* Top Sticky Header Bar */}
-        <div className="px-3.5 sm:px-10 py-2.5 sm:py-3.5 bg-white/90 backdrop-blur-md border-b border-neutral-200/60 flex items-center justify-between gap-2 shrink-0">
+        <div className="px-3.5 sm:px-10 py-2.5 sm:py-3.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200/60 dark:border-white/10 flex items-center justify-between gap-2 shrink-0">
           {/* Left: Close X + Author Badge + Date + Word Count */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Quick Close Button */}
             <button
               type="button"
               onClick={(e) => handleDirectClose(e)}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full sm:rounded-2xl bg-white hover:bg-rose-500 hover:text-white text-neutral-600 border border-neutral-200/80 shadow-3xs flex items-center justify-center transition cursor-pointer active:scale-90 shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full sm:rounded-2xl bg-white dark:bg-neutral-800 hover:bg-rose-500 hover:text-white text-neutral-600 dark:text-neutral-300 border border-neutral-200/80 dark:border-white/10 shadow-3xs flex items-center justify-center transition cursor-pointer active:scale-90 shrink-0"
               title="Close (Esc)"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -169,17 +169,17 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
                 <span>{locale === 'zh' ? '馆长精选' : 'Curator'}</span>
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bubble font-bold text-[11px] border border-emerald-200 shadow-xs flex items-center gap-1 shrink-0">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bubble font-bold text-[11px] border border-emerald-200 dark:border-emerald-900 shadow-xs flex items-center gap-1 shrink-0">
                 <span>🌱</span>
                 <span>{locale === 'zh' ? '旅人笔记' : 'Guest Note'}</span>
               </span>
             )}
 
-            <span className="px-2.5 py-0.8 rounded-full bg-neutral-100/90 text-neutral-700 text-[11px] font-bubble font-bold shadow-3xs hidden xs:inline">
+            <span className="px-2.5 py-0.8 rounded-full bg-neutral-100/90 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[11px] font-bubble font-bold shadow-3xs hidden xs:inline">
               📅 {formattedDate}
             </span>
 
-            <span className="text-[11px] font-cute text-neutral-400 hidden sm:inline">
+            <span className="text-[11px] font-cute text-neutral-400 dark:text-neutral-500 hidden sm:inline">
               • {note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}
             </span>
           </div>
@@ -188,10 +188,10 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={handleCopyMarkdown}
-              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-white hover:bg-neutral-100 text-neutral-700 text-xs font-cute font-bold clay-btn border border-neutral-200/80 cursor-pointer shadow-3xs transition active:scale-95"
+              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-cute font-bold clay-btn border border-neutral-200/80 dark:border-white/10 cursor-pointer shadow-3xs transition active:scale-95"
               title="Copy Markdown"
             >
-              {copiedMd ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-neutral-600" />}
+              {copiedMd ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />}
               <span className="hidden sm:inline">{copiedMd ? 'Copied!' : 'Copy'}</span>
             </button>
 
@@ -199,7 +199,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-cute font-bold clay-btn border border-rose-200 cursor-pointer shadow-3xs transition active:scale-95"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 text-xs font-cute font-bold clay-btn border border-rose-200 dark:border-rose-900 cursor-pointer shadow-3xs transition active:scale-95"
                 title={locale === 'zh' ? '馆长删除笔记' : 'Admin Delete Note'}
               >
                 <Trash2 className="w-3.5 h-3.5 text-rose-500" />
@@ -227,7 +227,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
 
         {/* Delete Confirmation Alert Bar */}
         {showDeleteConfirm && (
-          <div className="bg-rose-50 border-b border-rose-200 px-4 sm:px-8 py-3 flex items-center justify-between gap-3 text-xs font-cute text-rose-900 animate-in fade-in">
+          <div className="bg-rose-50 dark:bg-rose-950/90 border-b border-rose-200 dark:border-rose-900 px-4 sm:px-8 py-3 flex items-center justify-between gap-3 text-xs font-cute text-rose-900 dark:text-rose-200 animate-in fade-in">
             <div className="flex items-center gap-2">
               <span className="text-base">🗑️</span>
               <span className="font-bold">{locale === 'zh' ? '确定要删除这篇笔记并同步至云端吗？' : 'Delete this note and sync to cloud?'}</span>
@@ -250,7 +250,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 font-bubble font-bold rounded-xl border border-rose-300 shadow-3xs cursor-pointer"
+                className="px-3 py-1 bg-white dark:bg-neutral-800 hover:bg-rose-100 text-rose-700 dark:text-rose-300 font-bubble font-bold rounded-xl border border-rose-300 dark:border-rose-800 shadow-3xs cursor-pointer"
               >
                 {locale === 'zh' ? '取消' : 'Cancel'}
               </button>
@@ -262,7 +262,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
         <div className="flex-1 overflow-y-auto px-4 sm:px-12 py-5 sm:py-8 select-text">
           {/* Tags Mesh */}
           {(note.tags || []).length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-neutral-100 select-none">
+            <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-neutral-100 dark:border-white/10 select-none">
               {(note.tags || []).map((tg) => (
                 <button
                   key={tg}
@@ -280,7 +280,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
           )}
 
           {/* Pure Markdown Stream Content */}
-          <div className="font-cute text-base sm:text-[17px] text-neutral-800 leading-relaxed space-y-3">
+          <div className="font-cute text-base sm:text-[17px] text-neutral-800 dark:text-neutral-100 leading-relaxed space-y-3">
             {renderRichMarkdown(note.rawMarkdown || '', {
               stripFirstHeading: false,
               onTagClick: (tg) => {
@@ -291,10 +291,10 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
           </div>
 
           {/* Bottom Single Heart Like Section */}
-          <div className="mt-10 pt-6 border-t border-amber-900/10 flex flex-col items-center gap-3 select-none">
+          <div className="mt-10 pt-6 border-t border-amber-900/10 dark:border-white/10 flex flex-col items-center gap-3 select-none">
             <div className="flex items-center justify-center gap-1.5">
               <Sparkles className="w-4 h-4 text-rose-500" />
-              <span className="font-bubble font-bold text-xs sm:text-sm text-neutral-700">
+              <span className="font-bubble font-bold text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">
                 {locale === 'zh' ? '喜欢这篇灵感笔记？给作者点个赞吧！' : 'Enjoyed this note? Give the author a heart!'}
               </span>
             </div>
@@ -302,7 +302,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             <button
               type="button"
               onClick={handleLike}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-bubble font-bold text-base clay-btn border-2 border-rose-200 active:scale-125 transition-all cursor-pointer shadow-sm hover:shadow-md"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-600 dark:text-rose-300 font-bubble font-bold text-base clay-btn border-2 border-rose-200 dark:border-rose-900 active:scale-125 transition-all cursor-pointer shadow-sm hover:shadow-md"
             >
               <span className="text-xl leading-none select-none">❤️</span>
               <span className="leading-none">{likes}</span>
@@ -312,11 +312,11 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
 
         {/* Bottom Pagination Sticky Bar */}
         {(prevNote || nextNote) && (
-          <div className="px-3.5 sm:px-10 py-2.5 sm:py-3 bg-white/90 backdrop-blur-md border-t border-neutral-200/60 flex items-center justify-between gap-2 shrink-0 select-none">
+          <div className="px-3.5 sm:px-10 py-2.5 sm:py-3 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-t border-neutral-200/60 dark:border-white/10 flex items-center justify-between gap-2 shrink-0 select-none">
             {prevNote ? (
               <button
                 onClick={() => onSelectNote && onSelectNote(prevNote)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white hover:bg-pink-50 text-neutral-700 hover:text-pink-600 text-xs font-cute font-bold clay-btn border border-neutral-200/80 cursor-pointer shadow-3xs active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-pink-50 text-neutral-700 dark:text-neutral-300 hover:text-pink-600 text-xs font-cute font-bold clay-btn border border-neutral-200/80 dark:border-white/10 cursor-pointer shadow-3xs active:scale-95"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span className="max-w-[140px] truncate">{prevNote.excerpt || 'Prev'}</span>
@@ -326,7 +326,7 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             {nextNote && (
               <button
                 onClick={() => onSelectNote && onSelectNote(nextNote)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white hover:bg-pink-50 text-neutral-700 hover:text-pink-600 text-xs font-cute font-bold clay-btn border border-neutral-200/80 cursor-pointer shadow-3xs active:scale-95 ml-auto"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-pink-50 text-neutral-700 dark:text-neutral-300 hover:text-pink-600 text-xs font-cute font-bold clay-btn border border-neutral-200/80 dark:border-white/10 cursor-pointer shadow-3xs active:scale-95 ml-auto"
               >
                 <span className="max-w-[140px] truncate">{nextNote.excerpt || 'Next'}</span>
                 <ChevronRight className="w-4 h-4" />

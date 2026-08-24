@@ -28,16 +28,12 @@ export interface ClayBlogHomeProps {
   onGoToEditor: () => void;
   onGoToEditorWithNote: (note: Note) => void;
   onOpenShortcuts: () => void;
-  transitionClass?: string;
-  slideDirection?: 'slide-left' | 'slide-right';
 }
 
 export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   onGoToEditor,
   onGoToEditorWithNote,
   onOpenShortcuts,
-  transitionClass,
-  slideDirection = 'slide-left',
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -393,8 +389,8 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         currentRoute="gallery"
       />
 
-      {/* Main Gallery Body (Smooth Slide/Fade/Zoom Transition below stationary Header) */}
-      <div className={`w-full flex-1 flex flex-col ${transitionClass || (slideDirection === 'slide-left' ? 'page-slide-in-left' : 'page-slide-in-right')}`}>
+      {/* Main Gallery Body */}
+      <div className="w-full flex-1 flex flex-col">
         {/* Compact Gallery Stage Bar */}
         <div className="max-w-7xl mx-auto px-3 sm:px-8 pt-4 sm:pt-6 pb-2 select-none w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -403,22 +399,22 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
               playPop();
               window.location.hash = '#/';
             }}
-            className="p-2 sm:p-2.5 rounded-2xl bg-white hover:bg-pink-50 text-neutral-600 hover:text-pink-600 border border-neutral-200/80 shadow-3xs transition cursor-pointer active:scale-95 shrink-0"
+            className="p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-neutral-900 hover:bg-pink-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:text-pink-600 dark:hover:text-pink-400 border border-neutral-200/80 dark:border-white/10 shadow-3xs transition cursor-pointer active:scale-95 shrink-0"
             title="Back to Home Portal"
           >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700 dark:text-neutral-300" />
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-bubble text-lg sm:text-2xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 bg-clip-text text-transparent">
+              <h1 className="font-bubble text-lg sm:text-2xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 dark:from-white dark:via-neutral-100 dark:to-neutral-300 bg-clip-text text-transparent">
                 {locale === 'zh' ? (guestNotesEnabled ? '笔记' : '馆长精选笔记') : (guestNotesEnabled ? 'Notes Space' : 'Curator Notes')}
               </h1>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[11px] font-bubble font-bold border border-pink-200 shadow-3xs">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 text-[11px] font-bubble font-bold border border-pink-200 dark:border-pink-900/60 shadow-3xs">
                 <Sparkles className="w-3 h-3 text-pink-500" />
                 <span>{locale === 'zh' ? '5 种展示风格自由切换' : '5 Note Views'}</span>
               </span>
             </div>
-            <p className="font-cute text-xs text-neutral-500 hidden sm:block mt-0.5">
+            <p className="font-cute text-xs text-neutral-500 dark:text-neutral-400 hidden sm:block mt-0.5">
               {locale === 'zh'
                 ? `共收录 ${totalNotes} 篇笔记 • 点击右下角 🎡 轻松漫游`
                 : `${totalNotes} notes exhibited • Click 🎡 to roam`}

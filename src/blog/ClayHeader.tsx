@@ -50,13 +50,13 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
     }
   };
 
-  const basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/95 text-neutral-700 hover:text-neutral-950 border border-neutral-200/80 shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
-  const activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r ${theme.primaryGradient} text-white border-2 border-white/90 shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
+  const basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/95 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+  const activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-full font-bubble font-extrabold text-xs bg-gradient-to-r ${theme.primaryGradient} text-white border-2 border-white/90 dark:border-white/30 shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
 
   return (
     <header 
       style={{ backgroundColor: `${theme.headerBg}ee` }}
-      className="sticky top-0 z-40 px-3 sm:px-8 py-2.5 backdrop-blur-xl border-b border-amber-900/5 transition-colors duration-500 select-none"
+      className="sticky top-0 z-40 px-3 sm:px-8 py-2.5 backdrop-blur-xl border-b border-amber-900/5 dark:border-white/5 transition-colors duration-500 select-none"
     >
       <div className="max-w-[1480px] mx-auto flex items-center justify-between gap-3">
         {/* Left: Playful Logo */}
@@ -72,11 +72,11 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bubble font-bold text-lg sm:text-2xl tracking-tight text-neutral-800">
+              <span className="font-bubble font-bold text-lg sm:text-2xl tracking-tight text-neutral-800 dark:text-neutral-100">
                 TagMesh
               </span>
             </div>
-            <p className="text-[10px] sm:text-[11px] font-cute text-neutral-400 -mt-0.5 hidden md:block">
+            <p className="text-[10px] sm:text-[11px] font-cute text-neutral-400 dark:text-neutral-500 -mt-0.5 hidden md:block">
               {locale === 'zh' ? '🎈 趣味黏土笔记与思维织网乐园' : '🎈 A Playful Claymorphic Inspiration Notes & Thought Mesh'}
             </p>
           </div>

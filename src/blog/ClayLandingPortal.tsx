@@ -31,8 +31,6 @@ export interface ClayLandingPortalProps {
   onGoToEditor: () => void;
   onGoToExplore: (mode?: string, tag?: string) => void;
   onGoToEditorWithNote: (note: Note) => void;
-  transitionClass?: string;
-  slideDirection?: 'slide-left' | 'slide-right';
 }
 
 const STAMP_EMOJIS = ['🐾', '🌸', '✨', '🍡', '🍮', '💖', '🍭', '🧸'];
@@ -43,8 +41,6 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
   onGoToEditor,
   onGoToExplore,
   onGoToEditorWithNote,
-  transitionClass,
-  slideDirection = 'slide-left',
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -335,11 +331,11 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         currentRoute="home"
       />
 
-      {/* 2. Dead-Center Immersive Center Stage Gateway (Smooth Slide/Fade/Zoom Transition below stationary Header) */}
-      <main className={`flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-5xl mx-auto w-full select-none py-10 sm:py-16 ${transitionClass || (slideDirection === 'slide-left' ? 'page-slide-in-left' : 'page-slide-in-right')}`}>
+      {/* 2. Dead-Center Immersive Center Stage Gateway */}
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-5xl mx-auto w-full select-none py-10 sm:py-16">
         
         {/* Cute Studio Badge (Clean without trailing version) */}
-        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/95 border border-rose-200/90 text-rose-700 font-bubble text-sm sm:text-base font-bold mb-6 shadow-sm hover:scale-102 transition-transform">
+        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/95 dark:bg-neutral-900/90 border border-rose-200/90 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 font-bubble text-sm sm:text-base font-bold mb-6 shadow-sm hover:scale-102 transition-transform">
           <span className="text-xl">🎈</span>
           <span>{locale === 'zh' ? 'TagMesh 黏土工坊 • 灵感笔记系统' : 'TagMesh Studio • Thought Mesh System'}</span>
         </div>
@@ -348,7 +344,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         <ClayTypewriterHeadline />
 
         {/* Healing Subtitle */}
-        <p className="font-cute text-base sm:text-xl text-neutral-700/90 leading-relaxed mb-8 sm:mb-12 max-w-2xl mx-auto">
+        <p className="font-cute text-base sm:text-xl text-neutral-700/90 dark:text-neutral-300 leading-relaxed mb-8 sm:mb-12 max-w-2xl mx-auto">
           {locale === 'zh'
             ? '零文件夹焦虑，正文随时敲击 #标签 织就立体思维网，在 5 种沉浸式笔记展示模式中自由漫游、沉淀灵感。'
             : 'Zero folder anxiety. Type #hashtags anywhere to weave a thought mesh, and roam across 5 immersive note views.'}
@@ -374,7 +370,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
               playPop();
               onGoToExplore('grid');
             }}
-            className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-white/95 hover:bg-pink-50 text-neutral-800 hover:text-pink-600 font-bubble text-base sm:text-lg font-bold border-2 border-neutral-200/90 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
+            className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-white/95 dark:bg-neutral-900/90 hover:bg-pink-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-100 hover:text-pink-600 dark:hover:text-pink-400 font-bubble text-base sm:text-lg font-bold border-2 border-neutral-200/90 dark:border-white/10 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
           >
             <Layers className="w-5 h-5 text-rose-500" />
             <span>{locale === 'zh' ? '漫游笔记' : 'Explore Notes'}</span>
@@ -385,9 +381,9 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
               playPop();
               setIsGachaOpen(true);
             }}
-            className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-amber-100 hover:bg-amber-200 text-amber-950 font-bubble text-base sm:text-lg font-bold border-2 border-amber-300/90 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
+            className="flex items-center gap-2.5 px-6 sm:px-8 py-4 rounded-[26px] bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-950 dark:text-amber-200 font-bubble text-base sm:text-lg font-bold border-2 border-amber-300/90 dark:border-amber-700/60 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer clay-card"
           >
-            <Dices className="w-5 h-5 text-amber-700 animate-spin" style={{ animationDuration: '8s' }} />
+            <Dices className="w-5 h-5 text-amber-700 dark:text-amber-400 animate-spin" style={{ animationDuration: '8s' }} />
             <span>{locale === 'zh' ? '灵感扭蛋' : 'Inspiration Gacha'}</span>
           </button>
         </div>
@@ -395,10 +391,10 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         {/* Responsive Live Telemetry Status Dashboard (Aesthetic Modular Clay Capsules) */}
         <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 max-w-5xl mx-auto w-full select-none">
           {/* 1. Stable Uptime */}
-          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-2 border-white dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700 dark:text-neutral-300">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '稳定运行' : 'Uptime'}:</span>
-            <span className="font-bubble font-bold text-neutral-900">
+            <span className="font-bold text-neutral-600 dark:text-neutral-400">{locale === 'zh' ? '稳定运行' : 'Uptime'}:</span>
+            <span className="font-bubble font-bold text-neutral-900 dark:text-neutral-100">
               {sessionUptime.days > 0 ? `${sessionUptime.days}${locale === 'zh' ? '天 ' : 'd '}` : ''}
               {sessionUptime.hours > 0 ? `${sessionUptime.hours}${locale === 'zh' ? '小时 ' : 'h '}` : ''}
               {String(sessionUptime.minutes).padStart(2, '0')}{locale === 'zh' ? '分 ' : 'm '}
@@ -407,31 +403,31 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
           </div>
 
           {/* 2. Total Visitors */}
-          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-2 border-white dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700 dark:text-neutral-300">
             <Eye className="w-4 h-4 text-indigo-500 shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '总访客' : 'Total Visits'}:</span>
-            <span className="font-bubble font-bold text-neutral-900">
+            <span className="font-bold text-neutral-600 dark:text-neutral-400">{locale === 'zh' ? '总访客' : 'Total Visits'}:</span>
+            <span className="font-bubble font-bold text-neutral-900 dark:text-neutral-100">
               {realVisits.total} {locale === 'zh' ? '人次' : ''}
             </span>
           </div>
 
           {/* 3. Today's Visitors */}
-          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-2 border-white dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700 dark:text-neutral-300">
             <Sparkles className="w-4 h-4 text-pink-500 shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '今日访客' : 'Today Visits'}:</span>
-            <span className="px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-bubble font-bold text-xs shadow-3xs">
+            <span className="font-bold text-neutral-600 dark:text-neutral-400">{locale === 'zh' ? '今日访客' : 'Today Visits'}:</span>
+            <span className="px-2 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 font-bubble font-bold text-xs shadow-3xs">
               +{realVisits.today} {locale === 'zh' ? '人次' : ''}
             </span>
           </div>
 
           {/* 4. Notes & Word Count */}
-          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700">
+          <div className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-2 border-white dark:border-white/10 shadow-3xs hover:shadow-md hover:scale-105 transition-all text-xs font-cute text-neutral-700 dark:text-neutral-300">
             <Coffee className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="font-bold text-neutral-600">{locale === 'zh' ? '笔记沉淀' : 'Notes'}:</span>
-            <span className="font-bubble font-bold text-neutral-900">
+            <span className="font-bold text-neutral-600 dark:text-neutral-400">{locale === 'zh' ? '笔记沉淀' : 'Notes'}:</span>
+            <span className="font-bubble font-bold text-neutral-900 dark:text-neutral-100">
               {totalNotes} {locale === 'zh' ? '篇' : 'notes'}
             </span>
-            <span className="text-neutral-500 font-bubble font-bold text-[11px]">
+            <span className="text-neutral-500 dark:text-neutral-400 font-bubble font-bold text-[11px]">
               ({totalWords.toLocaleString()} {locale === 'zh' ? '字' : 'words'})
             </span>
           </div>
@@ -441,7 +437,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleLeaveStamp}
-            className="relative inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-100 via-rose-100 to-pink-100 hover:from-amber-200 hover:to-pink-200 border-2 border-white text-neutral-800 font-bubble text-xs font-bold shadow-3xs hover:shadow-md active:scale-90 transition-all cursor-pointer overflow-hidden"
+            className="relative inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-100 via-rose-100 to-pink-100 dark:from-amber-950/50 dark:via-rose-950/50 dark:to-pink-950/50 hover:from-amber-200 hover:to-pink-200 border-2 border-white dark:border-white/10 text-neutral-800 dark:text-neutral-100 font-bubble text-xs font-bold shadow-3xs hover:shadow-md active:scale-90 transition-all cursor-pointer overflow-hidden"
             title="Leave a paw stamp"
           >
             {stamps.map((st) => (
@@ -455,7 +451,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             ))}
             <span>🐾</span>
             <span>{locale === 'zh' ? '盖爪印' : 'Stamp'}</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-white/90 text-rose-600 font-bubble font-bold text-[11px] shadow-3xs">
+            <span className="px-1.5 py-0.2 rounded-full bg-white/90 dark:bg-neutral-900/90 text-rose-600 dark:text-rose-400 font-bubble font-bold text-[11px] shadow-3xs">
               {stampCount}
             </span>
           </button>
@@ -463,23 +459,23 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       </main>
 
       {/* 3. Aesthetic Version & Cloudflare Deployment Footer Bar */}
-      <footer className="text-center py-6 px-4 text-xs font-cute text-neutral-500 select-none flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3.5 flex-wrap">
-        <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/80 border border-neutral-200/70 shadow-3xs backdrop-blur-xs">
+      <footer className="text-center py-6 px-4 text-xs font-cute text-neutral-500 dark:text-neutral-400 select-none flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3.5 flex-wrap">
+        <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/80 dark:bg-neutral-900/80 border border-neutral-200/70 dark:border-white/10 shadow-3xs backdrop-blur-xs">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bubble font-bold text-neutral-800">TagMesh {APP_VERSION}</span>
+          <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-200">TagMesh {APP_VERSION}</span>
         </div>
 
-        <span className="text-neutral-300 hidden sm:inline">•</span>
+        <span className="text-neutral-300 dark:text-neutral-600 hidden sm:inline">•</span>
 
-        <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/80 border border-neutral-200/70 shadow-3xs backdrop-blur-xs">
-          <span className="text-amber-600">☁️</span>
-          <span className="font-medium text-neutral-600">{locale === 'zh' ? 'Cloudflare 最新部署时间' : 'Cloudflare Deployed'}:</span>
-          <span className="font-mono font-bold text-neutral-800">{getFormattedBuildTime(locale)}</span>
+        <div className="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/80 dark:bg-neutral-900/80 border border-neutral-200/70 dark:border-white/10 shadow-3xs backdrop-blur-xs">
+          <span className="text-amber-600 dark:text-amber-400">☁️</span>
+          <span className="font-medium text-neutral-600 dark:text-neutral-300">{locale === 'zh' ? 'Cloudflare 最新部署时间' : 'Cloudflare Deployed'}:</span>
+          <span className="font-mono font-bold text-neutral-800 dark:text-neutral-100">{getFormattedBuildTime(locale)}</span>
         </div>
 
-        <span className="text-neutral-300 hidden sm:inline">•</span>
+        <span className="text-neutral-300 dark:text-neutral-600 hidden sm:inline">•</span>
 
-        <div className="flex items-center gap-1.5 text-neutral-400">
+        <div className="flex items-center gap-1.5 text-neutral-400 dark:text-neutral-500">
           <span>⚡ Cloudflare Workers + D1 + R2 Edge</span>
         </div>
       </footer>

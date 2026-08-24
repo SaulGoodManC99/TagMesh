@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { motion, AnimatePresence } from 'motion/react';
 import { 
   PanelLeft, 
   Sparkles, 
@@ -41,7 +40,6 @@ import { playPop, playChime } from './blog/utils/soundEffects';
 import { useClayTheme } from './blog/utils/clayThemes';
 import { useAuth } from './hooks/useAuth';
 import { ClayAtmosphereCanvas } from './blog/components/ClayAtmosphereCanvas';
-import { PageTransitionStyle, getStoredTransitionStyle, PAGE_TRANSITION_VARIANTS } from './blog/utils/pageTransition';
 
 type AppRoute = 'home' | 'gallery' | 'danmaku' | 'editor';
 
@@ -60,15 +58,6 @@ export const App: React.FC = () => {
     return 'home';
   });
 
-  const ROUTE_ORDER: Record<AppRoute, number> = {
-    home: 0,
-    gallery: 1,
-    danmaku: 2,
-    editor: 3,
-  };
-
-  const [slideDirection, setSlideDirection] = useState<'slide-left' | 'slide-right'>('slide-left');
-  const [transitionStyle, setTransitionStyle] = useState<PageTransitionStyle>(() => getStoredTransitionStyle());
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('#all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -106,28 +95,11 @@ export const App: React.FC = () => {
         nextRoute = 'home';
       }
 
-      setRoute((prev) => {
-        if (prev !== nextRoute) {
-          const prevOrder = ROUTE_ORDER[prev] ?? 0;
-          const nextOrder = ROUTE_ORDER[nextRoute] ?? 0;
-          setSlideDirection(nextOrder >= prevOrder ? 'slide-left' : 'slide-right');
-        }
-        return nextRoute;
-      });
+      setRoute(nextRoute);
     };
 
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
-  }, []);
-
-  // Listen to transition style toggle from right-click menu
-  useEffect(() => {
-    const handleStyleChange = (e: Event) => {
-      const detail = (e as CustomEvent<PageTransitionStyle>).detail;
-      if (detail) setTransitionStyle(detail);
-    };
-    window.addEventListener('tagmesh_transition_style_changed', handleStyleChange);
-    return () => window.removeEventListener('tagmesh_transition_style_changed', handleStyleChange);
   }, []);
 
   // Guard against unauthorized editor access when guest notes mode is disabled
@@ -140,14 +112,6 @@ export const App: React.FC = () => {
       window.location.hash = '#/';
     }
   }, [route, guestNotesEnabled, isAdmin, openAuthModal, locale, showToast]);
-
-  const transitionClass = transitionStyle === 'fade'
-    ? 'page-fade-glow'
-    : transitionStyle === 'zoom'
-    ? 'page-spring-zoom'
-    : slideDirection === 'slide-left'
-    ? 'page-slide-in-left'
-    : 'page-slide-in-right';
 
   // Initialize DB, load initial note, seed guest sample notes, and ensure author separation
   useEffect(() => {
@@ -638,95 +602,79 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <AnimatePresence mode="wait" custom={slideDirection}>
-        <motion.div
-          key={route}
-          custom={slideDirection}
-          variants={PAGE_TRANSITION_VARIANTS[transitionStyle]}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          className="w-full min-h-screen relative"
-        >
-          {route === 'home' && (
-            <ClayLandingPortal
-              onGoToEditor={() => {
-                if (!guestNotesEnabled && !isAdmin) {
-                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
-                  openAuthModal();
-                  return;
-                }
-                setRoute('editor');
-                window.location.hash = '#/editor';
-              }}
-              onGoToExplore={(mode, tag) => {
-                const queryParams = new URLSearchParams();
-                if (mode) queryParams.set('mode', mode);
-                if (tag) queryParams.set('tag', tag);
-                const queryStr = queryParams.toString();
-                window.location.hash = queryStr ? `#/gallery?${queryStr}` : '#/gallery';
-              }}
-              onGoToEditorWithNote={(note) => {
-                if (!guestNotesEnabled && !isAdmin) {
-                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
-                  openAuthModal();
-                  return;
-                }
-                setActiveNote(note);
-                setRoute('editor');
-                window.location.hash = '#/editor';
-              }}
-              transitionClass={transitionClass}
-              slideDirection={slideDirection}
-            />
-          )}
+      <div className="w-full min-h-screen relative">
+        {route === 'home' && (
+          <ClayLandingPortal
+            onGoToEditor={() => {
+              if (!guestNotesEnabled && !isAdmin) {
+                showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                openAuthModal();
+                return;
+              }
+              setRoute('editor');
+              window.location.hash = '#/editor';
+            }}
+            onGoToExplore={(mode, tag) => {
+              const queryParams = new URLSearchParams();
+              if (mode) queryParams.set('mode', mode);
+              if (tag) queryParams.set('tag', tag);
+              const queryStr = queryParams.toString();
+              window.location.hash = queryStr ? `#/gallery?${queryStr}` : '#/gallery';
+            }}
+            onGoToEditorWithNote={(note) => {
+              if (!guestNotesEnabled && !isAdmin) {
+                showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                openAuthModal();
+                return;
+              }
+              setActiveNote(note);
+              setRoute('editor');
+              window.location.hash = '#/editor';
+            }}
+          />
+        )}
 
-          {route === 'gallery' && (
-            <ClayBlogHome
-              onGoToEditor={() => {
-                if (!guestNotesEnabled && !isAdmin) {
-                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
-                  openAuthModal();
-                  return;
-                }
-                setRoute('editor');
-                window.location.hash = '#/editor';
-              }}
-              onGoToEditorWithNote={(note) => {
-                if (!guestNotesEnabled && !isAdmin) {
-                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
-                  openAuthModal();
-                  return;
-                }
-                setActiveNote(note);
-                setRoute('editor');
-                window.location.hash = '#/editor';
-              }}
-              onOpenShortcuts={() => setIsShortcutsOpen(true)}
-              transitionClass={transitionClass}
-              slideDirection={slideDirection}
-            />
-          )}
+        {route === 'gallery' && (
+          <ClayBlogHome
+            onGoToEditor={() => {
+              if (!guestNotesEnabled && !isAdmin) {
+                showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                openAuthModal();
+                return;
+              }
+              setRoute('editor');
+              window.location.hash = '#/editor';
+            }}
+            onGoToEditorWithNote={(note) => {
+              if (!guestNotesEnabled && !isAdmin) {
+                showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                openAuthModal();
+                return;
+              }
+              setActiveNote(note);
+              setRoute('editor');
+              window.location.hash = '#/editor';
+            }}
+            onOpenShortcuts={() => setIsShortcutsOpen(true)}
+          />
+        )}
 
-          {route === 'danmaku' && (
-            <ClayDanmakuPlaza
-              onGoToEditor={() => {
-                if (!guestNotesEnabled && !isAdmin) {
-                  showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
-                  openAuthModal();
-                  return;
-                }
-                setRoute('editor');
-                window.location.hash = '#/editor';
-              }}
-              transitionClass={transitionClass}
-              slideDirection={slideDirection}
-            />
-          )}
+        {route === 'danmaku' && (
+          <ClayDanmakuPlaza
+            onGoToEditor={() => {
+              if (!guestNotesEnabled && !isAdmin) {
+                showToast(locale === 'zh' ? '🔒 旅人创作已关闭，仅馆长可进入工作台' : '🔒 Workspace is restricted to Curator');
+                openAuthModal();
+                return;
+              }
+              setRoute('editor');
+              window.location.hash = '#/editor';
+            }}
+          />
+        )}
 
-          {route === 'editor' && renderEditorView()}
-        </motion.div>
-      </AnimatePresence>
+        {route === 'editor' && renderEditorView()}
+      </div>
 
       {/* Toast Notification Pill */}
       {toastMessage && (
