@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { 
   ArrowUp, 
-  Layers, 
-  ChevronUp, 
+  RotateCw, 
   Sparkles,
   Check
 } from 'lucide-react';
 import { ViewMode } from '../ClayModeDock';
 import { useI18n } from '../../hooks/useI18n';
 import { useClayTheme } from '../utils/clayThemes';
-import { playPop, playSwoosh } from '../utils/soundEffects';
+import { playPop, playSwoosh, playChime } from '../utils/soundEffects';
 import { triggerParticleBurst } from '../utils/confetti';
 
 export interface ClayFloatingActionsProps {
   viewMode: ViewMode;
   onSelectMode: (mode: ViewMode) => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 const MODES: Array<{
@@ -70,6 +71,8 @@ const MODES: Array<{
 export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
   viewMode,
   onSelectMode,
+  onRefresh,
+  isRefreshing = false,
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -97,12 +100,12 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2.5 select-none">
+    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 select-none">
       {/* 1. Expandable 5-Mode Popup Selector Card */}
       {isMenuOpen && (
         <div 
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-16 right-0 w-72 p-4 rounded-[32px] bg-white/95 backdrop-blur-md border-3 border-white shadow-2xl clay-card animate-in zoom-in-90 fade-in duration-200 flex flex-col gap-2 z-50 mb-2"
+          className="absolute bottom-40 right-0 w-72 p-4 rounded-[32px] bg-white/95 backdrop-blur-md border-3 border-white shadow-2xl clay-card animate-in zoom-in-90 fade-in duration-200 flex flex-col gap-2 z-50 mb-2"
         >
           <div className="flex items-center justify-between px-2 pb-2 border-b border-neutral-100">
             <div className="flex items-center gap-1.5 font-bubble font-extrabold text-sm text-neutral-800">
@@ -144,26 +147,42 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
         </div>
       )}
 
-      {/* 2. Top Button: ⬆️ Back to Top */}
-      <button
-        onClick={handleScrollToTop}
-        className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-white/95 hover:bg-white text-neutral-700 hover:${theme.accentText} font-bubble text-xs sm:text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center gap-1.5 backdrop-blur-xs`}
-        title="Back to Top"
-      >
-        <ArrowUp className="w-4 h-4 text-rose-500" />
-        <span>{locale === 'zh' ? '回到顶部' : 'Top'}</span>
-      </button>
+      {/* 2. Unified 3-Button Round 3D Clay Floating Dock */}
+      <div className="flex flex-col items-center gap-2.5">
+        {/* Button 1: 🔄 Global Cloud Sync & Refresh */}
+        {onRefresh && (
+          <button
+            onClick={(e) => {
+              playChime();
+              triggerParticleBurst(e.clientX, e.clientY, 15);
+              onRefresh();
+            }}
+            disabled={isRefreshing}
+            className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white/95 hover:bg-white text-neutral-700 hover:${theme.accentText} font-bubble font-bold shadow-lg hover:shadow-xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center backdrop-blur-xs group relative`}
+            title={locale === 'zh' ? '全局云端同步与刷新' : 'Global Cloud Sync & Refresh'}
+          >
+            <RotateCw className={`w-5 h-5 text-rose-500 transition-transform ${isRefreshing ? 'animate-spin text-amber-500' : 'group-hover:rotate-180 duration-500'}`} />
+          </button>
+        )}
 
-      {/* 3. Bottom Button: 🎡 Switch View Mode (Synced with Theme Gradient) */}
-      <button
-        onClick={handleToggleMenu}
-        className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-xs sm:text-sm font-bold shadow-xl hover:shadow-2xl hover:scale-102 active:scale-98 transition-all cursor-pointer border-2 border-white`}
-        title="Switch Exhibition View Mode"
-      >
-        <span className="text-base sm:text-lg select-none">{currentMode.emoji}</span>
-        <span>{locale === 'zh' ? currentMode.nameZh : currentMode.nameEn}</span>
-        <ChevronUp className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} />
-      </button>
+        {/* Button 2: 🎡 Switch Exhibition View Mode (Round 3D Clay Button) */}
+        <button
+          onClick={handleToggleMenu}
+          className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold shadow-xl hover:shadow-2xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center text-xl select-none relative`}
+          title={`${locale === 'zh' ? currentMode.nameZh : currentMode.nameEn} (${locale === 'zh' ? '点击切换 5 模式' : 'Switch 5 Views'})`}
+        >
+          <span>{currentMode.emoji}</span>
+        </button>
+
+        {/* Button 3: ⬆️ Back to Top Button */}
+        <button
+          onClick={handleScrollToTop}
+          className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white/95 hover:bg-white text-neutral-700 hover:${theme.accentText} font-bubble font-bold shadow-lg hover:shadow-xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center backdrop-blur-xs`}
+          title={locale === 'zh' ? '回到顶部' : 'Back to Top'}
+        >
+          <ArrowUp className="w-5 h-5 text-rose-500" />
+        </button>
+      </div>
     </div>
   );
 };

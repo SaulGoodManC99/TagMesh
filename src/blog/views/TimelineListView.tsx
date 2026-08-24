@@ -197,21 +197,27 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
 
                   {/* Header Row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {note.isOfficial || note.author === 'admin' ? (
+                        <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs">
+                          👑 {locale === 'zh' ? '馆长精选' : 'Curator'}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs">
+                          🌱 {locale === 'zh' ? '旅人笔记' : 'Guest Note'}
+                        </span>
+                      )}
                       {note.isPinned && (
-                        <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-300 text-amber-900 text-[10px] font-bubble font-bold shadow-xs">
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 text-amber-900 text-[10px] font-bubble font-bold shadow-xs">
                           <Pin className="w-2.5 h-2.5" />
                           <span>Pinned</span>
                         </span>
                       )}
-                      <h3 className="font-bubble text-base sm:text-lg font-extrabold text-neutral-900 group-hover:text-rose-600 transition-colors line-clamp-1">
-                        {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题笔记' : 'Untitled Note'))}
-                      </h3>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs font-cute text-neutral-500 shrink-0">
                       <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 backdrop-blur-xs font-cute font-bold text-xs text-neutral-700 shadow-3xs">
-                        {formattedDate}
+                        📅 {formattedDate}
                       </span>
                       <span>•</span>
                       <span className="font-bubble font-bold text-neutral-600">
@@ -220,10 +226,10 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Content Preview */}
-                  <p className="font-cute text-xs sm:text-sm text-neutral-700/90 leading-relaxed line-clamp-2 mb-3">
-                    {renderCardMarkdownSnippet(note.rawMarkdown, 120)}
-                  </p>
+                  {/* Pure Markdown Stream Content */}
+                  <div className="font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed line-clamp-3 mb-3">
+                    {renderCardMarkdownSnippet(note.rawMarkdown, 180)}
+                  </div>
 
                   {/* Bottom Tags & Read Button */}
                   <div className="flex items-center justify-between pt-2.5 border-t border-black/5">

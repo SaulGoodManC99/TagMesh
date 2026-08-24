@@ -322,10 +322,12 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       {/* 0. Live Ambient Atmospheric Particle World */}
       <ClayAtmosphereCanvas />
 
-      {/* Floating Dual Action Group: [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] (Synced with theme color) */}
+      {/* Floating 3D Clay Action Dock: [ 🔄 全局云端同步 ] + [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] */}
       <ClayFloatingActions
         viewMode={viewMode}
         onSelectMode={(m) => handleViewModeChange(m)}
+        onRefresh={handleDynamicRefresh}
+        isRefreshing={isRefreshing}
       />
 
       {/* Top Navigation Header */}
@@ -365,19 +367,8 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           </div>
         </div>
 
-        {/* Author Dimension Filter Pills + Refresh Button + Active Tag Status */}
+        {/* Author Dimension Filter Pills + Active Tag Status */}
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end overflow-x-auto no-scrollbar">
-          {/* Dynamic Sync / Refresh Button */}
-          <button
-            type="button"
-            onClick={handleDynamicRefresh}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white/95 hover:bg-pink-50 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold text-neutral-700 hover:text-rose-600 transition cursor-pointer active:scale-90 shrink-0"
-            title={locale === 'zh' ? '动态实时刷新笔记列表' : 'Dynamic Refresh Notes'}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-rose-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{locale === 'zh' ? '动态刷新' : 'Refresh'}</span>
-          </button>
-
           {/* Author Switcher */}
           <div className="inline-flex p-1 rounded-2xl bg-white/95 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold shrink-0">
             <button

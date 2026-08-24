@@ -59,12 +59,21 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
 
               <div>
                 {/* Polaroid Upper Photo Window */}
-                <div className="w-full h-44 sm:h-48 rounded-[20px] bg-neutral-50/90 border-2 border-neutral-100 p-3.5 flex flex-col justify-between mb-3.5 shadow-inner relative overflow-hidden">
+                <div className="w-full h-52 sm:h-56 rounded-[20px] bg-neutral-50/95 border-2 border-neutral-100 p-3.5 flex flex-col justify-between mb-3 shadow-inner relative overflow-hidden">
                   <div className="flex items-center justify-between text-xs font-cute text-neutral-600 mb-1 z-10">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xl group-hover:scale-125 transition-transform inline-block">
                         {cardTheme.emoji}
                       </span>
+                      {note.isOfficial || note.author === 'admin' ? (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.2 rounded-full bg-amber-400 text-neutral-900 text-[10px] font-bubble font-extrabold shadow-3xs">
+                          👑 {locale === 'zh' ? '馆长' : 'Curator'}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bubble font-bold shadow-3xs">
+                          🌱 {locale === 'zh' ? '旅人' : 'Guest'}
+                        </span>
+                      )}
                       {note.isPinned && (
                         <span className="flex items-center gap-0.5 px-2 py-0.2 rounded-full bg-amber-300 text-amber-900 text-[10px] font-bubble font-bold shadow-3xs">
                           <Pin className="w-2.5 h-2.5" />
@@ -72,20 +81,15 @@ export const PolaroidBoardView: React.FC<PolaroidBoardViewProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="px-2 py-0.5 rounded-full bg-white/80 backdrop-blur-xs font-bubble font-bold text-[11px] text-neutral-700 shadow-3xs">
-                      {formattedDate}
+                    <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs font-bubble font-bold text-[11px] text-neutral-700 shadow-3xs">
+                      📅 {formattedDate}
                     </span>
                   </div>
 
-                  <div className="overflow-hidden flex-1 font-cute text-xs text-neutral-700 leading-relaxed z-10 line-clamp-4 pt-1">
-                    {renderCardMarkdownSnippet(note.rawMarkdown, 120)}
+                  <div className="overflow-hidden flex-1 font-cute text-xs sm:text-sm text-neutral-700 leading-relaxed z-10 line-clamp-6 pt-1">
+                    {renderCardMarkdownSnippet(note.rawMarkdown, 180)}
                   </div>
                 </div>
-
-                {/* Polaroid Lower Chin: Handwritten-Style Title */}
-                <h4 className="font-bubble text-base sm:text-lg font-extrabold text-neutral-900 leading-snug mb-2 group-hover:text-rose-600 transition-colors line-clamp-2 px-1">
-                  {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题灵感' : 'Untitled Note'))}
-                </h4>
               </div>
 
               {/* Bottom Tags & Read Minutes */}

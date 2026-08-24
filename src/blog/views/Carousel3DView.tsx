@@ -262,15 +262,10 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
                       </span>
                     </div>
 
-                    {/* Excerpt Headline */}
-                    <h3 className="font-bubble text-base sm:text-lg font-extrabold leading-snug mb-2 text-neutral-900 line-clamp-2 group-hover:text-rose-600 transition-colors">
-                      {renderInlineContent(note.excerpt || (locale === 'zh' ? '无标题灵感' : 'Untitled'))}
-                    </h3>
-
-                    {/* Snippet */}
-                    <p className="font-cute text-xs text-neutral-700/85 leading-relaxed line-clamp-3 mb-3">
-                      {renderCardMarkdownSnippet(note.rawMarkdown, 110)}
-                    </p>
+                    {/* Clean Markdown Stream Snippet (No Duplicated Title) */}
+                    <div className="font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed line-clamp-6 mb-3 pt-1">
+                      {renderCardMarkdownSnippet(note.rawMarkdown, 180)}
+                    </div>
                   </div>
 
                   {/* Bottom Indicator */}

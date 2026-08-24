@@ -363,12 +363,8 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                 </span>
               </div>
 
-              <h4 className="font-bubble text-xs font-bold leading-snug line-clamp-2 mb-1.5 text-neutral-900">
-                {node.note.excerpt || 'Untitled'}
-              </h4>
-
-              <div className="mb-3 overflow-hidden">
-                {renderCardMarkdownSnippet(node.note.rawMarkdown, 2)}
+              <div className="mb-3 overflow-hidden font-cute text-xs text-neutral-800 leading-relaxed line-clamp-3">
+                {renderCardMarkdownSnippet(node.note.rawMarkdown, 100)}
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-black/5">
@@ -410,12 +406,8 @@ export const FloatingCanvasView: React.FC<FloatingCanvasViewProps> = ({
                     </div>
                   </div>
 
-                  <h3 className="font-bubble text-base font-bold text-neutral-900 leading-snug">
-                    {node.note.excerpt || 'Untitled'}
-                  </h3>
-
-                  <div className="bg-amber-50/60 p-3 rounded-2xl border border-amber-100/60 overflow-hidden max-h-36">
-                    {renderCardMarkdownSnippet(node.note.rawMarkdown, 4)}
+                  <div className="bg-amber-50/60 p-3.5 rounded-2xl border border-amber-100/60 overflow-hidden max-h-48 font-cute text-xs sm:text-sm text-neutral-800 leading-relaxed">
+                    {renderCardMarkdownSnippet(node.note.rawMarkdown, 250)}
                   </div>
 
                   {/* Tags */}
