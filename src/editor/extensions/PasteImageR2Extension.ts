@@ -54,7 +54,8 @@ export const PasteImageR2Extension = Extension.create<PasteImageR2Options>({
             options.onUploadStart?.();
 
             uploadImageToR2(file)
-              .then(({ url }) => {
+              .then((res) => {
+                const finalUrl = res.url || localUrl;
                 const currentDoc = view.state.doc;
                 let foundPos = -1;
 
@@ -67,15 +68,17 @@ export const PasteImageR2Extension = Extension.create<PasteImageR2Options>({
 
                 if (foundPos !== -1) {
                   const updateTr = view.state.tr.setNodeMarkup(foundPos, undefined, {
-                    src: url,
+                    src: finalUrl,
                     alt: file.name || 'image',
                     title: null,
                   });
                   view.dispatch(updateTr);
                 }
 
-                URL.revokeObjectURL(localUrl);
-                options.onUploadSuccess?.(url);
+                if (res.url) {
+                  URL.revokeObjectURL(localUrl);
+                  options.onUploadSuccess?.(res.url);
+                }
               })
               .catch(err => {
                 options.onUploadError?.(err);
@@ -112,7 +115,8 @@ export const PasteImageR2Extension = Extension.create<PasteImageR2Options>({
             options.onUploadStart?.();
 
             uploadImageToR2(imageFile)
-              .then(({ url }) => {
+              .then((res) => {
+                const finalUrl = res.url || localUrl;
                 const currentDoc = view.state.doc;
                 let foundPos = -1;
 
@@ -125,15 +129,17 @@ export const PasteImageR2Extension = Extension.create<PasteImageR2Options>({
 
                 if (foundPos !== -1) {
                   const updateTr = view.state.tr.setNodeMarkup(foundPos, undefined, {
-                    src: url,
+                    src: finalUrl,
                     alt: imageFile.name || 'image',
                     title: null,
                   });
                   view.dispatch(updateTr);
                 }
 
-                URL.revokeObjectURL(localUrl);
-                options.onUploadSuccess?.(url);
+                if (res.url) {
+                  URL.revokeObjectURL(localUrl);
+                  options.onUploadSuccess?.(res.url);
+                }
               })
               .catch(err => {
                 options.onUploadError?.(err);

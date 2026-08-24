@@ -70,27 +70,6 @@ export async function deleteNoteRemote(noteId: string): Promise<boolean> {
   }
 }
 
-/**
- * Upload image screenshot directly to Cloudflare R2
- */
-export async function uploadImageToR2(file: File | Blob): Promise<{ url: string; key: string }> {
-  const formData = new FormData();
-  const filename = file instanceof File ? file.name : `screenshot-${Date.now()}.png`;
-  formData.append('file', file, filename);
-
-  const res = await fetch(`${API_BASE}/upload`, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`R2 Upload failed: ${err}`);
-  }
-
-  const data = await res.json() as { url: string; key: string; success: boolean };
-  return { url: data.url, key: data.key };
-}
 
 /**
  * Search notes in remote D1 with FTS5
@@ -248,5 +227,143 @@ export async function deleteDanmakuRemote(id: string): Promise<RemoteDanmakuResp
     return await res.json() as RemoteDanmakuResponse;
   } catch {
     return null;
+  }
+}
+
+/**
+ * ==========================================
+ * Cloudflare R2 Object Storage Services
+ * ==========================================
+ */
+
+export interface R2UploadResult {
+  success: boolean;
+  url?: string;
+  key?: string;
+  size?: number;
+  error?: string;
+}
+
+export interface R2BackupItem {
+  key: string;
+  size: number;
+  uploaded: string;
+  customMetadata?: Record<string, string>;
+}
+
+export interface R2StatusResult {
+  connected: boolean;
+  bucketName?: string;
+  message?: string;
+  sampleObjectsCount?: number;
+}
+
+/**
+ * Check R2 bucket connection status
+ */
+export async function checkR2StatusRemote(): Promise<R2StatusResult> {
+  try {
+    const res = await fetch(`${API_BASE}/upload/status`);
+    if (!res.ok) return { connected: false, message: `HTTP ${res.status}` };
+    return await res.json() as R2StatusResult;
+  } catch (err: unknown) {
+    return { connected: false, message: err instanceof Error ? err.message : 'Network offline' };
+  }
+}
+
+/**
+ * Upload Image or Screenshot to Cloudflare R2
+ */
+export async function uploadImageToR2(file: File): Promise<R2UploadResult> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({ error: `Upload failed HTTP ${res.status}` })) as { error?: string };
+      return {
+        success: false,
+        error: errJson.error || `Upload failed (${res.status})`,
+      };
+    }
+
+    const data = await res.json() as { success: boolean; url: string; key: string; size: number };
+    return {
+      success: true,
+      url: data.url,
+      key: data.key,
+      size: data.size,
+    };
+  } catch (err: unknown) {
+    console.error('[R2 Client Upload Error]', err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Network error during upload',
+    };
+  }
+}
+
+/**
+ * Create a full database snapshot archive in Cloudflare R2
+ */
+export async function createR2SnapshotBackup(notes: Note[], triggerBy: string = 'admin'): Promise<{ success: boolean; key?: string; totalNotes?: number; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/upload/backup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notes, triggerBy }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Backup request failed' })) as { error?: string };
+      return { success: false, error: err.error || `HTTP ${res.status}` };
+    }
+
+    const data = await res.json() as { success: boolean; key: string; totalNotes: number };
+    return { success: true, key: data.key, totalNotes: data.totalNotes };
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to create backup' };
+  }
+}
+
+/**
+ * List historical snapshot backups from Cloudflare R2
+ */
+export async function fetchR2BackupsList(): Promise<{ success: boolean; backups: R2BackupItem[]; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/upload/backups`);
+    if (!res.ok) return { success: false, backups: [] };
+    const data = await res.json() as { success: boolean; backups: R2BackupItem[]; error?: string };
+    return { success: Boolean(data.success), backups: data.backups || [] };
+  } catch (err: unknown) {
+    return { success: false, backups: [], error: err instanceof Error ? err.message : 'Failed to list backups' };
+  }
+}
+
+/**
+ * Fetch and parse a snapshot backup from Cloudflare R2 for restoration
+ */
+export async function restoreR2Snapshot(key: string): Promise<{ success: boolean; notes?: Note[]; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/upload/restore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Restore request failed' })) as { error?: string };
+      return { success: false, error: err.error || `HTTP ${res.status}` };
+    }
+
+    const data = await res.json() as { success: boolean; snapshot: { notes: Note[] } };
+    return { success: true, notes: data.snapshot?.notes || [] };
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : 'Restore failed' };
   }
 }

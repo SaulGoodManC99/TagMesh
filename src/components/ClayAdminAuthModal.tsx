@@ -1,10 +1,36 @@
-import React, { useState } from 'react';
-import { ShieldCheck, Lock, KeyRound, User, LogOut, Check, X, Sparkles, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  ShieldCheck, 
+  Lock, 
+  KeyRound, 
+  User, 
+  LogOut, 
+  Check, 
+  X, 
+  Sparkles, 
+  AlertCircle,
+  Cloud,
+  Database,
+  DownloadCloud,
+  UploadCloud,
+  RefreshCw,
+  Loader2,
+  HardDrive
+} from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useI18n } from '../hooks/useI18n';
-import { playPop, playChime } from '../blog/utils/soundEffects';
+import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
 import { triggerParticleBurst } from '../blog/utils/confetti';
-import { resetTelemetryRemote } from '../services/api';
+import { 
+  resetTelemetryRemote, 
+  checkR2StatusRemote, 
+  createR2SnapshotBackup, 
+  fetchR2BackupsList, 
+  restoreR2Snapshot,
+  R2BackupItem,
+  R2StatusResult
+} from '../services/api';
+import { db } from '../db/dexie';
 
 export const ClayAdminAuthModal: React.FC = () => {
   const { role, isAdmin, loginAsAdmin, logoutToGuest, updateAdminPassword, isAuthModalOpen, closeAuthModal } = useAuth();
@@ -18,6 +44,84 @@ export const ClayAdminAuthModal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'changePwd'>('login');
   const [oldPwd, setOldPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
+
+  // R2 Backup & Storage State
+  const [r2Status, setR2Status] = useState<R2StatusResult | null>(null);
+  const [backupsList, setBackupsList] = useState<R2BackupItem[]>([]);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [isRestoringKey, setIsRestoringKey] = useState<string | null>(null);
+  const [showBackupsList, setShowBackupsList] = useState(false);
+  const [isLoadingR2, setIsLoadingR2] = useState(false);
+
+  // Load R2 status & backups when admin modal is opened
+  useEffect(() => {
+    if (isAuthModalOpen && isAdmin) {
+      loadR2Info();
+    }
+  }, [isAuthModalOpen, isAdmin]);
+
+  const loadR2Info = async () => {
+    setIsLoadingR2(true);
+    try {
+      const [status, backups] = await Promise.all([
+        checkR2StatusRemote(),
+        fetchR2BackupsList()
+      ]);
+      setR2Status(status);
+      setBackupsList(backups.backups || []);
+    } catch (err) {
+      console.warn('[AdminModal] loadR2Info error:', err);
+    } finally {
+      setIsLoadingR2(false);
+    }
+  };
+
+  const handleCreateBackup = async () => {
+    setIsBackingUp(true);
+    playSoftTick();
+    try {
+      const allNotes = await db.notes.toArray();
+      const res = await createR2SnapshotBackup(allNotes, 'admin');
+      if (res.success) {
+        playChime();
+        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 30);
+        setSuccessMsg(locale === 'zh' ? `📦 成功创建 R2 云端快照！已备份 ${res.totalNotes} 篇笔记` : `📦 Snapshot created! ${res.totalNotes} notes backed up`);
+        loadR2Info();
+        setTimeout(() => setSuccessMsg(null), 4000);
+      } else {
+        setErrorMsg(res.error || 'Failed to create backup');
+      }
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Backup error');
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
+  const handleRestoreBackup = async (key: string) => {
+    if (!window.confirm(locale === 'zh' ? '确定要从该 R2 快照恢复笔记吗？本地已有同名笔记将被合并覆盖。' : 'Restore notes from this snapshot? Existing notes with same ID will be overwritten.')) {
+      return;
+    }
+
+    setIsRestoringKey(key);
+    playSoftTick();
+    try {
+      const res = await restoreR2Snapshot(key);
+      if (res.success && res.notes && res.notes.length > 0) {
+        await db.notes.bulkPut(res.notes);
+        playChime();
+        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
+        setSuccessMsg(locale === 'zh' ? `📥 成功从快照恢复 ${res.notes.length} 篇笔记！` : `📥 Successfully restored ${res.notes.length} notes!`);
+        setTimeout(() => setSuccessMsg(null), 4000);
+      } else {
+        setErrorMsg(res.error || 'No notes found in snapshot');
+      }
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Restore error');
+    } finally {
+      setIsRestoringKey(null);
+    }
+  };
 
   if (!isAuthModalOpen) return null;
 
@@ -234,6 +338,102 @@ export const ClayAdminAuthModal: React.FC = () => {
                     <span>{locale === 'zh' ? '一键全量重置' : 'Reset All'}</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Cloudflare R2 Object Storage & Cloud Snapshot Backups */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-sky-50 to-indigo-50/80 border border-sky-200/80 text-neutral-800 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bubble font-extrabold text-xs text-sky-900">
+                    <Cloud className="w-4 h-4 text-sky-600" />
+                    <span>{locale === 'zh' ? 'Cloudflare R2 对象存储与云端快照' : 'Cloudflare R2 & Cloud Snapshots'}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bubble font-bold ${
+                      r2Status?.connected ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-neutral-100 text-neutral-600'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${r2Status?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'}`}></span>
+                      <span>{r2Status?.connected ? (r2Status.bucketName || 'tagmesh-bucket') : (locale === 'zh' ? '存储桶未连接' : 'Disconnected')}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={loadR2Info}
+                      disabled={isLoadingR2}
+                      className="p-1 text-sky-600 hover:text-sky-800 transition cursor-pointer"
+                      title={locale === 'zh' ? '刷新 R2 状态' : 'Refresh R2'}
+                    >
+                      <RefreshCw className={`w-3 h-3 ${isLoadingR2 ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                <p className="font-cute text-[11px] text-sky-900/80 leading-relaxed">
+                  {locale === 'zh'
+                    ? 'R2 专属存储桶已启用，提供 Markdown 截图拖拽粘贴秒传（零出口流量费）及全库云端快照时光机备份。'
+                    : 'R2 bucket active: Zero-egress screenshot hosting & full database snapshot backups.'}
+                </p>
+
+                <div className="flex items-center gap-2 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={handleCreateBackup}
+                    disabled={isBackingUp}
+                    className="flex-1 p-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bubble font-bold text-xs shadow-3xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    {isBackingUp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UploadCloud className="w-3.5 h-3.5" />}
+                    <span>{isBackingUp ? (locale === 'zh' ? '打包上传中...' : 'Backing up...') : (locale === 'zh' ? '📦 一键备份全库到 R2' : '📦 Backup All to R2')}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowBackupsList(!showBackupsList)}
+                    className="p-2 px-3 rounded-xl bg-white hover:bg-sky-50 text-sky-800 font-bubble font-bold text-xs border border-sky-200 shadow-3xs flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer"
+                  >
+                    <DownloadCloud className="w-3.5 h-3.5 text-sky-600" />
+                    <span>{locale === 'zh' ? `快照列表 (${backupsList.length})` : `Snapshots (${backupsList.length})`}</span>
+                  </button>
+                </div>
+
+                {/* Collapsible Snapshots List */}
+                {showBackupsList && (
+                  <div className="pt-2 border-t border-sky-200/60 space-y-1.5 animate-in fade-in max-h-48 overflow-y-auto no-scrollbar">
+                    {backupsList.length === 0 ? (
+                      <p className="text-center py-2 text-xs font-cute text-sky-700/70">
+                        {locale === 'zh' ? '暂无云端快照，点击上方按钮即可创建第一份备份。' : 'No snapshots yet. Click above to create one.'}
+                      </p>
+                    ) : (
+                      backupsList.map((bk) => {
+                        const noteCount = bk.customMetadata?.totalNotes;
+                        const dateStr = new Date(bk.uploaded).toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US');
+                        const isRestoring = isRestoringKey === bk.key;
+
+                        return (
+                          <div key={bk.key} className="flex items-center justify-between p-2 rounded-xl bg-white/90 border border-sky-100 text-xs shadow-3xs">
+                            <div className="min-w-0 pr-2">
+                              <div className="font-mono font-bold text-neutral-800 truncate text-[11px]">
+                                📑 {bk.key.replace('backups/', '')}
+                              </div>
+                              <div className="font-cute text-[10px] text-neutral-500">
+                                {dateStr} {noteCount ? `• ${noteCount} 篇笔记` : ''} • {(bk.size / 1024).toFixed(1)} KB
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              disabled={isRestoring}
+                              onClick={() => handleRestoreBackup(bk.key)}
+                              className="px-2.5 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 font-bubble font-bold text-[11px] shrink-0 transition active:scale-95 cursor-pointer disabled:opacity-50"
+                            >
+                              {isRestoring ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <span>{locale === 'zh' ? '恢复' : 'Restore'}</span>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Password update section toggle */}

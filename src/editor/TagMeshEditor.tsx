@@ -33,13 +33,16 @@ import {
   Redo,
   Sparkles,
   Smile,
-  Minus
+  Minus,
+  UploadCloud,
+  Loader2
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { db, getAllTagCounts, getOrCreateActiveNote } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { markdownToHtml, htmlToMarkdown, extractExcerptFromMarkdown, countWordsAndChars } from './utils/markdown';
+import { uploadImageToR2 } from '../services/api';
 import Image from '@tiptap/extension-image';
 import { HashtagExtension } from './extensions/HashtagExtension';
 import { EmojiColonExtension } from './extensions/EmojiColonExtension';
@@ -105,6 +108,8 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
 
   // Emoji Picker Modal
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 100% Real-time dynamic live query for all tags in the database
   const allDbTags = useLiveQuery(() => getAllTagCounts(isAdmin ? undefined : 'guest'), [isAdmin]) || [];
@@ -159,18 +164,65 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
     }
   }, [note, onNoteChange]);
 
+  const editorRef = useRef<any>(null);
+
   /**
    * Handle Emoji selection from modal
    */
   const handleSelectEmojiItem = useCallback((item: EmojiItem) => {
-    if (!editor) return;
+    const currentEditor = editorRef.current;
+    if (!currentEditor) return;
 
     if (item.type === 'emoji') {
-      editor.chain().focus().insertContent(item.value).run();
+      currentEditor.chain().focus().insertContent(item.value).run();
     } else {
-      editor.chain().focus().setImage({ src: item.value, alt: item.nameZh }).run();
+      currentEditor.chain().focus().setImage({ src: item.value, alt: item.nameZh }).run();
     }
     setEmojiPickerOpen(false);
+  }, []);
+
+  /**
+   * Upload image file to Cloudflare R2 (or fallback to local base64/blob) and insert into TipTap editor
+   */
+  const handleUploadAndInsertImage = useCallback(async (file: File) => {
+    if (!file) return;
+    setIsUploadingImage(true);
+    playSoftTick();
+
+    try {
+      const res = await uploadImageToR2(file);
+      if (res.success && res.url) {
+        if (editorRef.current) {
+          editorRef.current.chain().focus().setImage({ src: res.url, alt: file.name || 'image' }).run();
+        }
+        playChime();
+        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 25);
+      } else {
+        // Fallback: Local Base64 so user is never blocked
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const src = e.target?.result as string;
+          if (src && editorRef.current) {
+            editorRef.current.chain().focus().setImage({ src, alt: file.name || 'image' }).run();
+            playPop();
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.warn('[Image Upload Fallback]', err);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const src = e.target?.result as string;
+        if (src && editorRef.current) {
+          editorRef.current.chain().focus().setImage({ src, alt: file.name || 'image' }).run();
+          playPop();
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsUploadingImage(false);
+    }
   }, []);
 
   // TipTap editor instance setup
@@ -182,8 +234,8 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
       }),
       Placeholder.configure({
         placeholder: locale === 'zh'
-          ? '写下此刻的灵感... 敲击 #标签 即可随心分类，敲击 :表情 唤起表情 ✨'
-          : 'Write down your spark... Type #tag to categorize, type :emoji for smileys ✨',
+          ? '写下此刻的灵感... 敲击 #标签 即可随心分类，敲击 :表情 唤起表情，支持直接 Ctrl+V 粘贴截图 ✨'
+          : 'Write down your spark... Type #tag to categorize, type :emoji for smileys, Ctrl+V to paste screenshots ✨',
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
@@ -199,6 +251,39 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
     ],
     content: note ? markdownToHtml(note.rawMarkdown || '') : '',
     editable: !isNoteProtected,
+    editorProps: {
+      handlePaste: (view, event) => {
+        const items = event.clipboardData?.items;
+        if (!items) return false;
+
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.type.startsWith('image/')) {
+            event.preventDefault();
+            const file = item.getAsFile();
+            if (file) {
+              handleUploadAndInsertImage(file);
+            }
+            return true;
+          }
+        }
+        return false;
+      },
+      handleDrop: (view, event) => {
+        const files = event.dataTransfer?.files;
+        if (!files || files.length === 0) return false;
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (file.type.startsWith('image/')) {
+            event.preventDefault();
+            handleUploadAndInsertImage(file);
+            return true;
+          }
+        }
+        return false;
+      },
+    },
     onUpdate: ({ editor }) => {
       if (!note || !activeNoteIdRef.current) return;
 
@@ -230,6 +315,11 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
       });
     },
   });
+
+  // Keep editorRef current
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   // Keep editor content in sync when active note changes
   useEffect(() => {
@@ -413,6 +503,46 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
                 <Smile className="w-3.5 h-3.5 text-rose-500" />
                 <span>{locale === 'zh' ? '表情 / 手势' : 'Emojis'}</span>
               </button>
+            )}
+
+            {/* R2 Image / Screenshot Upload Button */}
+            {!isNoteProtected && (
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleUploadAndInsertImage(file);
+                      e.target.value = '';
+                    }
+                  }}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  disabled={isUploadingImage}
+                  onClick={() => {
+                    playPop(560);
+                    fileInputRef.current?.click();
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-sky-500/10 to-indigo-500/10 hover:from-sky-500/20 hover:to-indigo-500/20 text-sky-700 border border-sky-200/80 text-xs font-bubble font-bold transition-all cursor-pointer active:scale-95 shadow-3xs disabled:opacity-50"
+                  title={locale === 'zh' ? '上传图片至 R2 (支持直接 Ctrl+V 粘贴截图)' : 'Upload image to R2 (Ctrl+V supported)'}
+                >
+                  {isUploadingImage ? (
+                    <Loader2 className="w-3.5 h-3.5 text-sky-600 animate-spin" />
+                  ) : (
+                    <UploadCloud className="w-3.5 h-3.5 text-sky-600" />
+                  )}
+                  <span>
+                    {isUploadingImage
+                      ? (locale === 'zh' ? 'R2 上传中...' : 'Uploading...')
+                      : (locale === 'zh' ? '图片 / 截屏' : 'Image')}
+                  </span>
+                </button>
+              </>
             )}
 
             <span className="flex items-center gap-1.5">

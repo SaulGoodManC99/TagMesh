@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = "./dist"
-binding = "ASSETS"
+not_found_handling = "single-page-application"
 
 # Cloudflare D1 Database (SQLite + FTS5 Full Text Search)
 [[d1_databases]]
@@ -13,6 +13,11 @@ binding = "DB"
 database_name = "tagmesh-db"
 database_id = "132a4651-9da7-4fb8-8e17-11ffb4354d10"
 migrations_dir = "./migrations"
+
+# Cloudflare R2 Object Storage (Images, Media, and Cloud Snapshot Backups)
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "tagmesh-bucket"
 
 [vars]
 ENVIRONMENT = "production"
