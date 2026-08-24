@@ -234,42 +234,71 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            {/* Quick Action 1: ✍️ Editor Workspace */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+            {/* Quick Action 1: 🏠 Home Portal */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                playPop();
+                setIsQuickHubOpen(false);
+                window.location.hash = '#/';
+              }}
+              className="p-2.5 rounded-2xl bg-amber-50/90 hover:bg-amber-100 text-amber-800 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-amber-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
+            >
+              <span className="text-base leading-none">🏰</span>
+              <span>{locale === 'zh' ? '乐园首页' : 'Home'}</span>
+            </button>
+
+            {/* Quick Action 2: 📖 Notes Showcase */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                playPop();
+                setIsQuickHubOpen(false);
+                window.location.hash = '#/gallery';
+              }}
+              className="p-2.5 rounded-2xl bg-orange-50/90 hover:bg-orange-100 text-orange-800 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-orange-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
+            >
+              <span className="text-base leading-none">📖</span>
+              <span>{locale === 'zh' ? '旅人笔记' : 'Notes'}</span>
+            </button>
+
+            {/* Quick Action 3: ✍️ Editor Workspace */}
             <button
               onClick={handleActionEditor}
               className="p-2.5 rounded-2xl bg-pink-50/90 hover:bg-pink-100 text-pink-700 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-pink-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
             >
               <PenTool className="w-4 h-4 text-pink-500" />
-              <span>{locale === 'zh' ? '写灵感 / 工作台' : 'Editor'}</span>
+              <span>{locale === 'zh' ? '工作台' : 'Editor'}</span>
             </button>
 
-            {/* Quick Action 2: 🎨 Mood Themes */}
-            <button
-              onClick={handleActionTheme}
-              className="p-2.5 rounded-2xl bg-amber-50/90 hover:bg-amber-100 text-amber-800 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-amber-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
-            >
-              <Palette className="w-4 h-4 text-amber-500" />
-              <span>{locale === 'zh' ? '切换心境主题' : 'Themes'}</span>
-            </button>
-
-            {/* Quick Action 3: 💬 Danmaku Plaza */}
+            {/* Quick Action 4: 💬 Danmaku Plaza */}
             <button
               onClick={handleActionDanmaku}
               className="p-2.5 rounded-2xl bg-indigo-50/90 hover:bg-indigo-100 text-indigo-700 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-indigo-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
             >
               <MessageSquare className="w-4 h-4 text-indigo-500" />
-              <span>{locale === 'zh' ? '弹幕星河广场' : 'Danmaku'}</span>
+              <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku'}</span>
             </button>
 
-            {/* Quick Action 4: 🔄 Dynamic Refresh */}
+            {/* Quick Action 5: 🎨 One-Click Mood Themes */}
+            <button
+              onClick={handleActionTheme}
+              className="p-2.5 rounded-2xl bg-rose-50/90 hover:bg-rose-100 text-rose-800 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-rose-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
+              title={locale === 'zh' ? '点一下立即切换心境主题' : 'Single click to cycle theme'}
+            >
+              <Palette className="w-4 h-4 text-rose-500" />
+              <span>{locale === 'zh' ? '换主题' : 'Theme'}</span>
+            </button>
+
+            {/* Quick Action 6: 🔄 Dynamic Refresh */}
             <button
               onClick={handleActionRefresh}
               disabled={isRefreshing}
               className="p-2.5 rounded-2xl bg-emerald-50/90 hover:bg-emerald-100 text-emerald-700 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-emerald-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
             >
               <RotateCw className={`w-4 h-4 text-emerald-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isRefreshing ? (locale === 'zh' ? '同步中...' : 'Syncing...') : (locale === 'zh' ? '全局云端刷新' : 'Cloud Sync')}</span>
+              <span>{isRefreshing ? (locale === 'zh' ? '同步中...' : 'Syncing...') : (locale === 'zh' ? '全局同步' : 'Sync')}</span>
             </button>
           </div>
         </div>

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ClayHeader } from './ClayHeader';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
+import { ClayFloatingActions } from './components/ClayFloatingActions';
 import { ClayDanmakuAdminModal } from './components/ClayDanmakuAdminModal';
 import { DanmakuItem, getStoredDanmakus, saveNewDanmaku, getDanmakuTelemetryStats, DanmakuTelemetryStats, deleteStoredDanmaku } from './data/danmakuData';
 import { filterDanmakuContent } from './data/danmakuFilter';
@@ -382,6 +383,15 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
     >
       {/* 0. Live Ambient Atmospheric Particle World */}
       <ClayAtmosphereCanvas />
+
+      {/* Global 3D Clay Floating Action Dock */}
+      <ClayFloatingActions
+        viewMode="grid"
+        onSelectMode={(m) => {
+          window.location.hash = `#/gallery?mode=${m}`;
+        }}
+        onGoToEditor={onGoToEditor}
+      />
 
       {/* 1. Top Unified Navigation Header */}
       <ClayHeader
