@@ -84,6 +84,41 @@ notesRouter.get('/:id', async (c) => {
 });
 
 /**
+ * POST /api/notes/:id/like
+ * Atomic persistent increment for note likes in Cloudflare D1
+ */
+notesRouter.post('/:id/like', async (c) => {
+  const id = c.req.param('id');
+  const db = c.env.DB;
+  if (!db) {
+    return c.json({ error: 'DB binding missing' }, 500);
+  }
+
+  try {
+    await db
+      .prepare('UPDATE notes SET likes = COALESCE(likes, 0) + 1 WHERE id = ?')
+      .bind(id)
+      .run();
+  } catch {
+    try {
+      await db.prepare('ALTER TABLE notes ADD COLUMN likes INTEGER DEFAULT 0').run();
+      await db
+        .prepare('UPDATE notes SET likes = COALESCE(likes, 0) + 1 WHERE id = ?')
+        .bind(id)
+        .run();
+    } catch {
+      // ignore
+    }
+  }
+
+  const note = await getNoteById(db, id);
+  return c.json({
+    success: true,
+    likes: note?.likes || 1,
+  });
+});
+
+/**
  * DELETE /api/notes/:id
  */
 notesRouter.delete('/:id', async (c) => {

@@ -19,6 +19,8 @@ import { triggerParticleBurst } from '../utils/confetti';
 import { renderRichMarkdown, renderCardMarkdownSnippet, renderInlineContent } from '../utils/markdownRenderer';
 import { useClayTheme } from '../utils/clayThemes';
 import { format24HourDateTime } from '../utils/dateFormatter';
+import { db } from '../../db/dexie';
+import { likeNoteRemote } from '../../services/api';
 
 export interface Carousel3DViewProps {
   notes: Note[];
@@ -49,12 +51,14 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
   }, [total, currentIndex]);
 
   const handlePrev = useCallback(() => {
+    if (total === 0) return;
     playPop(480);
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : total - 1));
   }, [total]);
 
   const handleNext = useCallback(() => {
-    playPop(520);
+    if (total === 0) return;
+    playPop(560);
     setCurrentIndex((prev) => (prev < total - 1 ? prev + 1 : 0));
   }, [total]);
 
@@ -71,44 +75,31 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
   // Active note
   const activeNote = notes[currentIndex] || notes[0];
 
-  // Local reactions for active note
-  const storageKey = activeNote ? `reactions_${activeNote.id}` : '';
-  const [reactions, setReactions] = useState<{ heart: number; cake: number; rocket: number; star: number; party: number }>({
-    heart: 0,
-    cake: 0,
-    rocket: 0,
-    star: 0,
-    party: 0,
+  // Persistent likes for active note
+  const [likes, setLikes] = useState<number>(() => {
+    if (activeNote && typeof activeNote.likes === 'number' && activeNote.likes > 0) return activeNote.likes;
+    const seed = activeNote ? (activeNote.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 7) + 1 : 1;
+    return seed;
   });
 
   useEffect(() => {
+    if (activeNote && typeof activeNote.likes === 'number') {
+      setLikes(activeNote.likes);
+    }
+  }, [activeNote?.id, activeNote?.likes]);
+
+  const handleLike = async (e: React.MouseEvent) => {
     if (!activeNote) return;
+    playChime();
+    triggerParticleBurst(e.clientX, e.clientY, 25);
+    const nextLikes = likes + 1;
+    setLikes(nextLikes);
     try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setReactions(JSON.parse(saved));
-      } else {
-        const seed = (activeNote.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 7) + 1;
-        setReactions({ heart: seed, cake: Math.max(0, seed - 2), rocket: Math.max(0, seed - 3), star: seed > 4 ? 2 : 0, party: 1 });
-      }
+      await db.notes.update(activeNote.id, { likes: nextLikes });
+      likeNoteRemote(activeNote.id);
     } catch {
       // ignore
     }
-  }, [activeNote?.id, storageKey]);
-
-  const handleReaction = (e: React.MouseEvent, type: 'heart' | 'cake' | 'rocket' | 'star' | 'party') => {
-    playChime();
-    triggerParticleBurst(e.clientX, e.clientY, 25);
-
-    setReactions((prev) => {
-      const next = { ...prev, [type]: (prev[type] || 0) + 1 };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
   };
 
   const handleCopyMarkdown = (e: React.MouseEvent) => {
@@ -371,11 +362,6 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
               </div>
             </div>
 
-            {/* Note Title */}
-            <h1 className="font-bubble text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight leading-snug mb-3">
-              {renderInlineContent(activeNote.excerpt || (locale === 'zh' ? '无标题灵感' : 'Untitled Note'))}
-            </h1>
-
             {/* Hashtag Pills */}
             {(activeNote.tags || []).length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-neutral-100 select-none">
@@ -395,61 +381,28 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
             {/* Rich Markdown Journal Body */}
             <div className="font-cute text-sm sm:text-base text-neutral-800 leading-relaxed space-y-2">
               {renderRichMarkdown(activeNote.rawMarkdown || '', {
-                stripFirstHeading: true,
+                stripFirstHeading: false,
                 onTagClick: (tg) => onTagClick(tg),
               })}
             </div>
 
-            {/* Interactive Reactions Footer */}
-            <div className="mt-8 pt-6 border-t border-neutral-100 text-center select-none">
-              <div className="flex items-center justify-center gap-1.5 mb-3">
-                <Sparkles className="w-4 h-4 text-amber-500" />
+            {/* Single Heart Like Section */}
+            <div className="mt-8 pt-6 border-t border-neutral-100 flex flex-col items-center gap-3 select-none">
+              <div className="flex items-center justify-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-rose-500" />
                 <span className="font-bubble font-bold text-xs sm:text-sm text-neutral-700">
-                  {locale === 'zh' ? '喜欢这篇笔记吗？给作者送点可爱反应吧！' : 'Enjoyed this note? Send a reaction!'}
+                  {locale === 'zh' ? '喜欢这篇灵感笔记？给作者点个赞吧！' : 'Enjoyed this note? Give the author a heart!'}
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-                <button
-                  onClick={(e) => handleReaction(e, 'heart')}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bubble font-bold text-xs sm:text-sm clay-btn border border-rose-200 active:scale-125 transition-transform cursor-pointer"
-                >
-                  <span>❤️</span>
-                  <span>{reactions.heart}</span>
-                </button>
-
-                <button
-                  onClick={(e) => handleReaction(e, 'cake')}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-600 font-bubble font-bold text-xs sm:text-sm clay-btn border border-amber-200 active:scale-125 transition-transform cursor-pointer"
-                >
-                  <span>🍰</span>
-                  <span>{reactions.cake}</span>
-                </button>
-
-                <button
-                  onClick={(e) => handleReaction(e, 'rocket')}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-cyan-50 hover:bg-cyan-100 text-cyan-600 font-bubble font-bold text-xs sm:text-sm clay-btn border border-cyan-200 active:scale-125 transition-transform cursor-pointer"
-                >
-                  <span>🚀</span>
-                  <span>{reactions.rocket}</span>
-                </button>
-
-                <button
-                  onClick={(e) => handleReaction(e, 'star')}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-600 font-bubble font-bold text-xs sm:text-sm clay-btn border border-purple-200 active:scale-125 transition-transform cursor-pointer"
-                >
-                  <span>⭐️</span>
-                  <span>{reactions.star}</span>
-                </button>
-
-                <button
-                  onClick={(e) => handleReaction(e, 'party')}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bubble font-bold text-xs sm:text-sm clay-btn border border-emerald-200 active:scale-125 transition-transform cursor-pointer"
-                >
-                  <span>🎉</span>
-                  <span>{reactions.party}</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleLike}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-bubble font-bold text-base clay-btn border-2 border-rose-200 active:scale-125 transition-all cursor-pointer shadow-sm hover:shadow-md"
+              >
+                <span className="text-xl leading-none select-none">❤️</span>
+                <span className="leading-none">{likes}</span>
+              </button>
             </div>
           </div>
         )}

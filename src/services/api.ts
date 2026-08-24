@@ -70,6 +70,22 @@ export async function deleteNoteRemote(noteId: string): Promise<boolean> {
   }
 }
 
+/**
+ * Increment note likes in Cloudflare D1
+ */
+export async function likeNoteRemote(noteId: string): Promise<{ success: boolean; likes: number }> {
+  try {
+    const res = await fetch(`${API_BASE}/notes/${noteId}/like`, {
+      method: 'POST',
+    });
+    if (!res.ok) return { success: false, likes: 0 };
+    return (await res.json()) as { success: boolean; likes: number };
+  } catch (err) {
+    console.warn('[SyncEngine] likeNoteRemote failed:', err);
+    return { success: false, likes: 0 };
+  }
+}
+
 
 /**
  * Search notes in remote D1 with FTS5

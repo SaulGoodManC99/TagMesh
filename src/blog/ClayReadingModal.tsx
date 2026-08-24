@@ -21,6 +21,8 @@ import { triggerParticleBurst } from './utils/confetti';
 import { renderRichMarkdown, renderInlineContent } from './utils/markdownRenderer';
 import { format24HourDateTime } from './utils/dateFormatter';
 import { useClayTheme } from './utils/clayThemes';
+import { db } from '../db/dexie';
+import { likeNoteRemote } from '../services/api';
 
 export interface ClayReadingModalProps {
   note: Note | null;
@@ -48,32 +50,23 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Local reactions
-  const storageKey = note ? `reactions_${note.id}` : '';
-  const [reactions, setReactions] = useState<{ heart: number; cake: number; rocket: number; star: number; party: number }>({
-    heart: 0,
-    cake: 0,
-    rocket: 0,
-    star: 0,
-    party: 0,
+  // Persistent Likes
+  const [likes, setLikes] = useState<number>(() => {
+    if (note && typeof note.likes === 'number' && note.likes > 0) return note.likes;
+    const seed = note ? (note.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 7) + 1 : 1;
+    return seed;
   });
+
+  useEffect(() => {
+    if (note && typeof note.likes === 'number') {
+      setLikes(note.likes);
+    }
+  }, [note?.likes]);
 
   useEffect(() => {
     if (!note) return;
     playSwoosh();
-
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setReactions(JSON.parse(saved));
-      } else {
-        const seed = (note.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 7) + 1;
-        setReactions({ heart: seed, cake: Math.max(0, seed - 2), rocket: Math.max(0, seed - 3), star: seed > 4 ? 2 : 0, party: 1 });
-      }
-    } catch {
-      // ignore
-    }
-  }, [note?.id, storageKey]);
+  }, [note?.id]);
 
   const handleDirectClose = (e?: React.MouseEvent) => {
     if (e) {
@@ -102,20 +95,19 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
   const prevNote = currentIndex > 0 ? allNotes[currentIndex - 1] : null;
   const nextNote = currentIndex >= 0 && currentIndex < allNotes.length - 1 ? allNotes[currentIndex + 1] : null;
 
-  const handleReaction = (e: React.MouseEvent, type: 'heart' | 'cake' | 'rocket' | 'star' | 'party') => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!note) return;
     playChime();
     triggerParticleBurst(e.clientX, e.clientY, 20);
-
-    setReactions((prev) => {
-      const next = { ...prev, [type]: (prev[type] || 0) + 1 };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+    const nextLikes = likes + 1;
+    setLikes(nextLikes);
+    try {
+      await db.notes.update(note.id, { likes: nextLikes });
+      likeNoteRemote(note.id);
+    } catch {
+      // ignore
+    }
   };
 
   const handleCopyMarkdown = (e: React.MouseEvent) => {
@@ -290,56 +282,23 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             })}
           </div>
 
-          {/* Reaction Burst Bar */}
-          <div className="mt-12 pt-8 border-t border-amber-900/10 text-center select-none">
-            <div className="flex items-center justify-center gap-1.5 mb-3">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span className="font-bubble font-bold text-sm text-neutral-700">
-                {locale === 'zh' ? '喜欢这篇笔记吗？给作者投喂互动吧！' : 'Enjoyed this note? Send a reaction!'}
+          {/* Bottom Single Heart Like Section */}
+          <div className="mt-10 pt-6 border-t border-amber-900/10 flex flex-col items-center gap-3 select-none">
+            <div className="flex items-center justify-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-rose-500" />
+              <span className="font-bubble font-bold text-xs sm:text-sm text-neutral-700">
+                {locale === 'zh' ? '喜欢这篇灵感笔记？给作者点个赞吧！' : 'Enjoyed this note? Give the author a heart!'}
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-              <button
-                onClick={(e) => handleReaction(e, 'heart')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bubble font-bold text-sm clay-btn border border-rose-200 active:scale-125 transition-transform cursor-pointer"
-              >
-                <span>❤️</span>
-                <span>{reactions.heart}</span>
-              </button>
-
-              <button
-                onClick={(e) => handleReaction(e, 'cake')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-600 font-bubble font-bold text-sm clay-btn border border-amber-200 active:scale-125 transition-transform cursor-pointer"
-              >
-                <span>🍰</span>
-                <span>{reactions.cake}</span>
-              </button>
-
-              <button
-                onClick={(e) => handleReaction(e, 'rocket')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-cyan-50 hover:bg-cyan-100 text-cyan-600 font-bubble font-bold text-sm clay-btn border border-cyan-200 active:scale-125 transition-transform cursor-pointer"
-              >
-                <span>🚀</span>
-                <span>{reactions.rocket}</span>
-              </button>
-
-              <button
-                onClick={(e) => handleReaction(e, 'star')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-600 font-bubble font-bold text-sm clay-btn border border-purple-200 active:scale-125 transition-transform cursor-pointer"
-              >
-                <span>⭐️</span>
-                <span>{reactions.star}</span>
-              </button>
-
-              <button
-                onClick={(e) => handleReaction(e, 'party')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bubble font-bold text-sm clay-btn border border-emerald-200 active:scale-125 transition-transform cursor-pointer"
-              >
-                <span>🎉</span>
-                <span>{reactions.party}</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleLike}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-bubble font-bold text-base clay-btn border-2 border-rose-200 active:scale-125 transition-all cursor-pointer shadow-sm hover:shadow-md"
+            >
+              <span className="text-xl leading-none select-none">❤️</span>
+              <span className="leading-none">{likes}</span>
+            </button>
           </div>
         </div>
 

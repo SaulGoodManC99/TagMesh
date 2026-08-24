@@ -1,21 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowUp, 
   RotateCw, 
   Sparkles,
-  Check
+  Check,
+  PenTool,
+  Palette,
+  MessageSquare,
+  Zap,
+  X,
+  Layers
 } from 'lucide-react';
 import { ViewMode } from '../ClayModeDock';
 import { useI18n } from '../../hooks/useI18n';
 import { useClayTheme } from '../utils/clayThemes';
 import { playPop, playSwoosh, playChime } from '../utils/soundEffects';
-import { triggerParticleBurst } from '../utils/confetti';
+import { triggerParticleBurst, triggerConfettiShower } from '../utils/confetti';
 
 export interface ClayFloatingActionsProps {
   viewMode: ViewMode;
   onSelectMode: (mode: ViewMode) => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  onGoToEditor?: () => void;
 }
 
 const MODES: Array<{
@@ -73,63 +80,124 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
   onSelectMode,
   onRefresh,
   isRefreshing = false,
+  onGoToEditor,
 }) => {
   const { locale } = useI18n();
-  const { theme } = useClayTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { theme, switchNextTheme } = useClayTheme();
+  const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
+  const [isQuickHubOpen, setIsQuickHubOpen] = useState(false);
 
   const currentMode = MODES.find((m) => m.id === viewMode) || MODES[0];
 
-  const handleScrollToTop = () => {
+  // Close menus on click outside
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      setIsModeMenuOpen(false);
+      setIsQuickHubOpen(false);
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
+
+  const handleScrollToTop = (e: React.MouseEvent) => {
+    e.stopPropagation();
     playPop(550);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleToggleMenu = (e: React.MouseEvent) => {
+  const handleToggleModeMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
     playPop();
-    setIsMenuOpen((prev) => !prev);
+    setIsQuickHubOpen(false);
+    setIsModeMenuOpen((prev) => !prev);
   };
 
-  const handleSelect = (mode: ViewMode, e: React.MouseEvent) => {
+  const handleToggleQuickHub = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    playPop(620);
+    setIsModeMenuOpen(false);
+    setIsQuickHubOpen((prev) => !prev);
+  };
+
+  const handleSelectMode = (mode: ViewMode, e: React.MouseEvent) => {
     e.stopPropagation();
     playSwoosh();
     triggerParticleBurst(e.clientX, e.clientY, 15);
     onSelectMode(mode);
-    setIsMenuOpen(false);
+    setIsModeMenuOpen(false);
+  };
+
+  // Quick Action Handlers
+  const handleActionEditor = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    playPop();
+    triggerParticleBurst(e.clientX, e.clientY, 15);
+    setIsQuickHubOpen(false);
+    if (onGoToEditor) {
+      onGoToEditor();
+    } else {
+      window.location.hash = '#/?view=editor';
+    }
+  };
+
+  const handleActionTheme = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    switchNextTheme();
+    triggerParticleBurst(e.clientX, e.clientY, 20);
+  };
+
+  const handleActionDanmaku = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    playPop();
+    triggerParticleBurst(e.clientX, e.clientY, 15);
+    setIsQuickHubOpen(false);
+    window.location.hash = '#/danmaku';
+  };
+
+  const handleActionRefresh = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    playChime();
+    triggerParticleBurst(e.clientX, e.clientY, 18);
+    setIsQuickHubOpen(false);
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 select-none">
+    <div 
+      className="fixed bottom-5 right-3.5 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2.5 select-none"
+      onClick={(e) => e.stopPropagation()}
+    >
       {/* 1. Expandable 5-Mode Popup Selector Card */}
-      {isMenuOpen && (
+      {isModeMenuOpen && (
         <div 
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-40 right-0 w-72 p-4 rounded-[32px] bg-white/95 backdrop-blur-md border-3 border-white shadow-2xl clay-card animate-in zoom-in-90 fade-in duration-200 flex flex-col gap-2 z-50 mb-2"
+          className="absolute bottom-32 sm:bottom-36 right-0 w-64 sm:w-72 p-3 sm:p-4 rounded-[28px] sm:rounded-[32px] bg-white/95 backdrop-blur-md border-3 border-white shadow-2xl clay-card animate-in zoom-in-90 fade-in duration-200 flex flex-col gap-2 z-50 mb-2"
         >
           <div className="flex items-center justify-between px-2 pb-2 border-b border-neutral-100">
-            <div className="flex items-center gap-1.5 font-bubble font-extrabold text-sm text-neutral-800">
+            <div className="flex items-center gap-1.5 font-bubble font-extrabold text-xs sm:text-sm text-neutral-800">
               <Sparkles className="w-4 h-4 text-rose-500" />
               <span>{locale === 'zh' ? '选择笔记展示模式' : 'Note Display Modes'}</span>
             </div>
             <span className="text-[11px] font-cute text-neutral-400">5 模式</span>
           </div>
 
-          <div className="space-y-1.5 pt-1">
+          <div className="space-y-1 pt-1">
             {MODES.map((m) => {
               const isSelected = m.id === viewMode;
               return (
                 <button
                   key={m.id}
-                  onClick={(e) => handleSelect(m.id, e)}
-                  className={`w-full p-2.5 rounded-[20px] transition-all cursor-pointer flex items-center justify-between gap-2 text-left ${
+                  onClick={(e) => handleSelectMode(m.id, e)}
+                  className={`w-full p-2 sm:p-2.5 rounded-[18px] sm:rounded-[20px] transition-all cursor-pointer flex items-center justify-between gap-2 text-left ${
                     isSelected
                       ? `bg-gradient-to-r ${theme.primaryGradient} text-white shadow-md font-bubble scale-[1.02]`
                       : 'hover:bg-neutral-100/80 text-neutral-800 font-cute'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-xl shrink-0">{m.emoji}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg sm:text-xl shrink-0">{m.emoji}</span>
                     <div className="min-w-0">
                       <div className="font-bold text-xs sm:text-sm leading-tight truncate">
                         {locale === 'zh' ? m.nameZh : m.nameEn}
@@ -147,28 +215,88 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
         </div>
       )}
 
-      {/* 2. Unified 3-Button Round 3D Clay Floating Dock */}
-      <div className="flex flex-col items-center gap-2.5">
-        {/* Button 1: 🔄 Global Cloud Sync & Refresh */}
-        {onRefresh && (
-          <button
-            onClick={(e) => {
-              playChime();
-              triggerParticleBurst(e.clientX, e.clientY, 15);
-              onRefresh();
-            }}
-            disabled={isRefreshing}
-            className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white/95 hover:bg-white text-neutral-700 hover:${theme.accentText} font-bubble font-bold shadow-lg hover:shadow-xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center backdrop-blur-xs group relative`}
-            title={locale === 'zh' ? '全局云端同步与刷新' : 'Global Cloud Sync & Refresh'}
-          >
-            <RotateCw className={`w-5 h-5 text-rose-500 transition-transform ${isRefreshing ? 'animate-spin text-amber-500' : 'group-hover:rotate-180 duration-500'}`} />
-          </button>
-        )}
+      {/* 2. Expandable Quick Magic Hub Card */}
+      {isQuickHubOpen && (
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          className="absolute bottom-40 sm:bottom-44 right-0 w-64 sm:w-72 p-3 sm:p-4 rounded-[28px] sm:rounded-[32px] bg-white/95 backdrop-blur-md border-3 border-white shadow-2xl clay-card animate-in zoom-in-90 fade-in duration-200 flex flex-col gap-2.5 z-50 mb-2"
+        >
+          <div className="flex items-center justify-between px-2 pb-2 border-b border-neutral-100">
+            <div className="flex items-center gap-1.5 font-bubble font-extrabold text-xs sm:text-sm text-neutral-800">
+              <Zap className="w-4 h-4 text-amber-500 fill-amber-400" />
+              <span>{locale === 'zh' ? '灵动快捷魔术坞' : 'Quick Actions Hub'}</span>
+            </div>
+            <button 
+              onClick={() => setIsQuickHubOpen(false)}
+              className="w-5 h-5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 flex items-center justify-center text-xs cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {/* Quick Action 1: ✍️ Editor Workspace */}
+            <button
+              onClick={handleActionEditor}
+              className="p-2.5 rounded-2xl bg-pink-50/90 hover:bg-pink-100 text-pink-700 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-pink-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
+            >
+              <PenTool className="w-4 h-4 text-pink-500" />
+              <span>{locale === 'zh' ? '写灵感 / 工作台' : 'Editor'}</span>
+            </button>
+
+            {/* Quick Action 2: 🎨 Mood Themes */}
+            <button
+              onClick={handleActionTheme}
+              className="p-2.5 rounded-2xl bg-amber-50/90 hover:bg-amber-100 text-amber-800 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-amber-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
+            >
+              <Palette className="w-4 h-4 text-amber-500" />
+              <span>{locale === 'zh' ? '切换心境主题' : 'Themes'}</span>
+            </button>
+
+            {/* Quick Action 3: 💬 Danmaku Plaza */}
+            <button
+              onClick={handleActionDanmaku}
+              className="p-2.5 rounded-2xl bg-indigo-50/90 hover:bg-indigo-100 text-indigo-700 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-indigo-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
+            >
+              <MessageSquare className="w-4 h-4 text-indigo-500" />
+              <span>{locale === 'zh' ? '弹幕星河广场' : 'Danmaku'}</span>
+            </button>
+
+            {/* Quick Action 4: 🔄 Dynamic Refresh */}
+            <button
+              onClick={handleActionRefresh}
+              disabled={isRefreshing}
+              className="p-2.5 rounded-2xl bg-emerald-50/90 hover:bg-emerald-100 text-emerald-700 font-bubble font-bold text-xs flex flex-col items-center justify-center gap-1 border border-emerald-200 shadow-3xs cursor-pointer active:scale-95 transition-all hover:scale-103"
+            >
+              <RotateCw className={`w-4 h-4 text-emerald-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? (locale === 'zh' ? '同步中...' : 'Syncing...') : (locale === 'zh' ? '全局云端刷新' : 'Cloud Sync')}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Unified 3-Button Round 3D Clay Floating Dock */}
+      <div className="flex flex-col items-center gap-2 sm:gap-2.5">
+        {/* Button 1: ⚡ Quick Magic Hub Trigger */}
+        <button
+          onClick={handleToggleQuickHub}
+          className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/95 hover:bg-white text-neutral-800 hover:${theme.accentText} font-bubble font-bold shadow-lg hover:shadow-xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center backdrop-blur-xs group relative ${
+            isQuickHubOpen ? 'ring-2 ring-amber-400 scale-105' : ''
+          }`}
+          title={locale === 'zh' ? '打开快捷魔术坞 (工作台/主题/弹幕/刷新)' : 'Quick Actions Hub (Editor/Themes/Danmaku/Sync)'}
+        >
+          <Zap className={`w-5 h-5 text-amber-500 transition-transform duration-300 ${isQuickHubOpen ? 'scale-125 rotate-12 fill-amber-400' : 'group-hover:rotate-12'}`} />
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 border border-white flex items-center justify-center text-[8px] text-white font-bold">
+            ✦
+          </span>
+        </button>
 
         {/* Button 2: 🎡 Switch Exhibition View Mode (Round 3D Clay Button) */}
         <button
-          onClick={handleToggleMenu}
-          className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold shadow-xl hover:shadow-2xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center text-xl select-none relative`}
+          onClick={handleToggleModeMenu}
+          className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold shadow-xl hover:shadow-2xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center text-lg sm:text-xl select-none relative ${
+            isModeMenuOpen ? 'ring-2 ring-white scale-105' : ''
+          }`}
           title={`${locale === 'zh' ? currentMode.nameZh : currentMode.nameEn} (${locale === 'zh' ? '点击切换 5 模式' : 'Switch 5 Views'})`}
         >
           <span>{currentMode.emoji}</span>
@@ -177,10 +305,10 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
         {/* Button 3: ⬆️ Back to Top Button */}
         <button
           onClick={handleScrollToTop}
-          className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white/95 hover:bg-white text-neutral-700 hover:${theme.accentText} font-bubble font-bold shadow-lg hover:shadow-xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center backdrop-blur-xs`}
+          className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/95 hover:bg-white text-neutral-700 hover:${theme.accentText} font-bubble font-bold shadow-lg hover:shadow-xl hover:scale-108 active:scale-90 transition-all cursor-pointer border-2 border-white flex items-center justify-center backdrop-blur-xs`}
           title={locale === 'zh' ? '回到顶部' : 'Back to Top'}
         >
-          <ArrowUp className="w-5 h-5 text-rose-500" />
+          <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />
         </button>
       </div>
     </div>

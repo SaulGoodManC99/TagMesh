@@ -14,6 +14,9 @@ import { triggerParticleBurst } from './utils/confetti';
 import { renderCardMarkdownSnippet, renderInlineContent } from './utils/markdownRenderer';
 import { useClayTheme } from './utils/clayThemes';
 
+import { db } from '../db/dexie';
+import { likeNoteRemote } from '../services/api';
+
 export interface ClayNoteCardProps {
   note: Note;
   index: number;
@@ -36,28 +39,18 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
-  // Local interactive reactions
-  const storageKey = `reactions_${note.id}`;
-  const [reactions, setReactions] = useState<{ heart: number; cake: number; rocket: number; star: number }>({
-    heart: 0,
-    cake: 0,
-    rocket: 0,
-    star: 0,
+  // Persistent like counter
+  const [likes, setLikes] = useState<number>(() => {
+    if (typeof note.likes === 'number' && note.likes > 0) return note.likes;
+    const seed = (note.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 7) + 1;
+    return seed;
   });
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setReactions(JSON.parse(saved));
-      } else {
-        const seed = (note.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 7) + 1;
-        setReactions({ heart: seed, cake: Math.max(0, seed - 2), rocket: Math.max(0, seed - 3), star: seed > 4 ? 2 : 0 });
-      }
-    } catch {
-      // ignore
+    if (typeof note.likes === 'number') {
+      setLikes(note.likes);
     }
-  }, [note.id, storageKey]);
+  }, [note.likes]);
 
   // 3D Tilt calculation & dynamic specular cursor light
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -81,19 +74,18 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
     setIsHovered(false);
   };
 
-  const handleReactionClick = (e: React.MouseEvent, type: 'heart' | 'cake' | 'rocket' | 'star') => {
+  const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     playChime();
-    triggerParticleBurst(e.clientX, e.clientY, 12);
-    setReactions((prev) => {
-      const next = { ...prev, [type]: prev[type] + 1 };
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+    triggerParticleBurst(e.clientX, e.clientY, 16);
+    const newLikes = likes + 1;
+    setLikes(newLikes);
+    try {
+      await db.notes.update(note.id, { likes: newLikes });
+      likeNoteRemote(note.id);
+    } catch {
+      // ignore
+    }
   };
 
   const handleCardClick = () => {
@@ -216,35 +208,18 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
           </div>
         )}
 
-        {/* Bottom Reaction Bar & Open Link Icon */}
+        {/* Bottom Reaction Bar (Only Pure ❤️ Like) & Open Link Icon */}
         <div className="flex items-center justify-between text-xs pt-1">
-          {/* Reaction Buttons */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={(e) => handleReactionClick(e, 'heart')}
-              className="px-2 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
-              title="Love"
-            >
-              <span>💖</span>
-              <span className="text-xs font-cute font-bold">{reactions.heart}</span>
-            </button>
-            <button
-              onClick={(e) => handleReactionClick(e, 'cake')}
-              className="px-2 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
-              title="Yummy"
-            >
-              <span>🍮</span>
-              <span className="text-xs font-cute font-bold">{reactions.cake}</span>
-            </button>
-            <button
-              onClick={(e) => handleReactionClick(e, 'star')}
-              className="px-2 py-1 rounded-xl bg-white/80 hover:bg-white text-neutral-700 text-xs font-cute font-bold flex items-center gap-1 shadow-3xs hover:scale-110 active:scale-90 transition-transform"
-              title="Sparkle"
-            >
-              <span>✨</span>
-              <span className="text-xs font-cute font-bold">{reactions.star}</span>
-            </button>
-          </div>
+          {/* Single Heart Like Button */}
+          <button
+            type="button"
+            onClick={handleLikeClick}
+            className="px-2.5 py-1 rounded-xl bg-white/85 hover:bg-white text-rose-600 hover:text-rose-700 text-xs font-cute font-bold flex items-center gap-1.5 shadow-3xs hover:scale-110 active:scale-90 transition-all border border-pink-100 cursor-pointer"
+            title={locale === 'zh' ? '点赞这篇笔记' : 'Like this note'}
+          >
+            <span className="text-sm leading-none select-none">❤️</span>
+            <span className="text-xs font-bubble font-bold leading-none">{likes}</span>
+          </button>
 
           <div className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs shrink-0">
             <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

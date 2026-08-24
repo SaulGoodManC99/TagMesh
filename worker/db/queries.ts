@@ -15,6 +15,7 @@ export interface DbNoteRow {
   synced_at: number;
   author?: string;
   is_official?: number;
+  likes?: number;
 }
 
 export function rowToNote(row: DbNoteRow): Note {
@@ -43,6 +44,7 @@ export function rowToNote(row: DbNoteRow): Note {
     syncedAt: row.synced_at,
     isOfficial,
     author,
+    likes: Number(row.likes || 0),
   };
 }
 

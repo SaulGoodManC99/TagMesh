@@ -92,13 +92,14 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   const handleDynamicRefresh = useCallback(async () => {
     playPop();
     setIsRefreshing(true);
-    setRefreshTick((t) => t + 1);
     try {
       const remoteNotes = await fetchRemoteNotes();
       if (remoteNotes && remoteNotes.length > 0) {
         for (const rNote of remoteNotes) {
+          const localNote = await db.notes.get(rNote.id);
           await db.notes.put({
             ...rNote,
+            likes: typeof rNote.likes === 'number' && rNote.likes > 0 ? rNote.likes : (localNote?.likes || 0),
             isDirty: false,
             syncedAt: rNote.syncedAt || Date.now(),
           });
@@ -107,6 +108,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     } catch {
       // ignore
     } finally {
+      setRefreshTick((t) => t + 1);
       setTimeout(() => setIsRefreshing(false), 500);
     }
   }, []);
@@ -322,12 +324,13 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       {/* 0. Live Ambient Atmospheric Particle World */}
       <ClayAtmosphereCanvas />
 
-      {/* Floating 3D Clay Action Dock: [ 🔄 全局云端同步 ] + [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] */}
+      {/* Floating 3D Clay Action Dock: [ ⚡ 灵动快捷魔术坞 ] + [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] */}
       <ClayFloatingActions
         viewMode={viewMode}
         onSelectMode={(m) => handleViewModeChange(m)}
         onRefresh={handleDynamicRefresh}
         isRefreshing={isRefreshing}
+        onGoToEditor={onGoToEditor}
       />
 
       {/* Top Navigation Header */}
