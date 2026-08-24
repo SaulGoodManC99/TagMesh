@@ -454,7 +454,7 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
         <span className="text-neutral-300 hidden sm:inline">•</span>
 
         <div className="flex items-center gap-1.5 text-neutral-400">
-          <span>⚡ Cloudflare Workers + D1 Edge</span>
+          <span>⚡ Cloudflare Workers + D1 + R2 Edge</span>
         </div>
       </footer>
 
