@@ -6,6 +6,7 @@ import { useI18n } from '../../hooks/useI18n';
 import { useClayTheme } from '../utils/clayThemes';
 import { playPop } from '../utils/soundEffects';
 import { triggerParticleBurst } from '../utils/confetti';
+import { toast } from '../../components/ClayToast';
 
 export interface ClayFloatingActionsProps {
   viewMode: ViewMode;
@@ -55,14 +56,6 @@ const MODES: Array<{
     descZh: '沉浸抽卡阅读',
     descEn: 'Coverflow',
   },
-  {
-    id: 'floating',
-    nameZh: '漂浮失重空间',
-    nameEn: 'Floating Space',
-    emoji: '🪐',
-    descZh: '物理拖拽碰撞',
-    descEn: 'Zero-G Physics',
-  },
 ];
 
 export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
@@ -71,7 +64,6 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
-  const [modeToast, setModeToast] = useState<{ id: string; emoji: string; nameZh: string; nameEn: string; descZh: string; descEn: string } | null>(null);
 
   const currentMode = MODES.find((m) => m.id === viewMode) || MODES[0];
 
@@ -91,30 +83,15 @@ export const ClayFloatingActions: React.FC<ClayFloatingActionsProps> = ({
     const nextMode = MODES[nextIndex];
     onSelectMode(nextMode.id);
 
-    setModeToast(nextMode);
-    setTimeout(() => {
-      setModeToast((curr) => (curr?.id === nextMode.id ? null : curr));
-    }, 2000);
+    toast.info(
+      locale === 'zh' ? `已切换至「${nextMode.nameZh}」模式 • ${nextMode.descZh}` : `Switched to ${nextMode.nameEn} Mode`,
+      locale === 'zh' ? `${nextMode.emoji} 展示风格切换` : `${nextMode.emoji} View Switch`,
+      2200
+    );
   };
 
   return (
     <>
-      {/* 1. Mode Switch Toast Notification (Top-Left Safe Corner) */}
-      {modeToast && typeof document !== 'undefined' && createPortal(
-        <div className="fixed top-16 left-4 sm:left-8 z-[200] pointer-events-none animate-in fade-in slide-in-from-top-2 slide-in-from-left-3 duration-250">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/98 backdrop-blur-md border-2 border-rose-300/80 shadow-2xl clay-card text-neutral-800 text-xs sm:text-sm font-bubble font-bold">
-            <span className="text-lg select-none">{modeToast.emoji}</span>
-            <span className="text-neutral-900">
-              {locale === 'zh' ? `已切换至「${modeToast.nameZh}」模式` : `Switched to ${modeToast.nameEn} Mode`}
-            </span>
-            <span className="hidden sm:inline text-neutral-400 font-cute text-xs">
-              • {locale === 'zh' ? modeToast.descZh : modeToast.descEn}
-            </span>
-          </div>
-        </div>,
-        document.body
-      )}
-
       {/* 2. Streamlined 2-Button Round 3D Clay Floating Dock */}
       <div 
         className="fixed bottom-5 right-3.5 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2.5 select-none"

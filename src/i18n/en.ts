@@ -17,7 +17,7 @@ export const en: TranslationDictionary = {
     cmdExportMarkdown: 'Export Current Note (.md)',
     cmdExportJson: 'Export Backup (JSON)',
     cmdCopyMcpToken: 'MCP Server Credentials & Token',
-    cmdToggleSidebar: 'Toggle Tag Mesh Sidebar (⌘\\)',
+    cmdToggleSidebar: 'Toggle Tag Mesh Sidebar (Alt+S)',
     cmdShortcuts: 'Keyboard Shortcuts Help',
     cmdDeleteNote: 'Delete Current Note',
     cmdPinNote: 'Pin Note',

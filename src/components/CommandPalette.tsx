@@ -127,9 +127,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     },
     {
       id: 'cmd-new',
-      title: locale === 'zh' ? '🌸 新建灵感笔记 (⌘N)' : '🌸 New Note (⌘N)',
+      title: locale === 'zh' ? '🌸 新建灵感笔记 (Alt+N)' : '🌸 New Note (Alt+N)',
       keywords: ['new', 'create', 'note', 'add', '新建', '创建', '笔记', '灵感', '随手记'],
-      shortcut: '⌘N',
+      shortcut: 'Alt+N',
       icon: <Plus className="w-4.5 h-4.5 text-rose-500" />,
       action: () => {
         onCreateNote('');
@@ -138,9 +138,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     },
     {
       id: 'cmd-sidebar',
-      title: locale === 'zh' ? '📑 展开 / 收起侧边栏 (⌘\\)' : '📑 Toggle Sidebar (⌘\\)',
+      title: locale === 'zh' ? '📑 展开 / 收起侧边栏 (Alt+S)' : '📑 Toggle Sidebar (Alt+S)',
       keywords: ['sidebar', 'tagmesh', 'panel', '侧边栏', '展开', '收起'],
-      shortcut: '⌘\\',
+      shortcut: 'Alt+S',
       icon: <Sidebar className="w-4.5 h-4.5 text-amber-500" />,
       action: () => {
         onToggleSidebar();
@@ -161,7 +161,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       id: 'cmd-toggle-lang',
       title: `${t.commandPalette.cmdToggleLang} (${locale === 'zh' ? 'EN' : '中文'})`,
       keywords: ['language', 'translate', 'locale', '语言', '中英文', '切换'],
-      shortcut: '⇧⌘L',
       icon: <Globe className="w-4.5 h-4.5 text-sky-600" />,
       action: () => {
         onToggleLanguage();
@@ -202,7 +201,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       id: 'cmd-shortcuts',
       title: t.commandPalette.cmdShortcuts,
       keywords: ['shortcuts', 'help', 'keyboard', '快捷键', '帮助'],
-      shortcut: '⌘/',
+      shortcut: 'Alt+/',
       icon: <HelpCircle className="w-4.5 h-4.5 text-neutral-400" />,
       action: () => {
         onOpenShortcuts();

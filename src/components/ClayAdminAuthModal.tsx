@@ -37,6 +37,7 @@ import {
   R2StatusResult
 } from '../services/api';
 import { db } from '../db/dexie';
+import { toast } from './ClayToast';
 
 export const ClayAdminAuthModal: React.FC = () => {
   const { role, isAdmin, loginAsAdmin, logoutToGuest, updateAdminPassword, isAuthModalOpen, closeAuthModal } = useAuth();
@@ -134,11 +135,9 @@ export const ClayAdminAuthModal: React.FC = () => {
     }
   };
 
-  const triggerAdminToast = (msg: string) => {
+  const triggerAdminToast = (msg: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     playChime();
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('tagmesh_toast_notify', { detail: { message: msg } }));
-    }
+    toast.show(msg, type);
   };
 
   if (!isAuthModalOpen) return null;

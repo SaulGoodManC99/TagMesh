@@ -93,6 +93,20 @@ export function htmlToMarkdown(html: string): string {
 }
 
 /**
+ * Formats inline Markdown elements (Bold, Italic, Strikethrough, Code, Links, Images) to HTML
+ */
+function formatInlineMarkdown(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="clay-meme-img inline-block max-h-36 rounded-2xl border-2 border-white shadow-md my-1.5" />')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/~~([^~]+)~~/g, '<s>$1</s>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+
+/**
  * Converts Markdown string into Tiptap-compatible HTML
  */
 export function markdownToHtml(markdown: string): string {
@@ -102,28 +116,28 @@ export function markdownToHtml(markdown: string): string {
     .map((para) => {
       const trimmed = para.trim();
       if (!trimmed) return '';
-      if (trimmed.startsWith('# ')) return `<h1>${trimmed.replace(/^#\s+/, '')}</h1>`;
-      if (trimmed.startsWith('## ')) return `<h2>${trimmed.replace(/^##\s+/, '')}</h2>`;
-      if (trimmed.startsWith('### ')) return `<h3>${trimmed.replace(/^###\s+/, '')}</h3>`;
+      if (trimmed.startsWith('# ')) return `<h1>${formatInlineMarkdown(trimmed.replace(/^#\s+/, ''))}</h1>`;
+      if (trimmed.startsWith('## ')) return `<h2>${formatInlineMarkdown(trimmed.replace(/^##\s+/, ''))}</h2>`;
+      if (trimmed.startsWith('### ')) return `<h3>${formatInlineMarkdown(trimmed.replace(/^###\s+/, ''))}</h3>`;
       if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('- [x] ')) {
         const items = trimmed.split('\n').map((l) => {
           const checked = l.startsWith('- [x] ');
           const content = l.replace(/^- \[[ x]\]\s*/, '');
-          return `<li data-type="taskItem" data-checked="${checked}"><p>${content}</p></li>`;
+          return `<li data-type="taskItem" data-checked="${checked}"><p>${formatInlineMarkdown(content)}</p></li>`;
         }).join('');
         return `<ul data-type="taskList">${items}</ul>`;
       }
       if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-        const items = trimmed.split('\n').map(l => `<li><p>${l.replace(/^[-*]\s*/, '')}</p></li>`).join('');
+        const items = trimmed.split('\n').map(l => `<li><p>${formatInlineMarkdown(l.replace(/^[-*]\s*/, ''))}</p></li>`).join('');
         return `<ul>${items}</ul>`;
       }
       if (/^\d+\.\s/.test(trimmed)) {
-        const items = trimmed.split('\n').map(l => `<li><p>${l.replace(/^\d+\.\s*/, '')}</p></li>`).join('');
+        const items = trimmed.split('\n').map(l => `<li><p>${formatInlineMarkdown(l.replace(/^\d+\.\s*/, ''))}</p></li>`).join('');
         return `<ol>${items}</ol>`;
       }
       if (trimmed.startsWith('> ')) {
         const quoteContent = trimmed.replace(/^>\s*/gm, '');
-        return `<blockquote><p>${quoteContent}</p></blockquote>`;
+        return `<blockquote><p>${formatInlineMarkdown(quoteContent)}</p></blockquote>`;
       }
       if (trimmed.startsWith('```')) {
         const langMatch = trimmed.match(/^```([a-z0-9_-]*)\n/i);
@@ -135,9 +149,7 @@ export function markdownToHtml(markdown: string): string {
         return `<hr />`;
       }
       
-      const parsedContent = trimmed
-        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="clay-meme-img inline-block max-h-36 rounded-2xl border-2 border-white shadow-md my-1.5" />')
-        .replace(/\n/g, '<br>');
+      const parsedContent = formatInlineMarkdown(trimmed).replace(/\n/g, '<br>');
 
       return `<p>${parsedContent}</p>`;
     })

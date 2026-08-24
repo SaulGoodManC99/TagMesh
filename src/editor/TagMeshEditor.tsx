@@ -403,7 +403,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
       {/* Clay Paper Pad Workspace */}
       <div 
         onContextMenu={isNoteProtected ? undefined : handleEditorContextMenu}
-        className="relative w-full rounded-[24px] sm:rounded-[44px] bg-[#fdfbf7] dark:bg-neutral-900/95 border-2 sm:border-4 border-white dark:border-white/10 shadow-lg sm:shadow-2xl clay-card p-3.5 sm:p-10 md:p-14 overflow-hidden flex flex-col justify-between min-h-[72vh] sm:min-h-[82vh] transition-all text-neutral-800 dark:text-neutral-100"
+        className="relative w-full rounded-[24px] sm:rounded-[44px] bg-white dark:bg-[#18181B] backdrop-blur-xl border-2 sm:border-3 border-neutral-200/80 dark:border-white/10 shadow-lg sm:shadow-2xl clay-card p-3.5 sm:p-10 md:p-14 overflow-hidden flex flex-col justify-between min-h-[72vh] sm:min-h-[82vh] transition-all text-neutral-800 dark:text-neutral-100"
       >
         {/* Top Rainbow Accent Strip */}
         <div className="absolute top-0 left-0 right-0 h-2 sm:h-2.5 bg-gradient-to-r from-pink-400 via-rose-400 via-amber-300 to-cyan-400" />
@@ -472,7 +472,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
         )}
 
         {/* 1. Top Clean Meta Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-amber-900/10 dark:border-white/10 select-none text-sm font-cute text-neutral-500 dark:text-neutral-400">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-white/60 dark:border-white/10 select-none text-sm font-cute text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-2xl select-none">✍️</span>
             <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100 text-base sm:text-lg">
@@ -563,7 +563,7 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
         </div>
 
         {/* 4. Bottom 3D Macaron Pill Tag Dock (精美轻盈的灵感胶囊收纳盒) */}
-        <div className="mt-6 sm:mt-12 pt-4 sm:pt-6 border-t border-amber-900/10 dark:border-white/10 select-none">
+        <div className="mt-6 sm:mt-12 pt-4 sm:pt-6 border-t border-white/60 dark:border-white/10 select-none">
           <div className="flex items-center justify-between mb-2.5 sm:mb-3.5">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bubble font-bold text-neutral-800 dark:text-neutral-100">
               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs">

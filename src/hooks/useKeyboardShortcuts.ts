@@ -14,8 +14,11 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isMeta = e.metaKey || e.ctrlKey;
+      const isAlt = e.altKey;
       const isShift = e.shiftKey;
       const key = e.key.toLowerCase();
+      const target = e.target as HTMLElement | null;
+      const isTypingInInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 
       // Escape
       if (e.key === 'Escape') {
@@ -31,40 +34,24 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
         return;
       }
 
-      // Cmd/Ctrl + \ or Cmd/Ctrl + B
-      if (isMeta && (key === '\\' || key === 'b')) {
-        e.preventDefault();
-        e.stopPropagation();
-        handlers.onToggleSidebar?.();
-        return;
-      }
-
-      // Cmd/Ctrl + N
-      if (isMeta && !isShift && key === 'n') {
+      // Alt + N or ⌘N (Alt+N avoids browser hijacking new window)
+      if ((isAlt && key === 'n') || (e.metaKey && !isShift && key === 'n')) {
         e.preventDefault();
         e.stopPropagation();
         handlers.onNewNote?.();
         return;
       }
 
-      // Cmd/Ctrl + S
-      if (isMeta && !isShift && key === 's') {
+      // Alt + S -> Toggle Sidebar
+      if (isAlt && key === 's') {
         e.preventDefault();
         e.stopPropagation();
-        handlers.onForceSave?.();
+        handlers.onToggleSidebar?.();
         return;
       }
 
-      // Cmd/Ctrl + Shift + L
-      if (isMeta && isShift && key === 'l') {
-        e.preventDefault();
-        e.stopPropagation();
-        handlers.onToggleLanguage?.();
-        return;
-      }
-
-      // Cmd/Ctrl + /
-      if (isMeta && !isShift && (key === '/' || key === '?')) {
+      // Alt + / or '?' (when not typing) -> Shortcuts
+      if ((isAlt && (key === '/' || key === '?')) || (!isTypingInInput && e.key === '?')) {
         e.preventDefault();
         e.stopPropagation();
         handlers.onToggleShortcuts?.();

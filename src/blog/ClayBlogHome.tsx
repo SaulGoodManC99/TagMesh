@@ -13,7 +13,6 @@ import { ClayHeader } from './ClayHeader';
 import { ClayTagCloud } from './ClayTagCloud';
 import { ViewMode } from './ClayModeDock';
 import { BentoGridView } from './views/BentoGridView';
-import { FloatingCanvasView } from './views/FloatingCanvasView';
 import { PolaroidBoardView } from './views/PolaroidBoardView';
 import { Carousel3DView } from './views/Carousel3DView';
 import { TimelineListView } from './views/TimelineListView';
@@ -21,6 +20,7 @@ import { ClayReadingModal } from './ClayReadingModal';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
 import { ClayFloatingActions } from './components/ClayFloatingActions';
 import { ClayGlobalContextMenu } from './components/ClayGlobalContextMenu';
+import { toast } from '../components/ClayToast';
 import { playPop, playChime } from './utils/soundEffects';
 import { useClayTheme } from './utils/clayThemes';
 
@@ -92,8 +92,6 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
 
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
 
-  const [syncToast, setSyncToast] = useState<{ message: string; count: number } | null>(null);
-
   // Dynamic Manual & Auto Refresh Handler
   const handleDynamicRefresh = useCallback(async () => {
     playChime();
@@ -122,13 +120,12 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         setIsRefreshing(false);
         setIsCardRefreshing(false);
       }, 420);
-      setSyncToast({
-        message: locale === 'zh' ? '✨ 云端笔记与全网点赞已全部同步！' : '✨ Cloud notes & all likes synced!',
-        count,
-      });
-      setTimeout(() => {
-        setSyncToast(null);
-      }, 2600);
+      toast.success(
+        count > 0 
+          ? (locale === 'zh' ? `已同步 ${count} 篇云端灵感笔记与点赞` : `Synced ${count} notes & likes`)
+          : (locale === 'zh' ? '云端笔记与全网点赞已全部保持最新' : 'All notes & likes are up to date'),
+        locale === 'zh' ? '云端同步完成' : 'Sync Complete'
+      );
     }
   }, [locale]);
 
@@ -351,23 +348,6 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       {/* 0. Live Ambient Atmospheric Particle World */}
       <ClayAtmosphereCanvas />
 
-      {/* Dynamic Sync Toast Feedback (Top-Left Safe Corner) */}
-      {syncToast && (
-        <div className="fixed top-16 left-4 sm:left-8 z-[200] pointer-events-none animate-in fade-in slide-in-from-top-2 slide-in-from-left-3 duration-250">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/98 backdrop-blur-md border-2 border-emerald-300/80 shadow-2xl clay-card text-neutral-800 text-xs sm:text-sm font-bubble font-bold">
-            <span className="text-lg select-none">✨</span>
-            <span className="text-neutral-900">
-              {syncToast.message}
-            </span>
-            {syncToast.count > 0 && (
-              <span className="hidden sm:inline text-emerald-600 font-bubble text-xs">
-                ({locale === 'zh' ? `共同步 ${syncToast.count} 篇灵感笔记` : `Synced ${syncToast.count} notes`})
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Floating 3D Clay Action Dock: [ 🎡 切换展示模式 ] + [ ⬆️ 回到顶部 ] */}
       <ClayFloatingActions
         viewMode={viewMode}
@@ -395,11 +375,12 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         <div className="max-w-7xl mx-auto px-3 sm:px-8 pt-4 sm:pt-6 pb-2 select-none w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => {
               playPop();
               window.location.hash = '#/';
             }}
-            className="p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-neutral-900 hover:bg-pink-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:text-pink-600 dark:hover:text-pink-400 border border-neutral-200/80 dark:border-white/10 shadow-3xs transition cursor-pointer active:scale-95 shrink-0"
+            className="p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-[#18181B] hover:bg-neutral-50 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-300 hover:text-pink-600 dark:hover:text-pink-400 border border-neutral-200/80 dark:border-white/10 shadow-3xs transition cursor-pointer active:scale-95 shrink-0"
             title="Back to Home Portal"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700 dark:text-neutral-300" />
@@ -426,14 +407,16 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         {guestNotesEnabled ? (
           <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end overflow-x-auto no-scrollbar">
             {/* Author Switcher */}
-            <div className="inline-flex p-1 rounded-2xl bg-white/95 border border-neutral-200/80 shadow-3xs text-xs font-bubble font-bold shrink-0">
+            <div 
+              className="inline-flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 rounded-2xl bg-black/[0.04] dark:bg-black/40 backdrop-blur-xl border border-black/[0.06] dark:border-white/10 shadow-inner text-xs font-bubble font-bold shrink-0"
+            >
               <button
                 type="button"
                 onClick={() => handleAuthorFilterChange('all', 520)}
                 className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 hover:scale-105 ${
                   authorFilter === 'all'
-                    ? 'bg-neutral-900 text-white shadow-xs'
-                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs border border-neutral-200/90 dark:border-white/15 scale-102'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10'
                 }`}
               >
                 <span>🌟 {locale === 'zh' ? '全部' : 'All'} ({publicNotes.length})</span>
@@ -444,8 +427,8 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
                 onClick={() => handleAuthorFilterChange('admin', 540)}
                 className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
                   authorFilter === 'admin'
-                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-neutral-900 shadow-xs'
-                    : 'text-amber-700 hover:bg-amber-50'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-neutral-900 shadow-xs border border-amber-300/60 scale-102'
+                    : 'text-amber-700 dark:text-amber-300 hover:bg-amber-100/60 dark:hover:bg-amber-950/40'
                 }`}
               >
                 <span>👑 {locale === 'zh' ? '馆长精选' : 'Curator'} ({adminNotesCount})</span>
@@ -456,8 +439,8 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
                 onClick={() => handleAuthorFilterChange('guest', 560)}
                 className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
                   authorFilter === 'guest'
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs'
-                    : 'text-emerald-700 hover:bg-emerald-50'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs border border-emerald-300/60 scale-102'
+                    : 'text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-950/40'
                 }`}
               >
                 <span>🌱 {locale === 'zh' ? '旅人笔记' : 'Guests'} ({guestNotesCount})</span>
@@ -465,7 +448,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bubble font-bold text-xs border border-amber-200 shadow-3xs shrink-0">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/90 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-bubble font-bold text-xs border border-amber-200/80 dark:border-amber-900/60 shadow-3xs shrink-0 backdrop-blur-md">
             <span>👑</span>
             <span>{locale === 'zh' ? '已开启馆长精选专属展台' : 'Curator Exclusive Exhibition'}</span>
           </div>
@@ -484,7 +467,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       </div>
 
       {/* Main Full-Width Immersive 5-View Showcase Canvas */}
-      <main className="w-full max-w-[1750px] mx-auto px-3 sm:px-8 pl-4 sm:pl-20 md:pl-24 py-4 flex-1">
+      <main className="w-full max-w-7xl mx-auto px-3 sm:px-8 py-4 flex-1">
         {rawNotes === undefined ? (
           <div className="text-center py-24 flex flex-col items-center justify-center">
             <span className="text-5xl select-none">🎈</span>
@@ -493,7 +476,9 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             </p>
           </div>
         ) : filteredNotes.length === 0 ? (
-          <div className="text-center py-16 px-4 bg-white/80 clay-card max-w-md mx-auto my-8 border-3 border-white shadow-xl select-none">
+          <div 
+            className="text-center py-16 px-4 bg-[#FAF7F2]/95 dark:bg-[#12111A]/90 backdrop-blur-2xl clay-card max-w-md mx-auto my-8 border-2 border-white/80 dark:border-white/10 shadow-xl rounded-[32px] select-none"
+          >
             <div className="text-5xl mb-3 select-none">
               {authorFilter === 'admin' ? '👑' : authorFilter === 'guest' ? '🌱' : '🎈'}
             </div>
@@ -534,49 +519,40 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           >
             {/* View 1: Bento Grid */}
             {viewMode === 'grid' && (
-                <BentoGridView
-                  notes={filteredNotes}
-                  onNoteClick={handleCardClick}
-                  onTagClick={(tg) => setSelectedTag(tg)}
-                />
-              )}
+              <BentoGridView
+                notes={filteredNotes}
+                onNoteClick={handleCardClick}
+                onTagClick={(tg) => setSelectedTag(tg)}
+              />
+            )}
 
-              {/* View 2: Floating Universe */}
-              {viewMode === 'floating' && (
-                <FloatingCanvasView
-                  notes={filteredNotes}
-                  onNoteClick={handleCardClick}
-                  onTagClick={(tg) => setSelectedTag(tg)}
-                />
-              )}
+            {/* View 2: Polaroid Sticky Board */}
+            {viewMode === 'polaroid' && (
+              <PolaroidBoardView
+                notes={filteredNotes}
+                onNoteClick={handleCardClick}
+                onTagClick={(tg) => setSelectedTag(tg)}
+              />
+            )}
 
-              {/* View 3: Polaroid Sticky Board */}
-              {viewMode === 'polaroid' && (
-                <PolaroidBoardView
-                  notes={filteredNotes}
-                  onNoteClick={handleCardClick}
-                  onTagClick={(tg) => setSelectedTag(tg)}
-                />
-              )}
+            {/* View 3: 3D Carousel Deck */}
+            {viewMode === 'carousel' && (
+              <Carousel3DView
+                notes={filteredNotes}
+                onNoteClick={handleCardClick}
+                onTagClick={(tg) => setSelectedTag(tg)}
+                onGoToEditorWithNote={onGoToEditorWithNote}
+              />
+            )}
 
-              {/* View 4: 3D Carousel Deck */}
-              {viewMode === 'carousel' && (
-                <Carousel3DView
-                  notes={filteredNotes}
-                  onNoteClick={handleCardClick}
-                  onTagClick={(tg) => setSelectedTag(tg)}
-                  onGoToEditorWithNote={onGoToEditorWithNote}
-                />
-              )}
-
-              {/* View 5: Timeline Stream */}
-              {viewMode === 'timeline' && (
-                <TimelineListView
-                  notes={filteredNotes}
-                  onNoteClick={handleCardClick}
-                  onTagClick={(tg) => setSelectedTag(tg)}
-                />
-              )}
+            {/* View 4: Timeline Stream */}
+            {viewMode === 'timeline' && (
+              <TimelineListView
+                notes={filteredNotes}
+                onNoteClick={() => {}}
+                onTagClick={(tg) => setSelectedTag(tg)}
+              />
+            )}
             </div>
         )}
       </main>

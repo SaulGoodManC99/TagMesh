@@ -43,7 +43,6 @@ const MODES: Array<{ id: ViewMode; nameZh: string; nameEn: string; emoji: string
   { id: 'polaroid', nameZh: '拍立得便签墙', nameEn: 'Polaroid Board', emoji: '📷' },
   { id: 'timeline', nameZh: '时光卷轴', nameEn: 'Timeline Stream', emoji: '⏳' },
   { id: 'carousel', nameZh: '3D 轮播穿梭', nameEn: '3D Carousel', emoji: '🎡' },
-  { id: 'floating', nameZh: '漂浮失重空间', nameEn: 'Floating Space', emoji: '🪐' },
 ];
 
 export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({

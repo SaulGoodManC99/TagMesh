@@ -13,36 +13,36 @@ interface SloganItem {
 
 const SLOGANS: SloganItem[] = [
   {
-    prefixZh: '把每一个灵感，\n捏成',
-    highlightZh: '可爱的黏土卡片',
+    prefixZh: '捕获瞬时闪念，\n记录',
+    highlightZh: '日常灵感与碎片',
     suffixZh: ' ✨',
-    prefixEn: 'Shape Every Idea into a \n',
-    highlightEn: 'Cute Clay Card',
+    prefixEn: 'Capture fleeting thoughts, \nrecord ',
+    highlightEn: 'Every Spark & Fragment',
     suffixEn: ' ✨',
   },
   {
-    prefixZh: '随时敲击 #标签，\n织就',
-    highlightZh: '立体思维网',
+    prefixZh: '随手打上 #标签，\n自动编织',
+    highlightZh: '多维知识网',
     suffixZh: ' 🕸️',
-    prefixEn: 'Type #hashtags anywhere to \nweave a ',
-    highlightEn: 'Thought Mesh',
+    prefixEn: 'Type #hashtags anytime to \nweave a ',
+    highlightEn: 'Multi-Dimensional Mesh',
     suffixEn: ' 🕸️',
   },
   {
-    prefixZh: '告别文件夹焦虑，\n自由切换 ',
-    highlightZh: '5 种笔记展示模式',
+    prefixZh: '告别繁琐文件夹，\n自由切换',
+    highlightZh: '5 种笔记展示视角',
     suffixZh: ' 🎡',
-    prefixEn: 'Zero folder anxiety, \nfreely explore ',
-    highlightEn: '5 Note Views',
+    prefixEn: 'Zero folder hierarchy, \nswitch across ',
+    highlightEn: '5 Dynamic Note Views',
     suffixEn: ' 🎡',
   },
   {
-    prefixZh: '不仅是 Markdown，\n更是',
-    highlightZh: '温暖治愈的创作乐园',
-    suffixZh: ' 🎈',
-    prefixEn: 'Not just Markdown, \na warm ',
-    highlightEn: 'Creative Wonderland',
-    suffixEn: ' 🎈',
+    prefixZh: '专注于 Markdown，\n回归',
+    highlightZh: '纯粹无干扰写作',
+    suffixZh: ' ✍️',
+    prefixEn: 'Focus on Markdown, \nembrace ',
+    highlightEn: 'Pure Distraction-Free Writing',
+    suffixEn: ' ✍️',
   },
 ];
 
@@ -103,7 +103,7 @@ export const ClayTypewriterHeadline: React.FC = () => {
 
     if (charCount <= prefixLen) {
       return (
-        <span className="whitespace-pre-line text-neutral-900">
+        <span className="whitespace-pre-line text-neutral-900 dark:text-white">
           {visibleFull}
         </span>
       );

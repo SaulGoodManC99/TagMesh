@@ -143,7 +143,9 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
         {/* Left Column (5 Cols): 3D 轮播切片舞台 + 进度 */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           {/* Top Controller Bar */}
-          <div className="flex items-center justify-between p-3 sm:p-4 rounded-[28px] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-3 border-white dark:border-white/10 shadow-lg clay-card">
+          <div 
+            className="flex items-center justify-between p-3 sm:p-4 rounded-[28px] bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-xl border border-neutral-200/80 dark:border-white/10 shadow-sm clay-card"
+          >
             <div className="flex items-center gap-2">
               <span className="text-xl">🎡</span>
               <span className="font-bubble font-extrabold text-sm sm:text-base text-neutral-900 dark:text-neutral-100">
@@ -199,19 +201,19 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
               } else if (offset === -1 || isLeft) {
                 transform = 'translateX(-55%) translateZ(-60px) rotateY(22deg) scale(0.88)';
                 zIndex = 20;
-                opacity = 0.75;
+                opacity = 0.9;
               } else if (offset === 1 || isRight) {
                 transform = 'translateX(55%) translateZ(-60px) rotateY(-22deg) scale(0.88)';
                 zIndex = 20;
-                opacity = 0.75;
+                opacity = 0.9;
               } else if (offset === -2) {
                 transform = 'translateX(-95%) translateZ(-130px) rotateY(32deg) scale(0.72)';
                 zIndex = 10;
-                opacity = 0.35;
+                opacity = 0.7;
               } else if (offset === 2) {
                 transform = 'translateX(95%) translateZ(-130px) rotateY(-32deg) scale(0.72)';
                 zIndex = 10;
-                opacity = 0.35;
+                opacity = 0.7;
               }
 
               const cardTheme = theme.noteCardThemes[idx % theme.noteCardThemes.length];
@@ -229,8 +231,8 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
                     opacity,
                     transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   }}
-                  className={`absolute w-[290px] sm:w-[340px] h-[310px] sm:h-[340px] p-6 rounded-[34px] ${cardTheme.bg} clay-card border-3 border-white dark:border-white/10 shadow-xl flex flex-col justify-between cursor-pointer group select-none overflow-hidden ${
-                    isCenter ? 'ring-3 ring-rose-400/40 shadow-2xl' : 'hover:opacity-90'
+                  className={`absolute w-[290px] sm:w-[340px] h-[310px] sm:h-[340px] p-6 rounded-[34px] bg-white dark:bg-[#18181B] backdrop-blur-xl clay-card border border-neutral-200/80 dark:border-white/10 shadow-md flex flex-col justify-between cursor-pointer group select-none overflow-hidden subpixel-antialiased ${
+                    isCenter ? 'ring-2 ring-rose-400/40 shadow-2xl' : 'hover:opacity-100'
                   }`}
                 >
                   {/* Decorative Washi Tape */}
@@ -248,23 +250,23 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className="px-2 py-0.5 rounded-full bg-white/80 dark:bg-neutral-800 border border-black/5 dark:border-white/10 text-[11px] font-bubble font-bold text-neutral-500 dark:text-neutral-400 shadow-3xs">
+                      <span className="px-2 py-0.5 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/10 text-[11px] font-bubble font-bold text-neutral-600 dark:text-neutral-300 shadow-3xs">
                         #{idx + 1}
                       </span>
                     </div>
 
                     {/* Clean Markdown Stream Snippet (No Duplicated Title) */}
-                    <div className="font-cute text-xs sm:text-sm text-neutral-800 dark:text-neutral-100 leading-relaxed line-clamp-6 mb-3 pt-1">
+                    <div className="font-cute text-sm sm:text-base text-neutral-800 dark:text-neutral-100 font-medium leading-relaxed line-clamp-5 mb-3 pt-1 antialiased">
                       {renderCardMarkdownSnippet(note.rawMarkdown, 180)}
                     </div>
                   </div>
 
                   {/* Bottom Indicator */}
-                  <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-xs">
-                    <span className="font-cute text-neutral-500 dark:text-neutral-400 font-bold text-xs">
+                  <div className="pt-2 border-t border-neutral-200/40 dark:border-white/5 flex items-center justify-between text-xs sm:text-sm">
+                    <span className="font-cute text-neutral-500 dark:text-neutral-400 font-bold text-xs sm:text-sm">
                       📅 {format24HourDateTime(note.createdAt || Date.now(), locale)}
                     </span>
-                    <span className="font-bubble font-bold text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                    <span className="font-bubble font-bold text-xs sm:text-sm text-rose-600 dark:text-rose-400 flex items-center gap-1">
                       {isCenter ? (locale === 'zh' ? '当前展出 ➜' : 'Active ➜') : (locale === 'zh' ? '点击切换' : 'Switch')}
                     </span>
                   </div>
@@ -274,13 +276,15 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
           </div>
 
           {/* Clean Single Continuous Gradient Progress Bar */}
-          <div className="p-3.5 sm:p-4 rounded-[28px] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-3 border-white dark:border-white/10 shadow-lg clay-card">
+          <div 
+            className="p-3.5 sm:p-4 rounded-[28px] bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-xl border border-neutral-200/80 dark:border-white/10 shadow-sm clay-card"
+          >
             <div className="flex items-center gap-3">
               <span className="font-mono font-bold text-xs text-neutral-500 dark:text-neutral-400 w-6 text-left">
                 {String(currentIndex + 1).padStart(2, '0')}
               </span>
 
-              <div className="flex-1 h-3 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden relative shadow-inner p-0.5 border border-neutral-200/60 dark:border-white/10">
+              <div className="flex-1 h-3 bg-white/50 dark:bg-black/30 rounded-full overflow-hidden relative shadow-inner p-0.5 border border-white/60 dark:border-white/10 backdrop-blur-md">
                 <div
                   className={`h-full bg-gradient-to-r ${theme.primaryGradient} rounded-full transition-all duration-300 shadow-xs`}
                   style={{ width: `${progressPercent}%` }}
@@ -296,7 +300,9 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
 
         {/* Right Column (7 Cols): 完整内容沉浸式阅读看板 */}
         {activeNote && (
-          <div className="lg:col-span-7 p-6 sm:p-10 rounded-[38px] bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-3.5 border-white dark:border-white/10 shadow-2xl clay-card relative select-text">
+          <div 
+            className="lg:col-span-7 p-6 sm:p-10 rounded-[38px] bg-white dark:bg-[#18181B] backdrop-blur-xl border border-neutral-200/80 dark:border-white/10 shadow-xl clay-card relative select-text"
+          >
             {/* Top Washi Tape */}
             <div className={`absolute -top-3 left-10 w-28 h-5 bg-gradient-to-r ${theme.washiGradient} opacity-90 rotate-[-1deg] shadow-xs select-none`} />
 
@@ -369,7 +375,7 @@ export const Carousel3DView: React.FC<Carousel3DViewProps> = ({
                   <button
                     key={tg}
                     onClick={() => onTagClick(tg)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-neutral-50 dark:bg-neutral-800 hover:bg-pink-50 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 hover:text-rose-600 text-xs sm:text-sm font-bubble font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer border border-neutral-200 dark:border-white/10 shadow-3xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-white/10 hover:bg-white hover:dark:bg-white/20 text-neutral-800 dark:text-neutral-200 hover:text-rose-600 text-xs sm:text-sm font-bubble font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer border border-white/70 dark:border-white/10 shadow-3xs backdrop-blur-md"
                   >
                     <Hash className="w-3.5 h-3.5 opacity-60 text-rose-500" />
                     <span>{tg.replace(/^#/, '')}</span>

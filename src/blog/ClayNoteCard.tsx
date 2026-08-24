@@ -39,7 +39,6 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
   const cardRef = useRef<HTMLElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
   // Extract first image in note if present (Xiaohongshu-style visual card cover)
@@ -62,7 +61,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
     }
   }, [note.likes]);
 
-  // 3D Tilt calculation & dynamic specular cursor light
+  // 3D Tilt calculation
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
@@ -75,7 +74,6 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
     const ry = ((x - centerX) / centerX) * 5;
 
     setTilt({ rx, ry });
-    setMousePos({ x, y });
     setIsHovered(true);
   };
 
@@ -121,17 +119,8 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
       style={{
         transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
       }}
-      className={`relative p-5 sm:p-6 ${cardTheme.bg} clay-card-interactive clay-sheen cursor-pointer group flex flex-col justify-between select-none overflow-hidden w-full h-auto gpu-layer`}
+      className="relative p-5 sm:p-6 bg-white dark:bg-[#18181B] backdrop-blur-xl border border-neutral-200/80 dark:border-white/10 shadow-sm hover:shadow-xl rounded-[32px] clay-card-interactive clay-sheen cursor-pointer group flex flex-col justify-between select-none overflow-hidden w-full h-auto gpu-layer transition-all duration-300"
     >
-      {/* Dynamic 3D Cursor Specular Glow Light */}
-      <div 
-        className="pointer-events-none absolute inset-0 rounded-[32px] transition-opacity duration-200 z-10"
-        style={{
-          opacity: isHovered ? 1 : 0,
-          background: `radial-gradient(350px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.7), transparent 60%)`,
-        }}
-      />
-
       {/* Sword Blade Light Slash Gleam on Hover */}
       <div className="clay-sword-gleam" />
 
@@ -154,65 +143,68 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             {note.isOfficial || note.author === 'admin' ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs leading-none shrink-0">
                 <span className="leading-none text-xs">👑</span>
-                <span className="leading-none">{locale === 'zh' ? '馆长精选' : 'Curator'}</span>
+                <span className="leading-none">{locale === 'zh' ? '馆长' : 'Curator'}</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bubble font-bold shadow-3xs leading-none shrink-0">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/80 dark:bg-white/10 text-emerald-800 dark:text-emerald-300 text-xs font-bubble font-bold border border-emerald-200/60 dark:border-white/10 shadow-3xs leading-none shrink-0 backdrop-blur-md">
                 <span className="leading-none text-xs">🌱</span>
-                <span className="leading-none">{locale === 'zh' ? '旅人笔记' : 'Guest Note'}</span>
+                <span className="leading-none">{locale === 'zh' ? '旅人' : 'Guest'}</span>
               </span>
             )}
             {note.isPinned && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 text-amber-900 text-[11px] font-bubble font-bold shadow-xs leading-none shrink-0">
-                <Pin className="w-3 h-3" />
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 text-amber-900 text-[10px] font-bubble font-bold shadow-3xs leading-none shrink-0">
+                <Pin className="w-2.5 h-2.5" />
                 <span className="leading-none">Pinned</span>
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1 opacity-80 text-xs font-cute text-neutral-500 font-medium shrink-0">
-            <FileText className="w-3.5 h-3.5 text-neutral-400" />
-            <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
+          <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 font-cute text-xs shrink-0">
+            <span className="flex items-center gap-1">
+              <FileText className="w-3 h-3 text-amber-600 dark:text-amber-400 opacity-80" />
+              <span>{note.wordCount || 0} {locale === 'zh' ? '字' : 'words'}</span>
+            </span>
           </div>
         </div>
 
-        {/* 📷 Xiaohongshu-Style First Image Cover (If Present) */}
+        {/* Note First Image Cover Preview */}
         {firstImage && (
-          <div className="w-full max-h-52 overflow-hidden rounded-2xl border-2 border-white/90 shadow-inner mb-3 bg-neutral-100/80 shrink-0 relative">
-            <img 
-              src={firstImage} 
-              alt="Cover" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-              loading="lazy" 
+          <div className="w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-white/60 dark:border-white/10 shadow-xs relative group-hover:scale-[1.01] transition-transform">
+            <img
+              src={firstImage}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         )}
 
-        {/* Pure Markdown Stream Content (Organic Length Scaling) */}
-        {isShortQuote ? (
-          <div className="font-bubble text-base sm:text-lg font-black text-neutral-800 dark:text-neutral-100 leading-snug py-1 mb-2 tracking-tight flex items-start gap-1.5">
-            <Quote className="w-4 h-4 text-pink-400 shrink-0 rotate-180 opacity-70 mt-0.5" />
-            <span className="italic">“{note.rawMarkdown.replace(/^#+\s*/, '').slice(0, 80)}”</span>
-          </div>
-        ) : (
-          <div className="font-cute text-xs sm:text-sm text-neutral-800 dark:text-neutral-100 leading-relaxed opacity-95 mb-2.5">
-            {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
-          </div>
-        )}
-
-        {/* Dedicated Date Badge Below Content */}
-        <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-cute font-bold text-neutral-500/90 dark:text-neutral-400 select-none mb-1">
-          <span className="text-xs">📅</span>
-          <span>{formattedDate}</span>
+        {/* Main Content Area: Pure Rendered Markdown Stream */}
+        <div 
+          className={`overflow-hidden transition-all duration-300 font-cute text-neutral-800 dark:text-neutral-100 font-medium antialiased ${
+            isShortQuote
+              ? 'text-base sm:text-lg font-bold italic line-clamp-3 leading-relaxed py-1'
+              : 'text-sm sm:text-base leading-relaxed line-clamp-5'
+          }`}
+        >
+          {renderCardMarkdownSnippet(note.rawMarkdown, excerptMaxChars)}
         </div>
       </div>
 
-      {/* Bottom Footer: Enlarged Hashtag Pills & Emoji Reactions */}
-      <div className="relative z-10 pt-2.5 border-t border-black/5 dark:border-white/5 flex flex-col gap-2.5 mt-auto">
-        {/* Enlarged Hashtags with Haptic Spring Touch */}
-        {note.tags && note.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {note.tags.map((t) => (
+      {/* Dedicated Date & Word Count Floor Tag Bar */}
+      <div className="relative z-10 mt-3 pt-2.5 border-t border-neutral-200/40 dark:border-white/10 flex flex-col gap-2">
+        <div className="flex items-center justify-between text-xs sm:text-sm font-cute text-neutral-500 dark:text-neutral-400">
+          <span className="flex items-center gap-1.5 font-semibold">
+            <span>📅</span>
+            <span>{formattedDate}</span>
+          </span>
+        </div>
+
+        {/* Dynamic Hashtag Pills */}
+        {(note.tags || []).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
+            {(note.tags || []).slice(0, 3).map((t) => (
               <motion.button
                 key={t}
                 whileHover={{ scale: 1.05, y: -1 }}
@@ -234,9 +226,9 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
                   playPop();
                   onTagClick(t);
                 }}
-                className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-bubble font-bold tracking-wide border shadow-3xs cursor-pointer ${cardTheme.tagPill}`}
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bubble font-bold tracking-wide border border-white/60 dark:border-white/10 shadow-3xs cursor-pointer bg-white/80 dark:bg-white/10 backdrop-blur-md text-neutral-800 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20"
               >
-                <Hash className="w-3.5 h-3.5 opacity-70" />
+                <Hash className="w-3.5 h-3.5 opacity-70 text-rose-500" />
                 <span className="leading-none">{t.replace(/^#/, '')}</span>
               </motion.button>
             ))}
@@ -244,7 +236,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
         )}
 
         {/* Bottom Reaction Bar (Only Pure ❤️ Like) & Open Link Icon */}
-        <div className="flex items-center justify-between text-xs pt-1">
+        <div className="flex items-center justify-between text-xs pt-2">
           {/* Single Heart Like Button with Spring Pop */}
           <motion.button
             type="button"
@@ -252,14 +244,14 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             whileHover={{ scale: 1.14 }}
             whileTap={{ scale: 0.86 }}
             transition={SPRING_MICRO}
-            className="px-2.5 py-1 rounded-xl bg-white/85 dark:bg-neutral-800 hover:bg-white text-rose-600 hover:text-rose-700 dark:text-rose-400 text-xs font-cute font-bold flex items-center gap-1.5 shadow-3xs border border-pink-100 dark:border-white/10 cursor-pointer"
+            className="px-2.5 py-1 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-md hover:bg-white hover:dark:bg-white/20 text-rose-600 hover:text-rose-700 dark:text-rose-400 text-xs font-cute font-bold flex items-center gap-1.5 shadow-3xs border border-white/60 dark:border-white/10 cursor-pointer"
             title={locale === 'zh' ? '点赞这篇笔记' : 'Like this note'}
           >
             <span className="text-sm leading-none select-none">❤️</span>
             <span className="text-xs font-bubble font-bold leading-none">{likes}</span>
           </motion.button>
 
-          <div className="w-7 h-7 rounded-full bg-white/80 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 dark:text-neutral-300 group-hover:bg-neutral-900 group-hover:text-white transition-colors shadow-3xs shrink-0">
+          <div className="w-7 h-7 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-md flex items-center justify-center text-neutral-600 dark:text-neutral-300 group-hover:bg-neutral-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-neutral-900 transition-colors shadow-3xs shrink-0 border border-white/60 dark:border-white/10">
             <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </div>
         </div>

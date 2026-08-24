@@ -8,7 +8,7 @@ import { useI18n } from '../hooks/useI18n';
 import { playPop, playSwoosh } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
 
-export type ViewMode = 'grid' | 'polaroid' | 'timeline' | 'carousel' | 'floating';
+export type ViewMode = 'grid' | 'polaroid' | 'timeline' | 'carousel';
 
 export interface ClayModeDockProps {
   viewMode: ViewMode;
@@ -72,22 +72,10 @@ const MODES: ModeItem[] = [
     titleEn: '3D Carousel',
     descZh: '景深翻转抽卡',
     descEn: '3D depth coverflow',
-    nextEmoji: '🪐',
-    nextZh: '漂浮失重空间',
-    nextEn: 'Floating Space',
-    themeGradient: 'from-emerald-400 via-teal-500 to-indigo-500',
-  },
-  {
-    id: 'floating',
-    emoji: '🪐',
-    titleZh: '漂浮失重空间',
-    titleEn: 'Floating Space',
-    descZh: '失重抓取与物理碰撞',
-    descEn: 'Zero-g floating universe',
     nextEmoji: '🍱',
     nextZh: '便当瀑布流',
     nextEn: 'Bento Grid',
-    themeGradient: 'from-purple-400 via-indigo-500 to-pink-500',
+    themeGradient: 'from-emerald-400 via-teal-500 to-indigo-500',
   },
 ];
 

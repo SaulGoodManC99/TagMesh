@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { playPop, playChime } from '../../blog/utils/soundEffects';
 import { triggerParticleBurst } from '../../blog/utils/confetti';
+import { useI18n } from '../../hooks/useI18n';
 
 export interface ContextMenuPosition {
   x: number;
@@ -54,6 +55,7 @@ export const ClayContextMenu: React.FC<ClayContextMenuProps> = ({
   onInsertDivider,
   onCopyAllMarkdown,
 }) => {
+  const { locale } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close when clicking outside or pressing Escape
@@ -103,154 +105,154 @@ export const ClayContextMenu: React.FC<ClayContextMenuProps> = ({
         left: `${clampedX}px`,
         top: `${clampedY}px`,
       }}
-      className="fixed z-50 w-60 bg-[#fdfbf7]/95 backdrop-blur-xl border-3 border-white shadow-2xl rounded-3xl clay-card p-2 text-neutral-800 popover-enter select-none ring-1 ring-black/5"
+      className="fixed z-50 w-60 bg-[#fdfbf7]/95 dark:bg-neutral-900/95 backdrop-blur-xl border-3 border-white dark:border-white/10 shadow-2xl rounded-3xl clay-card p-2 text-neutral-800 dark:text-neutral-100 popover-enter select-none ring-1 ring-black/5"
     >
       {/* Menu Header Badge */}
-      <div className="flex items-center justify-between px-3 py-1.5 mb-1 border-b border-amber-900/10 text-[11px] font-bubble font-bold text-neutral-400">
+      <div className="flex items-center justify-between px-3 py-1.5 mb-1 border-b border-amber-900/10 dark:border-white/10 text-[11px] font-bubble font-bold text-neutral-400 dark:text-neutral-500">
         <span className="flex items-center gap-1">
           <Sparkles className="w-3 h-3 text-pink-500" />
-          <span>笔记排版助手</span>
+          <span>{locale === 'zh' ? '笔记排版助手' : 'Formatting Helper'}</span>
         </span>
-        <span className="text-[10px] font-mono text-neutral-400">Esc 退出</span>
+        <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500">{locale === 'zh' ? 'Esc 退出' : 'Esc'}</span>
       </div>
 
       <div className="space-y-0.5 max-h-80 overflow-y-auto font-cute text-xs">
         {/* Code Block */}
         <button
           onClick={(e) => handleAction(() => onInsertCodeBlock(), e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-pink-50 hover:text-pink-700 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-pink-50 dark:hover:bg-pink-950/60 hover:text-pink-700 dark:hover:text-pink-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-cyan-100 text-cyan-800 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 group-hover:scale-110 transition-transform">
               <Code className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">插入代码块</span>
+            <span className="font-bold">{locale === 'zh' ? '插入代码块' : 'Code Block'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">```</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">```</kbd>
         </button>
 
         {/* Hashtag */}
         <button
           onClick={(e) => handleAction(onInsertTag, e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-pink-50 hover:text-pink-700 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-pink-50 dark:hover:bg-pink-950/60 hover:text-pink-700 dark:hover:text-pink-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-pink-100 text-pink-700 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 group-hover:scale-110 transition-transform">
               <Hash className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">插入灵感标签</span>
+            <span className="font-bold">{locale === 'zh' ? '插入灵感标签' : 'Insert Tag'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">#</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">#</kbd>
         </button>
 
         {/* Headings */}
         <button
           onClick={(e) => handleAction(() => onInsertHeading(1), e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-amber-50 hover:text-amber-800 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-amber-50 dark:hover:bg-amber-950/60 hover:text-amber-800 dark:hover:text-amber-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-amber-100 text-amber-800 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 group-hover:scale-110 transition-transform">
               <Heading1 className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">大标题 (H1)</span>
+            <span className="font-bold">{locale === 'zh' ? '大标题 (H1)' : 'Heading 1 (H1)'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">#</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">#</kbd>
         </button>
 
         <button
           onClick={(e) => handleAction(() => onInsertHeading(2), e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-amber-50 hover:text-amber-800 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-amber-50 dark:hover:bg-amber-950/60 hover:text-amber-800 dark:hover:text-amber-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-amber-100 text-amber-800 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 group-hover:scale-110 transition-transform">
               <Heading2 className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">中标题 (H2)</span>
+            <span className="font-bold">{locale === 'zh' ? '中标题 (H2)' : 'Heading 2 (H2)'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">##</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">##</kbd>
         </button>
 
         {/* Task List */}
         <button
           onClick={(e) => handleAction(onInsertTaskList, e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-emerald-50 hover:text-emerald-800 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-800 dark:hover:text-emerald-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-emerald-100 text-emerald-800 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 group-hover:scale-110 transition-transform">
               <CheckSquare className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">待办事项清单</span>
+            <span className="font-bold">{locale === 'zh' ? '待办事项清单' : 'Task List'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">[]</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">[]</kbd>
         </button>
 
         {/* Quote */}
         <button
           onClick={(e) => handleAction(onInsertQuote, e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-purple-50 hover:text-purple-800 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-purple-50 dark:hover:bg-purple-950/60 hover:text-purple-800 dark:hover:text-purple-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-purple-100 text-purple-800 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 group-hover:scale-110 transition-transform">
               <Quote className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">便签引用块</span>
+            <span className="font-bold">{locale === 'zh' ? '便签引用块' : 'Blockquote'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">&gt;</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">&gt;</kbd>
         </button>
 
         {/* Bullet List */}
         <button
           onClick={(e) => handleAction(onInsertBulletList, e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-rose-50 hover:text-rose-800 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-800 dark:hover:text-rose-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-rose-100 text-rose-800 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 group-hover:scale-110 transition-transform">
               <List className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">项目符号列表</span>
+            <span className="font-bold">{locale === 'zh' ? '项目符号列表' : 'Bullet List'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">-</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">-</kbd>
         </button>
 
         {/* Numbered List */}
         <button
           onClick={(e) => handleAction(onInsertOrderedList, e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-rose-50 hover:text-rose-800 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-800 dark:hover:text-rose-300 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-rose-100 text-rose-800 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 group-hover:scale-110 transition-transform">
               <ListOrdered className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">有序序号列表</span>
+            <span className="font-bold">{locale === 'zh' ? '有序序号列表' : 'Numbered List'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">1.</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">1.</kbd>
         </button>
 
         {/* Divider */}
         <button
           onClick={(e) => handleAction(onInsertDivider, e)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-neutral-100 text-neutral-700 transition cursor-pointer text-left group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 transition cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-xl bg-neutral-100 text-neutral-700 group-hover:scale-110 transition-transform">
+            <div className="p-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 group-hover:scale-110 transition-transform">
               <Minus className="w-3.5 h-3.5" />
             </div>
-            <span className="font-bold">插入分割线</span>
+            <span className="font-bold">{locale === 'zh' ? '插入分割线' : 'Horizontal Rule'}</span>
           </div>
-          <kbd className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded-md border border-neutral-200 text-neutral-400">---</kbd>
+          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-800 px-1.5 py-0.5 rounded-md border border-neutral-200 dark:border-white/10 text-neutral-400 dark:text-neutral-400">---</kbd>
         </button>
 
         {/* Copy All */}
-        <div className="pt-1 mt-1 border-t border-amber-900/10">
+        <div className="pt-1 mt-1 border-t border-amber-900/10 dark:border-white/10">
           <button
             onClick={(e) => handleAction(onCopyAllMarkdown, e)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-emerald-50 text-emerald-800 transition cursor-pointer text-left group font-bold"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 transition cursor-pointer text-left group font-bold"
           >
             <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-xl bg-emerald-100 text-emerald-800">
+              <div className="p-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
                 <Copy className="w-3.5 h-3.5" />
               </div>
-              <span>复制全文 Markdown</span>
+              <span>{locale === 'zh' ? '复制全文 Markdown' : 'Copy All Markdown'}</span>
             </div>
           </button>
         </div>

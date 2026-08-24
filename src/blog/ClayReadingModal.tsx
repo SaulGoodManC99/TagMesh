@@ -142,14 +142,16 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
         initial={{ opacity: 0, scale: 0.95, y: 14 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 480, damping: 28, mass: 0.7 }}
-        className="relative w-full h-full sm:h-auto sm:max-h-[92vh] max-w-4xl bg-white/95 rounded-none sm:rounded-[40px] sm:border-4 border-white shadow-2xl clay-card flex flex-col overflow-hidden backdrop-blur-xl gpu-layer"
+        className="relative w-full h-full sm:h-auto sm:max-h-[92vh] max-w-4xl rounded-none sm:rounded-[40px] bg-white dark:bg-[#18181B] border-2 sm:border-3 border-neutral-200/80 dark:border-white/10 shadow-2xl clay-card flex flex-col overflow-hidden backdrop-blur-xl gpu-layer text-neutral-800 dark:text-neutral-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Decorative Gradient Accent Bar */}
         <div className={`h-2.5 w-full bg-gradient-to-r ${theme.primaryGradient} shrink-0`} />
 
         {/* Top Sticky Header Bar */}
-        <div className="px-3.5 sm:px-10 py-2.5 sm:py-3.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200/60 dark:border-white/10 flex items-center justify-between gap-2 shrink-0">
+        <div 
+          className="px-3.5 sm:px-10 py-2.5 sm:py-3.5 bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-md border-b border-neutral-200/60 dark:border-white/10 flex items-center justify-between gap-2 shrink-0"
+        >
           {/* Left: Close X + Author Badge + Date + Word Count */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Quick Close Button */}
@@ -312,7 +314,10 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
 
         {/* Bottom Pagination Sticky Bar */}
         {(prevNote || nextNote) && (
-          <div className="px-3.5 sm:px-10 py-2.5 sm:py-3 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-t border-neutral-200/60 dark:border-white/10 flex items-center justify-between gap-2 shrink-0 select-none">
+          <div 
+            style={{ backgroundColor: `${theme.headerBg}f0` }}
+            className="px-3.5 sm:px-10 py-2.5 sm:py-3 backdrop-blur-md border-t border-black/5 dark:border-white/10 flex items-center justify-between gap-2 shrink-0 select-none"
+          >
             {prevNote ? (
               <button
                 onClick={() => onSelectNote && onSelectNote(prevNote)}

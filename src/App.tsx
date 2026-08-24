@@ -37,6 +37,7 @@ import { ClayLandingPortal } from './blog/ClayLandingPortal';
 import { ClayDanmakuPlaza } from './blog/ClayDanmakuPlaza';
 import { ClayHeader } from './blog/ClayHeader';
 import { ClayAdminAuthModal } from './components/ClayAdminAuthModal';
+import { ClayToastContainer, toast } from './components/ClayToast';
 import { playPop, playChime } from './blog/utils/soundEffects';
 import { useClayTheme } from './blog/utils/clayThemes';
 import { useAuth } from './hooks/useAuth';
@@ -61,7 +62,6 @@ export const App: React.FC = () => {
 
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('#all');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Left Sidebar state (responsive default: open on desktop, drawer on mobile)
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
@@ -74,11 +74,8 @@ export const App: React.FC = () => {
   // 1.5s Debounced Zero-Sync Hook
   const { syncState, forceSyncNow } = useZeroSync(activeNote);
 
-  const showToast = useCallback((msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
+  const showToast = useCallback((msg: string, type: 'success' | 'info' | 'warning' | 'error' = 'info') => {
+    toast.show(msg, type);
   }, []);
 
   // Listen to hash changes for routing
@@ -317,26 +314,40 @@ export const App: React.FC = () => {
   // Register Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const isMeta = e.metaKey || e.ctrlKey;
+      const isAlt = e.altKey;
+      const key = e.key.toLowerCase();
+      const target = e.target as HTMLElement | null;
+      const isTypingInInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
       // ⌘K or Ctrl+K -> Command Palette
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if (isMeta && key === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+        return;
       }
-      // ⌘\ or Ctrl+\ -> Toggle Sidebar
-      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
-        e.preventDefault();
-        setIsSidebarOpen((prev) => !prev);
-      }
-      // ⌘N or Ctrl+N -> New Note
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+
+      // Alt+N or ⌘N -> New Note (Alt+N avoids browser hijacking new window)
+      if ((isAlt && key === 'n') || (e.metaKey && key === 'n')) {
         e.preventDefault();
         handleCreateNote('');
+        return;
       }
-      // ⌘/ or Ctrl+/ -> Shortcuts
-      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+
+      // Alt+S -> Toggle Sidebar
+      if (isAlt && key === 's') {
+        e.preventDefault();
+        setIsSidebarOpen((prev) => !prev);
+        return;
+      }
+
+      // Alt+/ or (when not typing) '?' -> Shortcuts
+      if ((isAlt && e.key === '/') || (!isTypingInInput && e.key === '?')) {
         e.preventDefault();
         setIsShortcutsOpen((prev) => !prev);
+        return;
       }
+
       // Escape
       if (e.key === 'Escape') {
         setIsCommandPaletteOpen(false);
@@ -352,47 +363,29 @@ export const App: React.FC = () => {
 
   const renderEditorView = () => (
     <div 
-      style={{ backgroundColor: theme.editorBg }}
+      style={{ backgroundColor: theme.bg }}
       className="h-screen w-screen overflow-hidden text-neutral-800 flex flex-col selection:bg-pink-300 selection:text-pink-900 font-sans transition-colors duration-500 relative"
     >
       {/* 0. Live Ambient Atmospheric Particle World */}
       <ClayAtmosphereCanvas />
 
-      {/* Top Cute Clay Header Bar (Responsive & Streamlined) */}
+      {/* Top Floating App Bar */}
       <header 
-        style={{ backgroundColor: `${theme.headerBg}ee` }}
-        className="h-14 border-b border-amber-900/10 px-3 sm:px-6 flex items-center justify-between text-xs text-neutral-600 select-none shrink-0 backdrop-blur-md transition-colors duration-500 relative z-30"
+        style={{ backgroundColor: `${theme.headerBg}cc` }}
+        className="h-14 border-b border-white/60 dark:border-white/10 backdrop-blur-xl px-3 sm:px-6 flex items-center justify-between z-30 shrink-0 select-none transition-colors duration-500"
       >
-        {/* Left Actions: Back / Gallery / Sidebar toggle */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Link to Portal Home */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Back to Blog Gallery */}
           <button
             type="button"
             onClick={() => {
-              playPop();
-              setRoute('home');
-              window.location.hash = '#/';
-            }}
-            className="h-9 px-2.5 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/95 text-neutral-700 hover:text-pink-600 border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-            title="Return to Home Portal"
-          >
-            <Home className="w-3.5 h-3.5 text-pink-500" />
-            <span className="hidden sm:inline">{locale === 'zh' ? '首页' : 'Home'}</span>
-          </button>
-
-          {/* Link to Gallery */}
-          <button
-            type="button"
-            onClick={() => {
-              playPop();
-              setRoute('gallery');
               window.location.hash = '#/gallery';
             }}
             className="h-9 px-2.5 sm:px-3.5 rounded-full font-bubble font-bold text-xs bg-white/95 text-neutral-700 hover:text-rose-600 border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
             title="Return to Notes Gallery"
           >
-            <Layers className="w-3.5 h-3.5 text-rose-500" />
-            <span className="hidden sm:inline">{locale === 'zh' ? '笔记' : 'Gallery'}</span>
+            <Home className="w-3.5 h-3.5 text-pink-500" />
+            <span className="hidden sm:inline">{locale === 'zh' ? '首页' : 'Home'}</span>
           </button>
 
           {/* Sidebar Drawer Toggle */}
@@ -402,7 +395,7 @@ export const App: React.FC = () => {
             className={`h-9 px-2.5 sm:px-3 rounded-full border-2 border-white shadow-3xs hover:shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer font-bubble font-bold text-xs ${
               isSidebarOpen ? `bg-gradient-to-r ${theme.primaryGradient} text-white border-white shadow-sm` : 'bg-white/95 text-neutral-700 hover:text-neutral-900'
             }`}
-            title="Toggle Sidebar Drawer (⌘\)"
+            title={locale === 'zh' ? '展开/收起左侧笔记库 (Alt+S)' : 'Toggle Sidebar (Alt+S)'}
           >
             <PanelLeft className={`w-3.5 h-3.5 ${isSidebarOpen ? 'text-white' : 'text-neutral-500'}`} />
             <span className="hidden sm:inline">{locale === 'zh' ? '笔记列表' : 'Notes'}</span>
@@ -609,8 +602,7 @@ export const App: React.FC = () => {
 
         {/* Center Canvas: Pure Prose Writing Area */}
         <main 
-          style={{ backgroundColor: theme.editorBg }}
-          className="flex-1 overflow-y-auto relative flex flex-col justify-between transition-colors duration-500"
+          className="flex-1 overflow-y-auto relative flex flex-col justify-between transition-colors duration-500 z-10"
         >
           <TagMeshEditor
             note={activeNote}
@@ -737,12 +729,8 @@ export const App: React.FC = () => {
         {route === 'editor' && renderEditorView()}
       </div>
 
-      {/* Toast Notification Pill */}
-      {toastMessage && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[400] animate-in fade-in slide-in-from-top-3 duration-200 px-5 py-2.5 rounded-2xl bg-neutral-900/95 dark:bg-neutral-800/95 border border-white/20 dark:border-white/10 text-white text-xs sm:text-sm font-bubble font-bold shadow-2xl backdrop-blur-xl flex items-center gap-2 select-none pointer-events-none">
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      {/* Unified Clay Dynamic Island Toast Container */}
+      <ClayToastContainer />
 
       {/* Command Palette (Cmd + K) */}
       <CommandPalette

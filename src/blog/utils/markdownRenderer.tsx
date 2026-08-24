@@ -126,7 +126,7 @@ export function renderInlineContent(
       );
     }
 
-    return <span key={idx} className="font-medium text-neutral-800 dark:text-neutral-200">{part}</span>;
+    return <span key={idx} className="font-medium text-neutral-900 dark:text-neutral-100">{part}</span>;
   });
 }
 
@@ -309,7 +309,7 @@ export function renderMarkdownToBlocks(
       return (
         <blockquote
           key={idx}
-          className="border-l-4 border-amber-400 dark:border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 p-5 sm:p-7 rounded-3xl my-5 text-neutral-800/95 dark:text-neutral-200 leading-[2.0] font-medium text-[17px] sm:text-[18.5px] shadow-3xs"
+          className="border-l-4 border-amber-400 dark:border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 p-5 sm:p-7 rounded-3xl my-5 text-neutral-900 dark:text-neutral-100 leading-[2.0] font-medium text-[17px] sm:text-[18.5px] shadow-3xs"
         >
           <div>{renderInlineContent(content, onTagClick)}</div>
         </blockquote>
@@ -341,7 +341,7 @@ export function renderMarkdownToBlocks(
                 >
                   {isChecked ? '✓' : ''}
                 </span>
-                <span className={isChecked ? 'line-through text-neutral-400 dark:text-neutral-500' : 'text-neutral-800 dark:text-neutral-200'}>
+                <span className={isChecked ? 'line-through text-neutral-400 dark:text-neutral-500' : 'text-neutral-900 dark:text-neutral-100'}>
                   {renderInlineContent(text, onTagClick)}
                 </span>
               </li>
@@ -361,7 +361,7 @@ export function renderMarkdownToBlocks(
             return (
               <li key={lidx} className="flex items-start gap-3">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-400 dark:bg-rose-500 mt-2.5 shrink-0 inline-block select-none" />
-                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-800 dark:text-neutral-200 leading-[2.0] font-medium">
+                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-900 dark:text-neutral-100 leading-[2.0] font-medium">
                   {renderInlineContent(cleanText, onTagClick)}
                 </div>
               </li>
@@ -383,7 +383,7 @@ export function renderMarkdownToBlocks(
                 <span className="px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-300 font-bubble text-xs font-bold shrink-0 mt-1 border border-rose-200 dark:border-rose-900 select-none">
                   {lidx + 1}
                 </span>
-                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-800 dark:text-neutral-200 leading-[2.0] font-medium">
+                <div className="flex-1 text-[17.5px] sm:text-[18.5px] text-neutral-900 dark:text-neutral-100 leading-[2.0] font-medium">
                   {renderInlineContent(cleanText, onTagClick)}
                 </div>
               </li>
@@ -419,7 +419,7 @@ export function renderMarkdownToBlocks(
 
     // Standard Paragraph with 2.0x line-height and comfortable 18px ~ 19px sizing
     return (
-      <p key={idx} className="text-[17.5px] sm:text-[18.5px] text-neutral-800 dark:text-neutral-200 leading-[2.0] font-medium my-4.5">
+      <p key={idx} className="text-[17.5px] sm:text-[18.5px] text-neutral-900 dark:text-neutral-100 leading-[2.0] font-medium my-4.5">
         {renderInlineContent(trimmed, onTagClick)}
       </p>
     );
@@ -427,33 +427,35 @@ export function renderMarkdownToBlocks(
 }
 
 /**
- * Compact Markdown Snippet for Grid/Polaroid/Floating cards
+ * Compact Markdown Snippet for Grid/Polaroid/Carousel cards
+ * Extracts clean readable text including headers
  */
 export function renderCardMarkdownSnippet(
   markdown: string,
-  maxLines: number = 3
+  maxLines: number = 4
 ): React.ReactNode {
   if (!markdown) return null;
 
   const clean = markdown
     .split('\n')
-    .filter((l) => l.trim().length > 0)
-    .filter((l) => !l.trim().startsWith('#'))
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+    .map((l) => l.replace(/^#+\s*/, ''))
     .slice(0, maxLines);
 
   return (
-    <div className="space-y-1.5 text-[13.5px] sm:text-[14.5px] text-neutral-700 dark:text-neutral-200 font-cute leading-[1.8]">
+    <div className="space-y-2 text-neutral-900 dark:text-neutral-100 font-cute leading-[1.8]">
       {clean.map((ln, idx) => {
         const trimmed = ln.trim();
         if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('- [x] ')) {
           const isChecked = trimmed.startsWith('- [x] ');
           const text = trimmed.replace(/^- \[[ x]\]\s*/, '');
           return (
-            <div key={idx} className="flex items-center gap-2 truncate">
+            <div key={idx} className="flex items-center gap-2">
               <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 ${isChecked ? 'bg-emerald-500 text-white' : 'border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800'}`}>
                 {isChecked ? '✓' : ''}
               </span>
-              <span className={isChecked ? 'line-through opacity-50 truncate' : 'truncate'}>
+              <span className={isChecked ? 'line-through opacity-50' : ''}>
                 {renderInlineContent(text)}
               </span>
             </div>
@@ -462,22 +464,84 @@ export function renderCardMarkdownSnippet(
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           const text = trimmed.replace(/^[-*]\s*/, '');
           return (
-            <div key={idx} className="flex items-center gap-2 truncate">
+            <div key={idx} className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 dark:bg-rose-500 shrink-0" />
-              <span className="truncate">{renderInlineContent(text)}</span>
+              <span>{renderInlineContent(text)}</span>
             </div>
           );
         }
         if (trimmed.startsWith('> ')) {
           const text = trimmed.replace(/^>\s*/, '');
           return (
-            <div key={idx} className="italic text-neutral-600 dark:text-neutral-300 pl-2 border-l-2 border-amber-300 dark:border-amber-500 truncate">
+            <div key={idx} className="italic text-neutral-700 dark:text-neutral-200 pl-2.5 border-l-2 border-amber-400 dark:border-amber-500">
               {renderInlineContent(text)}
             </div>
           );
         }
         return (
-          <p key={idx} className="truncate">
+          <p key={idx}>
+            {renderInlineContent(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Large Spacious Markdown Snippet for Timeline Stream
+ * High-legibility 18px ~ 19px font, 2.0x line-height, crystal clear in light and dark mode
+ */
+export function renderTimelineMarkdownSnippet(
+  markdown: string,
+  maxLines: number = 6
+): React.ReactNode {
+  if (!markdown) return null;
+
+  const clean = markdown
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+    .map((l) => l.replace(/^#+\s*/, ''))
+    .slice(0, maxLines);
+
+  return (
+    <div className="space-y-3 text-[17px] sm:text-[18.5px] text-neutral-900 dark:text-neutral-100 font-cute leading-[2.0] font-medium antialiased">
+      {clean.map((ln, idx) => {
+        const trimmed = ln.trim();
+        if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('- [x] ')) {
+          const isChecked = trimmed.startsWith('- [x] ');
+          const text = trimmed.replace(/^- \[[ x]\]\s*/, '');
+          return (
+            <div key={idx} className="flex items-center gap-3">
+              <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${isChecked ? 'bg-emerald-500 text-white' : 'border-2 border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800'}`}>
+                {isChecked ? '✓' : ''}
+              </span>
+              <span className={isChecked ? 'line-through text-neutral-400 dark:text-neutral-500' : ''}>
+                {renderInlineContent(text)}
+              </span>
+            </div>
+          );
+        }
+        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+          const text = trimmed.replace(/^[-*]\s*/, '');
+          return (
+            <div key={idx} className="flex items-start gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-400 dark:bg-rose-500 mt-2.5 shrink-0 inline-block" />
+              <div className="flex-1">{renderInlineContent(text)}</div>
+            </div>
+          );
+        }
+        if (trimmed.startsWith('> ')) {
+          const text = trimmed.replace(/^>\s*/, '');
+          return (
+            <div key={idx} className="italic text-neutral-800 dark:text-neutral-200 pl-3.5 py-1 border-l-4 border-amber-400 dark:border-amber-500 bg-amber-50/40 dark:bg-amber-950/20 rounded-r-2xl">
+              {renderInlineContent(text)}
+            </div>
+          );
+        }
+        return (
+          <p key={idx}>
             {renderInlineContent(trimmed)}
           </p>
         );

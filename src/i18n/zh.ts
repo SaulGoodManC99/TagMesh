@@ -17,7 +17,7 @@ export const zh: TranslationDictionary = {
     cmdExportMarkdown: '导出当前笔记 (.md)',
     cmdExportJson: '备份全量知识库 (JSON)',
     cmdCopyMcpToken: '查看 MCP 边缘服务接口与 Bearer Token',
-    cmdToggleSidebar: '展开/收起标签侧边栏 (⌘\\)',
+    cmdToggleSidebar: '展开/收起标签侧边栏 (Alt+S)',
     cmdShortcuts: '键盘快捷键指南',
     cmdDeleteNote: '删除当前笔记',
     cmdPinNote: '置顶当前笔记',

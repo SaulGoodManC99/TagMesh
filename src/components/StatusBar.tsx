@@ -127,7 +127,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             onToggleSidebar();
           }}
           className="flex items-center gap-1 px-3 py-1 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-pink-50 dark:hover:bg-white/20 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 hover:text-pink-600 dark:hover:text-pink-400 transition cursor-pointer text-xs font-bubble font-bold shadow-xs active:scale-95"
-          title="Tag Mesh Sidebar (⌘\)"
+          title={locale === 'zh' ? '展开/收起侧边栏 (Alt+S)' : 'Tag Mesh Sidebar (Alt+S)'}
         >
           <Sidebar className="w-3.5 h-3.5 text-pink-500" />
           <span className="hidden md:inline">{locale === 'zh' ? '侧边栏' : 'Sidebar'}</span>
@@ -153,7 +153,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             onToggleLanguage();
           }}
           className="flex items-center gap-1 px-3 py-1 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-cyan-50 dark:hover:bg-white/20 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition cursor-pointer text-xs font-bubble font-bold shadow-xs active:scale-95"
-          title="Toggle Language (⇧⌘L)"
+          title={locale === 'zh' ? '切换中英文' : 'Toggle Language'}
         >
           <Globe className="w-3 h-3 text-cyan-500" />
           <span>{locale === 'zh' ? '中' : 'EN'}</span>

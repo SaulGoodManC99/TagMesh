@@ -17,7 +17,14 @@ import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
 import { ClayFloatingActions } from './components/ClayFloatingActions';
 import { ClayGlobalContextMenu } from './components/ClayGlobalContextMenu';
 import { ClayDanmakuAdminModal } from './components/ClayDanmakuAdminModal';
-import { DanmakuItem, getStoredDanmakus, saveNewDanmaku, getDanmakuTelemetryStats, DanmakuTelemetryStats, deleteStoredDanmaku } from './data/danmakuData';
+import { 
+  DanmakuItem, 
+  getStoredDanmakus, 
+  saveNewDanmaku, 
+  getDanmakuTelemetryStats, 
+  DanmakuTelemetryStats, 
+  deleteStoredDanmaku 
+} from './data/danmakuData';
 import { filterDanmakuContent } from './data/danmakuFilter';
 import { renderInlineContent } from './utils/markdownRenderer';
 import { playPop, playSwoosh, playChime, playSoftTick } from './utils/soundEffects';
@@ -27,6 +34,7 @@ import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { db } from '../db/dexie';
 import { fetchDanmakusRemote, publishDanmakuRemote, likeDanmakuRemote, deleteDanmakuRemote } from '../services/api';
+import { toast } from '../components/ClayToast';
 
 export interface ClayDanmakuPlazaProps {
   onGoToEditor: () => void;
@@ -81,7 +89,6 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
   const [sender, setSender] = useState('');
   const [themeStyle, setThemeStyle] = useState<'rainbow' | 'sakura' | 'cosmic' | 'zen' | 'gold' | 'default'>('rainbow');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [launchedToast, setLaunchedToast] = useState<{ id: number; sender: string; message: string } | null>(null);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -319,12 +326,10 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
     setFlyingList((prev) => [...prev, userFlyingItem]);
     setTelemetry(getDanmakuTelemetryStats());
 
-    // Show on-screen celebratory broadcast toast in Bottom-Right Corner
-    const toastId = Date.now();
-    setLaunchedToast({ id: toastId, sender: cleanSender, message: cleanText });
-    setTimeout(() => {
-      setLaunchedToast((curr) => (curr?.id === toastId ? null : curr));
-    }, 3200);
+    toast.success(
+      `"${cleanText}"`,
+      locale === 'zh' ? `🚀 ${cleanSender} 弹幕发射成功！` : `🚀 ${cleanSender} Launched Danmaku!`
+    );
 
     setContent('');
     setShowEmojiPicker(false);
@@ -449,24 +454,6 @@ export const ClayDanmakuPlaza: React.FC<ClayDanmakuPlazaProps> = ({
           </button>
         )}
       </div>
-
-      {/* 2.5 Bottom-Right Toast Notification for Successful Launch */}
-      {launchedToast && (
-        <div className="fixed bottom-24 right-4 sm:right-8 z-50 animate-in slide-in-from-bottom-5 zoom-in-95 duration-300 pointer-events-none">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-[24px] bg-white/98 border-[2.5px] border-amber-300 shadow-2xl clay-card">
-            <span className="text-2xl select-none shrink-0">🚀</span>
-            <div className="text-left">
-              <div className="font-bubble font-extrabold text-xs sm:text-sm text-neutral-900 flex items-center gap-1.5">
-                <span>{locale === 'zh' ? '弹幕发射成功！已注入星河' : 'Danmaku Launched!'}</span>
-                <span className="text-amber-500 animate-pulse">✨</span>
-              </div>
-              <div className="text-[11px] sm:text-xs font-cute text-amber-700 font-bold truncate max-w-[200px] sm:max-w-xs">
-                {launchedToast.sender}: "{launchedToast.message}"
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 3. Main Full-Screen Floating Barrage Stage (Zero-Collision Non-overlapping Tracks) */}
       <div className="flex-1 relative overflow-hidden pointer-events-none">

@@ -1,11 +1,11 @@
 {
-  "name": "TagMesh | 趣味黏土灵感笔记系统",
+  "name": "TagMesh | 闪念捕获与多维标签网灵感笔记系统",
   "short_name": "TagMesh",
-  "description": "无文件夹 · 无标题 · 依托 #标签 网状编织的 3D 拟物粘土风 Markdown 灵感笔记系统",
+  "description": "闪念随手捕获 · #标签自动织网 · 告别文件夹焦虑 · 5 种画廊视角漫游 · 本地优先 Markdown 灵感笔记系统",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8f5ee",
-  "theme_color": "#f8f5ee",
+  "background_color": "#09090b",
+  "theme_color": "#18181b",
   "orientation": "any",
   "categories": ["productivity", "utilities", "lifestyle"],
   "icons": [
