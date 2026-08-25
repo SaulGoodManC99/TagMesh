@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Trash2
+  Trash2,
+  Pin
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
@@ -24,7 +25,7 @@ import { renderRichMarkdown, renderInlineContent } from './utils/markdownRendere
 import { format24HourDateTime } from './utils/dateFormatter';
 import { useClayTheme } from './utils/clayThemes';
 import { db } from '../db/dexie';
-import { likeNoteRemote } from '../services/api';
+import { likeNoteRemote, syncNoteRemote } from '../services/api';
 import { MODAL_EXPAND_VARIANTS, SPRING_MICRO } from './utils/motionSystem';
 
 export interface ClayReadingModalProps {
@@ -59,6 +60,35 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
     const seed = note ? (note.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 7) + 1 : 1;
     return seed;
   });
+
+  // Pin state in modal
+  const [isPinned, setIsPinned] = useState<boolean>(() => Boolean(note?.isPinned));
+
+  useEffect(() => {
+    if (note) {
+      setIsPinned(Boolean(note.isPinned));
+    }
+  }, [note?.id, note?.isPinned]);
+
+  const handleTogglePinInModal = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!note) return;
+    const nextPin = !isPinned;
+    setIsPinned(nextPin);
+    playPop(nextPin ? 700 : 350);
+    if (nextPin) {
+      triggerParticleBurst(e.clientX, e.clientY, 20);
+    }
+    const now = Date.now();
+    const updatedNote: Note = {
+      ...note,
+      isPinned: nextPin,
+      isDirty: true,
+      updatedAt: now,
+    };
+    await db.notes.put(updatedNote);
+    syncNoteRemote(updatedNote);
+  };
 
   useEffect(() => {
     if (note && typeof note.likes === 'number') {
@@ -186,8 +216,23 @@ export const ClayReadingModal: React.FC<ClayReadingModalProps> = ({
             </span>
           </div>
 
-          {/* Right: Actions (Edit + Copy) */}
+          {/* Right: Actions (Pin + Copy + Delete + Edit) */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Pin / Unpin Button */}
+            <button
+              type="button"
+              onClick={handleTogglePinInModal}
+              className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs font-bubble font-bold clay-btn border cursor-pointer shadow-3xs transition active:scale-95 ${
+                isPinned
+                  ? 'bg-amber-100 dark:bg-amber-950/80 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300'
+                  : 'bg-white dark:bg-neutral-800 hover:bg-amber-50 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
+              }`}
+              title={isPinned ? (locale === 'zh' ? '取消置顶' : 'Unpin Note') : (locale === 'zh' ? '置顶笔记' : 'Pin Note')}
+            >
+              <Pin className={`w-3.5 h-3.5 ${isPinned ? 'text-amber-600 fill-amber-500' : 'text-neutral-500'}`} />
+              <span className="hidden sm:inline">{isPinned ? (locale === 'zh' ? '已置顶' : 'Pinned') : (locale === 'zh' ? '置顶' : 'Pin')}</span>
+            </button>
+
             <button
               onClick={handleCopyMarkdown}
               className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-cute font-bold clay-btn border border-neutral-200/80 dark:border-white/10 cursor-pointer shadow-3xs transition active:scale-95"

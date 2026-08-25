@@ -12,6 +12,8 @@ import { playPop, playSoftTick } from '../utils/soundEffects';
 import { renderRichMarkdown } from '../utils/markdownRenderer';
 import { useClayTheme } from '../utils/clayThemes';
 import { format24HourDateTime } from '../utils/dateFormatter';
+import { db } from '../../db/dexie';
+import { syncNoteRemote } from '../../services/api';
 
 export interface TimelineListViewProps {
   notes: Note[];
@@ -244,10 +246,26 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
                           </span>
                         )}
                         {note.isPinned && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 text-amber-900 text-[10px] sm:text-xs font-bubble font-bold shadow-xs">
-                            <Pin className="w-2.5 h-2.5" />
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              playSoftTick();
+                              const updated: Note = {
+                                ...note,
+                                isPinned: false,
+                                isDirty: true,
+                                updatedAt: Date.now(),
+                              };
+                              await db.notes.put(updated);
+                              syncNoteRemote(updated);
+                            }}
+                            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 hover:bg-amber-400 text-amber-900 text-[10px] sm:text-xs font-bubble font-bold shadow-xs transition active:scale-95 cursor-pointer"
+                            title={locale === 'zh' ? '点击取消置顶' : 'Click to unpin'}
+                          >
+                            <Pin className="w-2.5 h-2.5 fill-amber-700" />
                             <span>Pinned</span>
-                          </span>
+                          </button>
                         )}
                       </div>
 

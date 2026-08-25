@@ -102,12 +102,21 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         count = remoteNotes.length;
         for (const rNote of remoteNotes) {
           const localNote = await db.notes.get(rNote.id);
-          await db.notes.put({
-            ...rNote,
-            likes: typeof rNote.likes === 'number' && rNote.likes > 0 ? rNote.likes : (localNote?.likes || 0),
-            isDirty: false,
-            syncedAt: rNote.syncedAt || Date.now(),
-          });
+          if (!localNote) {
+            await db.notes.put({
+              ...rNote,
+              likes: typeof rNote.likes === 'number' && rNote.likes > 0 ? rNote.likes : 0,
+              isDirty: false,
+              syncedAt: rNote.syncedAt || Date.now(),
+            });
+          } else if (!localNote.isDirty && rNote.updatedAt >= localNote.updatedAt) {
+            await db.notes.put({
+              ...rNote,
+              likes: typeof rNote.likes === 'number' && rNote.likes > 0 ? rNote.likes : (localNote.likes || 0),
+              isDirty: false,
+              syncedAt: rNote.syncedAt || Date.now(),
+            });
+          }
         }
       }
     } catch {
@@ -141,16 +150,26 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
         await seed10GuestSampleNotes();
       }
 
-      // Pull latest notes from D1 (including any created via MCP)
+      // Pull latest notes from D1 (including any created via MCP or Telegram)
       try {
         const remoteNotes = await fetchRemoteNotes();
         if (remoteNotes.length > 0) {
           for (const rNote of remoteNotes) {
-            await db.notes.put({
-              ...rNote,
-              isDirty: false,
-              syncedAt: rNote.syncedAt || Date.now(),
-            });
+            const localNote = await db.notes.get(rNote.id);
+            if (!localNote) {
+              await db.notes.put({
+                ...rNote,
+                isDirty: false,
+                syncedAt: rNote.syncedAt || Date.now(),
+              });
+            } else if (!localNote.isDirty && rNote.updatedAt >= localNote.updatedAt) {
+              await db.notes.put({
+                ...rNote,
+                likes: typeof rNote.likes === 'number' && rNote.likes > 0 ? rNote.likes : (localNote.likes || 0),
+                isDirty: false,
+                syncedAt: rNote.syncedAt || Date.now(),
+              });
+            }
           }
         }
       } catch {

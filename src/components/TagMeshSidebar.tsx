@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { Note, TagCount } from '../types/note';
 import { db, getAllTagCounts, searchNotesLocal, getOrCreateActiveNote, getActiveNotes, createNewNote } from '../db/dexie';
-import { deleteNoteRemote } from '../services/api';
+import { deleteNoteRemote, syncNoteRemote } from '../services/api';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
@@ -155,6 +155,25 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
       }
       return next;
     });
+  };
+
+  // Toggle pin on a specific note
+  const handleTogglePinById = async (e: React.MouseEvent, note: Note) => {
+    e.stopPropagation();
+    playSoftTick();
+    const newPin = !note.isPinned;
+    const now = Date.now();
+    const updatedNote: Note = {
+      ...note,
+      isPinned: newPin,
+      isDirty: true,
+      updatedAt: now,
+    };
+    await db.notes.put(updatedNote);
+    if (activeNote?.id === note.id) {
+      onSelectNote(updatedNote);
+    }
+    syncNoteRemote(updatedNote);
   };
 
   // Select all currently visible filtered notes
@@ -739,7 +758,14 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                           {/* Note Title + Pin */}
                           <div className="flex items-center gap-1.5 min-w-0 flex-1">
                             {note.isPinned && !isBatchMode && (
-                              <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />
+                              <button
+                                type="button"
+                                onClick={(e) => handleTogglePinById(e, note)}
+                                className="p-0.5 rounded hover:bg-amber-100 dark:hover:bg-amber-950/80 transition cursor-pointer"
+                                title={locale === 'zh' ? '点击取消置顶' : 'Click to unpin'}
+                              >
+                                <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0 hover:scale-110 active:scale-90 transition-transform" />
+                              </button>
                             )}
                             <span className={`font-bubble text-[13.5px] truncate ${
                               isActive && !isBatchMode 
@@ -750,13 +776,26 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                             </span>
                           </div>
 
-                          {/* Right side: Micro Tag + Short Date */}
-                          <div className="flex items-center gap-2 shrink-0 text-xs font-cute text-neutral-400 dark:text-neutral-500">
+                          {/* Right side: Micro Tag + Short Date + Pin/Delete */}
+                          <div className="flex items-center gap-1.5 shrink-0 text-xs font-cute text-neutral-400 dark:text-neutral-500">
                             {noteTags[0] && (
                               <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-md bg-black/5 dark:bg-white/10 text-neutral-600 dark:text-neutral-300 text-[10px] font-mono font-semibold truncate max-w-[80px]">
                                 {noteTags[0]}
                               </span>
                             )}
+
+                            {/* Pin button on hover if not pinned */}
+                            {!isBatchMode && !note.isPinned && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleTogglePinById(e, note)}
+                                className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-amber-100 dark:hover:bg-amber-950/80 hover:text-amber-600 dark:hover:text-amber-300 transition text-neutral-400"
+                                title={locale === 'zh' ? '置顶笔记' : 'Pin Note'}
+                              >
+                                <Pin className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
                             <span className="font-mono text-[11px] text-neutral-400 dark:text-neutral-500">
                               {formatShortDate(note.createdAt || Date.now(), locale)}
                             </span>
@@ -808,7 +847,14 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                           <div className={`flex items-start justify-between gap-2 mb-1 ${isBatchMode ? 'pr-7' : ''} ${isActive && !isBatchMode ? 'pl-1.5' : ''}`}>
                             <div className="flex items-center gap-1.5 min-w-0 flex-1">
                               {note.isPinned && !isBatchMode && (
-                                <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleTogglePinById(e, note)}
+                                  className="p-0.5 rounded hover:bg-amber-100 dark:hover:bg-amber-950/80 transition cursor-pointer"
+                                  title={locale === 'zh' ? '点击取消置顶' : 'Click to unpin'}
+                                >
+                                  <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0 hover:scale-110 active:scale-90 transition-transform" />
+                                </button>
                               )}
                               <h4 className={`font-bubble text-sm font-bold truncate leading-snug ${
                                 isChecked
@@ -820,9 +866,21 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                                 {note.excerpt || (locale === 'zh' ? '空白笔记' : 'Untitled note')}
                               </h4>
                             </div>
-                            <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500 shrink-0">
-                              {formatShortDate(note.createdAt || Date.now(), locale)}
-                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {!isBatchMode && !note.isPinned && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleTogglePinById(e, note)}
+                                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-amber-100 dark:hover:bg-amber-950/80 text-neutral-400 hover:text-amber-600 transition cursor-pointer"
+                                  title={locale === 'zh' ? '置顶笔记' : 'Pin Note'}
+                                >
+                                  <Pin className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500 shrink-0">
+                                {formatShortDate(note.createdAt || Date.now(), locale)}
+                              </span>
+                            </div>
                           </div>
 
                           {/* Line 2: Single-line Clean Plain Text Preview */}

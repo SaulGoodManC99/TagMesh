@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Note } from './types/note';
 import { db, getActiveNotes, createNewNote, getOrCreateActiveNote, ensureNotesAuthorSeparation, isNoteEmpty } from './db/dexie';
-import { fetchRemoteNotes, deleteNoteRemote } from './services/api';
+import { fetchRemoteNotes, deleteNoteRemote, syncNoteRemote } from './services/api';
 import { useZeroSync } from './hooks/useZeroSync';
 import { useI18n } from './hooks/useI18n';
 import { useSiteConfig } from './hooks/useSiteConfig';
@@ -147,16 +147,26 @@ export const App: React.FC = () => {
         await seed10GuestSampleNotes();
       }
 
-      // Pull latest notes from D1 (including any created via MCP)
+      // Pull latest notes from D1 (including any created via MCP or Telegram)
       try {
         const remoteNotes = await fetchRemoteNotes();
         if (remoteNotes.length > 0) {
           for (const rNote of remoteNotes) {
-            await db.notes.put({
-              ...rNote,
-              isDirty: false,
-              syncedAt: rNote.syncedAt || Date.now(),
-            });
+            const localNote = await db.notes.get(rNote.id);
+            if (!localNote) {
+              await db.notes.put({
+                ...rNote,
+                isDirty: false,
+                syncedAt: rNote.syncedAt || Date.now(),
+              });
+            } else if (!localNote.isDirty && rNote.updatedAt >= localNote.updatedAt) {
+              await db.notes.put({
+                ...rNote,
+                likes: typeof rNote.likes === 'number' && rNote.likes > 0 ? rNote.likes : (localNote.likes || 0),
+                isDirty: false,
+                syncedAt: rNote.syncedAt || Date.now(),
+              });
+            }
           }
         }
       } catch {
@@ -233,10 +243,21 @@ export const App: React.FC = () => {
   const handleTogglePin = useCallback(async () => {
     if (!activeNote) return;
     const newPin = !activeNote.isPinned;
-    await db.notes.update(activeNote.id, { isPinned: newPin, isDirty: true });
-    setActiveNote({ ...activeNote, isPinned: newPin, isDirty: true });
-    showToast(newPin ? '📌 Note Pinned' : 'Unpinned Note');
-  }, [activeNote, showToast]);
+    const now = Date.now();
+    const updatedNote: Note = {
+      ...activeNote,
+      isPinned: newPin,
+      isDirty: true,
+      updatedAt: now,
+    };
+    await db.notes.put(updatedNote);
+    setActiveNote(updatedNote);
+    
+    // Immediately persist and sync to Cloudflare D1
+    syncNoteRemote(updatedNote);
+
+    showToast(newPin ? (locale === 'zh' ? '📌 笔记已置顶' : '📌 Note Pinned') : (locale === 'zh' ? '📌 已取消置顶' : 'Unpinned Note'));
+  }, [activeNote, locale, showToast]);
 
   // Delete specific note by ID
   const handleDeleteNoteById = useCallback(async (id: string) => {

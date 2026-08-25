@@ -10,14 +10,14 @@ import {
 import { Note } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
 import { format24HourDateTime } from './utils/dateFormatter';
-import { playPop, playChime } from './utils/soundEffects';
+import { playPop, playChime, playSoftTick } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
 import { renderCardMarkdownSnippet } from './utils/markdownRenderer';
 import { useClayTheme } from './utils/clayThemes';
 import { SPRING_MACRO, SPRING_MICRO } from './utils/motionSystem';
 
 import { db } from '../db/dexie';
-import { likeNoteRemote } from '../services/api';
+import { likeNoteRemote, syncNoteRemote } from '../services/api';
 
 export interface ClayNoteCardProps {
   note: Note;
@@ -154,10 +154,26 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
               </span>
             )}
             {note.isPinned && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 text-amber-900 text-[10px] font-bubble font-bold shadow-3xs leading-none shrink-0">
-                <Pin className="w-2.5 h-2.5" />
+              <button
+                type="button"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  playSoftTick();
+                  const updated: Note = {
+                    ...note,
+                    isPinned: false,
+                    isDirty: true,
+                    updatedAt: Date.now(),
+                  };
+                  await db.notes.put(updated);
+                  syncNoteRemote(updated);
+                }}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-300 hover:bg-amber-400 text-amber-900 text-[10px] font-bubble font-bold shadow-3xs leading-none shrink-0 transition active:scale-95 cursor-pointer"
+                title={locale === 'zh' ? '点击取消置顶' : 'Click to unpin'}
+              >
+                <Pin className="w-2.5 h-2.5 fill-amber-700" />
                 <span className="leading-none">Pinned</span>
-              </span>
+              </button>
             )}
           </div>
 
