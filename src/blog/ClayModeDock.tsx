@@ -8,7 +8,7 @@ import { useI18n } from '../hooks/useI18n';
 import { playPop, playSwoosh } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
 
-export type ViewMode = 'grid' | 'polaroid' | 'timeline' | 'carousel';
+export type ViewMode = 'grid' | 'timeline';
 
 export interface ClayModeDockProps {
   viewMode: ViewMode;
@@ -36,22 +36,10 @@ const MODES: ModeItem[] = [
     titleEn: 'Bento Grid',
     descZh: '经典错落卡片网格',
     descEn: 'Classic masonry grid',
-    nextEmoji: '📷',
-    nextZh: '拍立得便签墙',
-    nextEn: 'Polaroid Board',
-    themeGradient: 'from-pink-400 via-rose-500 to-amber-400',
-  },
-  {
-    id: 'polaroid',
-    emoji: '📷',
-    titleZh: '拍立得便签墙',
-    titleEn: 'Polaroid Board',
-    descZh: '和纸胶带与图钉排版',
-    descEn: 'Washi tape & pin cards',
     nextEmoji: '🎞️',
     nextZh: '时光卷轴',
     nextEn: 'Timeline Stream',
-    themeGradient: 'from-amber-400 via-orange-500 to-pink-500',
+    themeGradient: 'from-pink-400 via-rose-500 to-amber-400',
   },
   {
     id: 'timeline',
@@ -60,22 +48,10 @@ const MODES: ModeItem[] = [
     titleEn: 'Timeline Stream',
     descZh: '纵向时间线清单',
     descEn: 'Chronological timeline',
-    nextEmoji: '🎡',
-    nextZh: '3D 轮播穿梭',
-    nextEn: '3D Carousel',
-    themeGradient: 'from-sky-400 via-cyan-500 to-emerald-400',
-  },
-  {
-    id: 'carousel',
-    emoji: '🎡',
-    titleZh: '3D 轮播穿梭',
-    titleEn: '3D Carousel',
-    descZh: '景深翻转抽卡',
-    descEn: '3D depth coverflow',
     nextEmoji: '🍱',
     nextZh: '便当瀑布流',
     nextEn: 'Bento Grid',
-    themeGradient: 'from-emerald-400 via-teal-500 to-indigo-500',
+    themeGradient: 'from-sky-400 via-cyan-500 to-emerald-400',
   },
 ];
 

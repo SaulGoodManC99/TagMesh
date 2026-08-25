@@ -427,60 +427,152 @@ export function renderMarkdownToBlocks(
 }
 
 /**
- * Compact Markdown Snippet for Grid/Polaroid/Carousel cards
- * Extracts clean readable text including headers
+ * Compact Markdown Snippet for Grid/Polaroid/Carousel cards (100% Full Content, No Truncation)
+ * Cleanly formats code blocks, headings, checklists, lists, blockquotes, and paragraphs
  */
 export function renderCardMarkdownSnippet(
   markdown: string,
-  maxLines: number = 4
+  onTagClick?: (tag: string) => void
 ): React.ReactNode {
   if (!markdown) return null;
 
-  const clean = markdown
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0)
-    .map((l) => l.replace(/^#+\s*/, ''))
-    .slice(0, maxLines);
+  // Split into raw blocks (code blocks, paragraphs, lists, quotes)
+  const blocks: string[] = [];
+  const rawLines = markdown.split('\n');
+  let inCodeBlock = false;
+  let currentCodeBlock: string[] = [];
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i];
+    if (line.trim().startsWith('```')) {
+      if (inCodeBlock) {
+        currentCodeBlock.push(line);
+        blocks.push(currentCodeBlock.join('\n'));
+        currentCodeBlock = [];
+        inCodeBlock = false;
+      } else {
+        inCodeBlock = true;
+        currentCodeBlock.push(line);
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      currentCodeBlock.push(line);
+      continue;
+    }
+
+    const trimmed = line.trim();
+    // Skip empty lines or standalone image lines (images are rendered in card header cover)
+    if (!trimmed || /^!\[.*?\]\(.*?\)$/.test(trimmed)) {
+      continue;
+    }
+
+    blocks.push(line);
+  }
+
+  if (currentCodeBlock.length > 0) {
+    blocks.push(currentCodeBlock.join('\n'));
+  }
 
   return (
     <div className="space-y-2 text-neutral-900 dark:text-neutral-100 font-cute leading-[1.8]">
-      {clean.map((ln, idx) => {
-        const trimmed = ln.trim();
+      {blocks.map((block, idx) => {
+        const trimmed = block.trim();
+
+        // Code block
+        if (trimmed.startsWith('```')) {
+          const code = trimmed
+            .replace(/^```[a-zA-Z0-9_-]*\n?/, '')
+            .replace(/\n?```$/, '');
+          return (
+            <pre
+              key={idx}
+              className="p-3 sm:p-3.5 my-2 rounded-2xl bg-neutral-900/95 dark:bg-black/80 text-emerald-300 dark:text-emerald-400 text-xs font-mono overflow-x-auto border border-neutral-800 dark:border-white/10 shadow-inner"
+            >
+              <code>{code}</code>
+            </pre>
+          );
+        }
+
+        // Headings (#, ##, ###)
+        if (trimmed.startsWith('#')) {
+          const headingText = trimmed.replace(/^#+\s*/, '');
+          return (
+            <h4
+              key={idx}
+              className="font-bubble text-base sm:text-lg font-bold text-neutral-900 dark:text-white pt-1"
+            >
+              {renderInlineContent(headingText, onTagClick)}
+            </h4>
+          );
+        }
+
+        // Task List Checkbox
         if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('- [x] ')) {
           const isChecked = trimmed.startsWith('- [x] ');
           const text = trimmed.replace(/^- \[[ x]\]\s*/, '');
           return (
-            <div key={idx} className="flex items-center gap-2">
-              <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 ${isChecked ? 'bg-emerald-500 text-white' : 'border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800'}`}>
+            <div key={idx} className="flex items-center gap-2 text-sm sm:text-base">
+              <span
+                className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                  isChecked
+                    ? 'bg-emerald-500 text-white shadow-xs'
+                    : 'border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800'
+                }`}
+              >
                 {isChecked ? '✓' : ''}
               </span>
               <span className={isChecked ? 'line-through opacity-50' : ''}>
-                {renderInlineContent(text)}
+                {renderInlineContent(text, onTagClick)}
               </span>
             </div>
           );
         }
+
+        // Unordered List (- or *)
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           const text = trimmed.replace(/^[-*]\s*/, '');
           return (
-            <div key={idx} className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 dark:bg-rose-500 shrink-0" />
-              <span>{renderInlineContent(text)}</span>
+            <div key={idx} className="flex items-start gap-2 text-sm sm:text-base">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 dark:bg-rose-500 mt-2 shrink-0" />
+              <div className="flex-1">{renderInlineContent(text, onTagClick)}</div>
             </div>
           );
         }
+
+        // Ordered List (1. 2.)
+        if (/^\d+\.\s/.test(trimmed)) {
+          const text = trimmed.replace(/^\d+\.\s*/, '');
+          const matchNum = trimmed.match(/^(\d+)\./);
+          const num = matchNum ? matchNum[1] : '';
+          return (
+            <div key={idx} className="flex items-start gap-2 text-sm sm:text-base">
+              <span className="text-xs font-bubble font-bold text-rose-500 shrink-0 mt-0.5">
+                {num}.
+              </span>
+              <div className="flex-1">{renderInlineContent(text, onTagClick)}</div>
+            </div>
+          );
+        }
+
+        // Blockquote (> )
         if (trimmed.startsWith('> ')) {
           const text = trimmed.replace(/^>\s*/, '');
           return (
-            <div key={idx} className="italic text-neutral-700 dark:text-neutral-200 pl-2.5 border-l-2 border-amber-400 dark:border-amber-500">
-              {renderInlineContent(text)}
+            <div
+              key={idx}
+              className="italic text-neutral-700 dark:text-neutral-200 pl-2.5 py-0.5 border-l-2 border-amber-400 dark:border-amber-500 bg-amber-50/40 dark:bg-amber-950/20 rounded-r-xl"
+            >
+              {renderInlineContent(text, onTagClick)}
             </div>
           );
         }
+
+        // Standard Paragraph
         return (
-          <p key={idx}>
-            {renderInlineContent(trimmed)}
+          <p key={idx} className="text-sm sm:text-base">
+            {renderInlineContent(trimmed, onTagClick)}
           </p>
         );
       })}

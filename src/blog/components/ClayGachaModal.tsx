@@ -115,7 +115,7 @@ export const ClayGachaModal: React.FC<ClayGachaModalProps> = ({
 
             {/* Note Snippet */}
             <div className="mb-3">
-              {renderCardMarkdownSnippet(selectedNote.rawMarkdown || '', 2)}
+              {renderCardMarkdownSnippet(selectedNote.rawMarkdown || '')}
             </div>
 
             {/* Tags Mesh */}

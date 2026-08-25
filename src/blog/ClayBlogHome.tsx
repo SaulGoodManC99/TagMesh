@@ -13,8 +13,6 @@ import { ClayHeader } from './ClayHeader';
 import { ClayTagCloud } from './ClayTagCloud';
 import { ViewMode } from './ClayModeDock';
 import { BentoGridView } from './views/BentoGridView';
-import { PolaroidBoardView } from './views/PolaroidBoardView';
-import { Carousel3DView } from './views/Carousel3DView';
 import { TimelineListView } from './views/TimelineListView';
 import { ClayReadingModal } from './ClayReadingModal';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
@@ -392,13 +390,13 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 text-[11px] font-bubble font-bold border border-pink-200 dark:border-pink-900/60 shadow-3xs">
                 <Sparkles className="w-3 h-3 text-pink-500" />
-                <span>{locale === 'zh' ? '5 种展示风格自由切换' : '5 Note Views'}</span>
+                <span>{locale === 'zh' ? '双重视角自由切换' : 'Dual Note Views'}</span>
               </span>
             </div>
             <p className="font-cute text-xs text-neutral-500 dark:text-neutral-400 hidden sm:block mt-0.5">
               {locale === 'zh'
-                ? `共收录 ${totalNotes} 篇笔记 • 点击右下角 🎡 轻松漫游`
-                : `${totalNotes} notes exhibited • Click 🎡 to roam`}
+                ? `共收录 ${totalNotes} 篇笔记 • 点击右下角 🍱 / 🎞️ 轻松切换`
+                : `${totalNotes} notes exhibited • Click bottom right to toggle views`}
             </p>
           </div>
         </div>
@@ -526,30 +524,11 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
               />
             )}
 
-            {/* View 2: Polaroid Sticky Board */}
-            {viewMode === 'polaroid' && (
-              <PolaroidBoardView
-                notes={filteredNotes}
-                onNoteClick={handleCardClick}
-                onTagClick={(tg) => setSelectedTag(tg)}
-              />
-            )}
-
-            {/* View 3: 3D Carousel Deck */}
-            {viewMode === 'carousel' && (
-              <Carousel3DView
-                notes={filteredNotes}
-                onNoteClick={handleCardClick}
-                onTagClick={(tg) => setSelectedTag(tg)}
-                onGoToEditorWithNote={onGoToEditorWithNote}
-              />
-            )}
-
-            {/* View 4: Timeline Stream */}
+            {/* View 2: Timeline Stream */}
             {viewMode === 'timeline' && (
               <TimelineListView
                 notes={filteredNotes}
-                onNoteClick={() => {}}
+                onNoteClick={handleCardClick}
                 onTagClick={(tg) => setSelectedTag(tg)}
               />
             )}

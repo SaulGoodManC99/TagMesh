@@ -7,459 +7,102 @@ export interface SampleNoteRaw {
 }
 
 export const SAMPLE_40_NOTES: SampleNoteRaw[] = [
-  // --- TECH & CLOUDFLARE & SERVERLESS ---
   {
     isPinned: true,
-    content: `欢迎来到 #TagMesh 黏土乐园与极客知识库 🎈
-
-这里彻底摒弃了传统繁重的“文件夹层级”与“起标题焦虑”。只需敲击键盘，随性在正文中写下你的灵感，并在任意位置插入 #标签（例如 #cloudflare、#架构、#clay）。
-
-## 🌈 多维展示模式随心切换
-- **🍱 便当瀑布流 (Bento Grid)**：错落有致的 3D 黏土卡片。
-- **🌌 漂浮重力宇宙 (Floating Bubble)**：失重漂浮、互动碰撞的灵感气泡。
-- **🎴 3D 轮播穿梭 (3D Carousel)**：沉浸式 3D 翻转卡片。
-- **📜 紧凑时光卷轴 (Timeline List)**：高效按时间线排布的清单。
-
-#tagmesh #linear #geek #minimalism #clay`,
+    content: "京都雨季：古寺苔藓与初夏紫阳花 🌸\n\n![紫阳花与古寺](https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=800&auto=format&fit=crop)\n\n在三千院的庭园里听雨声淅沥。青苔吸饱了雨水，在古杉树荫下泛着温润的深绿。\n\n- **雨日漫步**：湿润的石阶，偶遇几株深蓝色的紫阳花正在盛开\n- **心境沉淀**：听雨滴顺着茅草屋檐滴落在青石钵上，时间仿佛慢了下来\n\n#京都旅行 #日系生活 #胶片摄影 #生活美学 #旅行手记",
   },
   {
     isPinned: true,
-    content: `Cloudflare Serverless 极速全栈架构实践 🚀
-
-基于 **Cloudflare Workers + D1 SQLite + R2** 构建 0 冷启动、0 出站流量费用的全球边缘架构：
-
-export default {
-  async fetch(req, env, ctx) {
-    const { results } = await env.DB.prepare("SELECT * FROM notes_fts MATCH ?").bind("cloudflare*").all();
-    return Response.json({ status: "edge-fast", total: results.length });
-  }
-}
-
-边缘毫秒级响应，数据自动同步至世界各地节点。
-
-#cloudflare #serverless #sqlite #architecture`,
+    content: "Cloudflare Workers + D1 边缘架构极速实战 ⚡\n\n基于 Serverless Edge 打造毫秒级冷启动的分布式 Markdown 笔记系统：\n\n```typescript\nexport async function queryNotes(db: D1Database, tag: string) {\n  const stmt = db.prepare(\n    \"SELECT * FROM notes WHERE tags LIKE ? ORDER BY updatedAt DESC LIMIT 20\"\n  ).bind(`%${tag}%`);\n  const { results } = await stmt.all();\n  return results;\n}\n```\n\n数据全球多活同步，无需管理服务器运维，零出站流量费用。\n\n#cloudflare #serverless #typescript #sqlite #架构",
   },
   {
-    content: `React 19 Server Components 与全新 Hooks 探索 ⚛️
-
-React 19 带来了突破性的内置状态原语：
-- useActionState：优雅处理表单提交与加载态
-- useOptimistic：开箱即用的乐观更新 UI 体验
-- 自动 React Compiler：无需手动编写 useMemo 与 useCallback
-
-前端开发体验正在迎来十年未有的简化。
-
-#react19 #frontend #javascript #webdev`,
+    content: "种一棵树最好的时间是十年前，其次是现在。🌱\n\n不必焦虑起点，迈出第一步的瞬间，未来就已经开始发生改变。\n\n#闪念 #哲学 #每日一句 #思考",
   },
   {
-    content: `为什么现代笔记系统应该彻底抛弃“树状文件夹”？ 🌳
-
-从分类学的角度看，文件夹是一种**单维树状约束**。然而人类的大脑与灵感是**高维网状拓扑**：
-1. 一篇笔记可能同时属于 #架构、#todo 与 #cloudflare。
-2. 强迫用户在新建前决定分类，是扼杀写作冲动的头号元凶。
-3. 纯 #标签网 + 全文检索 (FTS5) 才是终极生产力形态。
-
-#mindset #productivity #pkm #knowledge`,
+    content: "埃塞俄比亚耶加雪菲手冲黄金萃取参数 ☕\n\n- **咖啡豆**：耶加雪菲 沃卡处理厂（水洗 G1）\n- **粉水比例**：15g 咖啡粉 / 225g 水 (1:15)\n- **研磨刻度**：中细研磨 (EK43s 8.5)\n- **萃取水温**：91℃ 纯净水\n- **注水阶段**：\n  1. 30g 闷蒸 30 秒\n  2. 绕圈注水至 130g (中心缓慢向外扩散)\n  3. 待液面下降至一半，平稳注水至 225g 截止\n\n茉莉花香与佛手柑红茶尾韵极度清亮悠长。\n\n#咖啡 #手冲 #生活美学 #日常仪式",
   },
   {
-    content: `SQLite FTS5 全文搜索引擎的高性能微调技巧 🔍
-
-在 SQLite 中启用 tokenize='porter unicode61' 可以完美支持中英文混排的分词与前缀通配符检索：
-
-SELECT * FROM notes_fts WHERE notes_fts MATCH '"cloudflare"*' ORDER BY rank LIMIT 30;
-
-毫秒级索引百万字文本，无需引入重型 ElasticSearch 集群！
-
-#sqlite #fts5 #database #performance`,
+    content: "为什么“高维网状标签”远优于“单维树状文件夹”？ 🧠\n\n传统笔记软件最大的认知负担，在于强迫用户在新建的第一秒决定“它属于哪个文件夹”。\n\n然而真实世界的灵感永远是多维交织的：\n1. 一篇关于 Rust 编译器的文章，同时属于 #rust、#编译器、#系统编程 和 #阅读笔记；\n2. 树状层级结构逼迫你做出非此即彼的分类妥协；\n3. 通过自由敲击 #标签 建立拓扑网，配合全局 FTS5 检索，才是最贴合人类第二大脑的笔记形态。\n\n自由记录，自然相连。\n\n#第二大脑 #知识管理 #卡片盒笔记法 #认知升级 #tagmesh",
   },
   {
-    content: `Tailwind CSS v4 全新纯 CSS 引擎体验报告 ⚡
-
-Tailwind v4 基于 Rust 核心与 Lightning CSS 重构：
-- 彻底移除了 tailwind.config.js，一切通过纯 @import "tailwindcss"; 驱动
-- 原生 CSS 变量驱动的全新颜色与阴影系统
-- 编译速度暴涨 5~10 倍，热重载眨眼间完成！
-
-#tailwindcss #css #frontend #dx`,
+    content: "今日高效专注清单 🎯\n\n- [x] 重构 TagMesh 首页双层页脚与状态胶囊\n- [x] 优化瀑布流多层次动态阶梯高度算法\n- [x] 通过 MCP 协议写入全新多维笔记数据\n- [ ] 享受一杯热拿铁，记录黄昏落日灵感\n- [ ] 整理本周 GitHub Issue 反馈与功能路线图\n\n#todo #效率 #今日计划 #聚焦",
   },
   {
-    content: `纯净 Serverless MCP (Model Context Protocol) 架构设计 🤖
-
-为 Claude Desktop 与 Cursor 等外部 AI 编写纯净无污染的知识召回接口：
-- search_by_tag：按标签网精准过滤
-- search_fulltext：FTS5 毫秒检索
-- create_or_update_note：双向回写
-
-让本地 AI 成为你真正的第二大脑。
-
-#mcp #ai #architecture #cursor`,
+    content: "富士胶片 Classic Chrome 街头纪实色彩配方 📷\n\n![街头纪实胶片感](https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop)\n\n- **胶片模拟**：Classic Chrome (经典正片)\n- **动态范围**：DR400%\n- **高光色调**：-1.0 ｜ **阴影色调**：+1.5\n- **色彩效果**：Color Chrome Effect Strong\n- **白平衡偏移**：Auto (R:+1, B:-2)\n\n适合午后斜阳下的城市漫步，低饱和度搭配浓郁的暗部层次，故事感十足。\n\n#摄影 #富士胶片 #街拍 #色彩美学",
   },
   {
-    content: `TypeScript 5.x 强类型元编程与常量类型推导 🛠️
-
-使用 as const 与泛型参数推断构建类型安全的 API：
-
-const createPayload = <const T extends string[]>(tags: T) => ({
-  tags,
-  count: tags.length,
-});
-
-在编译期抹平所有运行时隐患。
-
-#typescript #coding #cleancode`,
-  },
-
-  // --- UI/UX & CLAYMORPHISM & DESIGN ---
-  {
-    content: `Claymorphism (黏土拟态) 的 3D 光影公式揭秘 🎨
-
-要调配出 Q 弹立体的黏土质感，核心是**双层内发光 + 柔和外阴影**：
-1. 内发光高光：模拟顶部环境光散射
-2. 内阴影暗部：模拟底部材质受力
-3. 外落阴影：打造悬浮于桌面的真实厚度
-
-#clay #ui #design #css #art`,
+    content: "React 19 Compiler 与全新的内置 Action Hooks ⚛️\n\n```typescript\nconst [state, formAction, isPending] = useActionState(\n  async (prevState, formData) => {\n    const note = await saveNote(formData.get(\"content\"));\n    return { ok: true, note };\n  },\n  { ok: false, note: null }\n);\n```\n\n无需再手动编写繁重的 loading 状态管理，React 19 自动处理过渡态与表单挂起，代码精简了一半以上。\n\n#react19 #frontend #typescript #webdev",
   },
   {
-    content: `给冰冷的软件注入一点“可爱感” (Emotional Design) 🧸
-
-当软件界面从千篇一律的灰黑商务风，换上 **Fredoka / Baloo 2** 的圆润字体与糖果马卡龙色系时：
-- 用户的认知疲劳大幅下降
-- 互动意愿与写作欲望提升超过 40%
-- 科技不应该是冷峻的，它应当像一块刚捏好的温热黏土。
-
-#design #ux #emotion #creativity`,
+    content: "极简主义不是一无所有，而是把空间留给真正重要之事 🍃\n\n物理桌面少一件杂物，内心就多一分清澈。从物理环境的断舍离，到信息输入的精选，专注真正能产生长远价值的创造。\n\n#极简生活 #断舍离 #专注 #心境",
   },
   {
-    content: `弹性动画与弹簧物理曲线 (Spring Physics) 弹力美学 🎈
-
-在 CSS 中使用 cubic-bezier(0.34, 1.56, 0.64, 1) 可以轻松实现超过 100% 回弹的萌系弹力效果。
-
-点击与悬浮的瞬间就像按压了一块果冻！
-
-#animation #css #ui #microinteraction`,
+    content: "深夜代码：Hono 轻量路由在边缘运行时的极致性能 🏎️\n\n体积不足 20KB，零外部冗余依赖，冷启动耗时接近 0ms。在 Cloudflare V8 隔离区内运行如同原生 C++ 般迅捷。\n\n```typescript\nimport { Hono } from 'hono';\nconst app = new Hono();\napp.get('/api/notes', (c) => c.json({ status: 'ok' }));\n```\n\n#hono #cloudflare #backend #typescript #性能优化",
   },
   {
-    content: `色盲友好的马卡龙对比度配色法 🌸
-
-在设计高饱和度糖果界面时，务必保持 WCAG AA 级文字对比度：
-- 樱花粉底色 (#FFF1F2) 搭配深李紫文字 (#9F1239)
-- 浅海蓝底色 (#ECFEFF) 搭配深青蓝文字 (#155E75)
-- 暖蜜黄底色 (#FFFBEB) 搭配焦糖褐文字 (#92400E)
-
-美丽与可访问性完全可以兼得。
-
-#design #color #a11y #ui`,
-  },
-
-  // --- PRODUCTIVITY & GEEK PHILOSOPHY ---
-  {
-    content: `Raycast 与 Linear 的“全键盘极客心流” (Flow State) ⌨️
-
-顶尖工具的共同特质：永远不要强迫用户将右手从键盘移到鼠标上去找按钮：
-- **Cmd + K**：一切指令的万能枢纽
-- **Cmd + \\**：无缝展开/收起侧边栏
-- **Cmd + N**：瞬间进入写作态
-
-打字的速度，就是思考的速度。
-
-#linear #raycast #geek #flow #productivity`,
+    content: "晚风中的散步与耳机里的落日歌单 🌙\n\n![黄昏海岸线](https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop)\n\n晚上八点半，换上一双舒服的跑鞋出门散步。微风徐徐吹过街角，夏夜的气息扑面而来。\n\n- **今日单曲循环**：落日飞车《I Know You Know I Love You》\n- **路遇小确幸**：街角面包房飘出的现烤肉桂卷香味，路边慵懒打哈欠的橘猫 🐱\n- **今日步数**：8,420 步，放空了白天的疲倦\n\n把今天的不开心留在晚风里，明天依然是充满希望的新一天。\n\n#晚间散步 #音乐歌单 #治愈日常 #晚安日记",
   },
   {
-    content: `费曼学习法与微笔记卡片 (Zettelkasten) 🧠
-
-不要试图一次性写出万字长文。将复杂的概念拆解为独立的 #知识卡片：
-1. 一张卡片只表达一个清晰原子概念
-2. 用大白话解释给一个 10 岁小孩听
-3. 通过 #标签 将卡片链接成知识晶体
-
-#feynman #learning #pkm #knowledge`,
+    content: "Dexie.js 本地优先（Local-First）架构实践 💾\n\n为什么选择 IndexedDB 作为第一数据源？\n- **零延迟**：用户输入笔记的瞬间，数据在 0 毫秒内写入本地磁盘，绝不因网络卡顿丢失字符；\n- **全离线**：断网环境下依然可以无缝翻阅历史笔记、创建新内容；\n- **静默同步**：通过 1.5s 防抖调度在空闲时段增量同步至 Cloudflare D1。\n\n把控制权还给用户自己的设备。\n\n#localfirst #indexeddb #dexie #前端架构",
   },
   {
-    content: `零阻力写作原则 (Zero Friction Rule) ✍️
-
-写作最大的阻力在于“仪式感过重”：
-- ❌ 思考标题 -> 挑选目录 -> 选择模板 -> 调整字号
-- ✅ 打开即敲 -> 正文穿插标签 -> 自动提炼摘要 -> 毫秒级后台同步
-
-删去一切阻碍灵感流淌的中间层。
-
-#writing #creativity #minimalism #habits`,
+    content: "灵感如同夜空中的萤火虫，不及时捕捉便会隐入黑暗 ✨\n\n随身携带一个轻快无负担的笔记工具，随时随地把脑海中闪现的火花记录下来。\n\n#闪念 #灵感 #写作 #创造力",
   },
   {
-    content: `如何对抗信息过载？“数字极简”实践手册 📵
-
-- 取消所有非必要推送通知
-- 用纯文本与 Markdown 记录重要决策
-- 每天固定 45 分钟深度工作无干扰专注时段
-
-在嘈杂的信息洪流中守护内心的秩序。
-
-#minimalism #focus #life #habits`,
-  },
-
-  // --- FOOD & COFFEE & LIFE AESTHETICS ---
-  {
-    content: `手冲咖啡的黄金萃取公式 (Pour Over Coffee) ☕
-
-一杯完美的耶加雪菲手冲日记：
-- **粉水比**：1:15 (15g 浅烘豆，225g 热水)
-- **水温**：92℃ 恒温手冲壶
-- **三段式萃取**：30g 水闷蒸 30 秒 -> 注水至 130g -> 绕圈注水至 225g
-- **风味轮**：明亮茉莉花香、柑橘酸甜与蜂蜜回甘 🍯
-
-#coffee #lifestyle #recipe #relax`,
+    content: "夏日自制冷萃咖啡（Cold Brew）风味指南 🧊\n\n1. **豆种选择**：浅中烘焙埃塞俄比亚耶加雪菲（粗研磨，如粗海盐状）\n2. **粉水比例**：1:10 (40g 咖啡粉 / 400g 冰纯净水)\n3. **冷藏浸泡**：封口置于冰箱 4℃ 冷藏室缓慢萃取 16~18 小时\n4. **风味呈现**：过滤后入口有强烈的白桃乌龙茶感与柑橘果酸，顺滑无苦涩\n\n加两片鲜柠檬和气泡水，就是一杯顶级的冰美式特调。\n\n#咖啡 #冷萃 #夏日饮品 #日常美学",
   },
   {
-    content: `深夜日式溏心蛋拉面秘密高汤 🍜
-
-家庭版 20 分钟浓郁高汤指南：
-- 味噌 2 勺 + 芝麻酱 1 勺 + 蒜末 1 茶匙
-- 倒入滚烫的骨汤或豆乳充分乳化
-- 配上半熟溏心蛋、海苔脆片与炙烤叉烧
-
-给忙碌代码之夜最好的温暖慰藉。
-
-#food #cooking #life #delicious`,
+    content: "3D 拟物黏土风（Claymorphism）设计哲学 🎨\n\n扁平化设计统治了十年后，人类对触觉感官的渴望重新觉醒。\n- 双重柔和内阴影 (Double Soft Inner Shadow)\n- 圆润厚实的倒角 (Rounded Clay Geometry)\n- 微透光的马卡龙色调 (Subtle Macaron Translucency)\n\n赋予数字界面如同真实黏土般温暖可触的治愈质感。\n\n#设计 #clay #ui #ux #设计美学",
   },
   {
-    content: `松弛感烘焙：法式巴斯克焦香芝士蛋糕 🍰
-
-哪怕是烘焙新手也能 100% 成功的甜点：
-- 奶油奶酪 250g + 细砂糖 50g + 鸡蛋 2 颗 + 淡奶油 120g + 玉米淀粉 6g
-- 220℃ 高温烘烤 25 分钟，表面形成迷人焦糖黑皮
-- 冷藏一晚后，口感如同丝滑冰淇淋！
-
-#baking #dessert #food #sweet`,
+    content: "TypeScript 核心类型体操技巧：DeepReadonly 📐\n\n```typescript\ntype DeepReadonly<T> = T extends Function | boolean | number | string | null | undefined\n  ? T\n  : T extends Array<infer U>\n  ? _DeepReadonlyArray<U>\n  : _DeepReadonlyObject<T>;\n\ninterface _DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}\ntype _DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]> };\n```\n\n在编译期构建不可变数据结构，彻底消除运行时浅拷贝副作用。\n\n#typescript #typegym #编程技巧 #clean-code",
   },
   {
-    content: `周末骑行与城市街角观察笔记 🚲
-
-骑着小单车穿过梧桐树荫下的老街：
-- 阳光穿过树叶洒在斑马线上的光斑
-- 面包房里刚出炉的可颂黄油香气
-- 灵感往往不在工位前，而在漫无目的的微风里。
-
-#travel #cycling #citywalk #life`,
-  },
-
-  // --- TECH TIPS & ARCHITECTURE PATTERNS ---
-  {
-    content: `CSS has 选择器彻底颠覆父级样式控制 🪄
-
-过去需要通过 JavaScript 监听子元素状态来切换父级类名，现在一行 CSS 搞定：
-
-.clay-card:has(.pinned-badge) {
-  border-color: #fbbf24;
-  box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-}
-
-现代 Web 标准正在变得无比强大。
-
-#css #frontend #tips #webdev`,
+    content: "在信息过载的时代，输入减半，输出翻倍 📚\n\n停止无休止的信息被动刷屏。读完一本书，写下 3 张核心闪念卡片；学完一个技术，亲手敲出一个最小可用 Demo。\n\n能用大白话向一个外行讲明白，才算真正内化了知识。\n\n#学习方法 #费曼学习法 #知识管理 #生产力",
   },
   {
-    content: `IndexedDB + Dexie.js 离线优先 (Offline-First) 架构 💾
-
-本地优先软件的三大核心要素：
-1. 所有读写操作立即在本地 IndexedDB 完成（0 毫秒延迟响应）
-2. 后台通过 1.5s 防抖无声增量同步到 Cloudflare D1
-3. 网络断开时无缝切换为离线模式，重连后自动恢复
-
-用户的数据永远属于本地。
-
-#indexeddb #dexie #offline #architecture`,
+    content: "东京下北泽二手黑胶与复古咖啡馆探店 🎷\n\n![复古黑胶唱片与咖啡](https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop)\n\n窄巷里隐蔽的爵士黑胶唱片店，木质地板在脚下发出轻微声响。点一杯深烘曼特宁，听着 Miles Davis 的小号声，在角落写下一整个下午的随笔。\n\n生活需要这样无所事事的专注时刻。\n\n#东京 #黑胶唱片 #探店 #爵士乐 #生活方式",
   },
   {
-    content: `Web Workers 在前端大文件处理中的魔力 🧵
-
-将密集的 Markdown AST 解析与全库标签聚合丢给 Worker 线程，主线程始终保持 120 FPS 丝滑顺畅。
-
-告别任何微小的输入卡顿。
-
-#performance #javascript #webworker`,
+    content: "Model Context Protocol (MCP) 原生协议详解 🤖\n\nMCP 统一了 AI Agent 与外部数据源通信的标准规范：\n- **JSON-RPC 2.0 基础协议**：跨语言、轻量、双向通讯；\n- **Tools（工具）**：赋予 AI 主动调用外部 API（增删改查笔记）的能力；\n- **Resources（上下文资源）**：为 AI 提供结构化的只读参考资料；\n- **Prompts（提示词模版）**：固化最佳工作流与交互模版。\n\n让笔记库无缝蜕变为 AI 的外部记忆中枢。\n\n#mcp #ai #claude #modelcontextprotocol #llm",
   },
   {
-    content: `SVG 滤镜打造真实黏土表面微颗粒噪点 🪨
-
-在 CSS 中混入一点微弱的 SVG 噪点，可以瞬间让原本光滑的渐变呈现出像真正手工泥雕一样的有机质感。
-
-#clay #svg #design #craftsmanship`,
-  },
-
-  // --- TRAVEL & CULTURE & NATURE ---
-  {
-    content: `京都雨天漫步：苔藓古寺与抹茶香 🍵
-
-在琉璃光院的木廊上静坐，细听雨滴打在枫叶与青苔上的沙沙声：
-- 窗外的雨雾与深浅交织的绿意
-- 手捧一碗现沏的热抹茶，微苦中泛出甘甜
-- 时间在这一刻仿佛完全静止了。
-
-#travel #kyoto #japan #zen #peace`,
+    content: "每日晨间高能自律清单 ☀️\n\n- [x] 空腹饮用 300ml 温开水唤醒身体代谢\n- [x] 15 分钟晨间拉伸与冥想放空\n- [x] 打开 TagMesh 浏览昨日未完成的待办事项\n- [x] 列出今日最重要的 3 件核心攻坚目标\n- [ ] 晨光下享用一杯现磨手冲咖啡\n\n用秩序感开启高效专注的一天。\n\n#晨间习惯 #自律 #健康 #生活方式 #todo",
   },
   {
-    content: `冰岛自驾指南：追逐极光与黑沙滩的浪 🌌
-
-在零下十度的维克黑沙滩仰望夜空：
-- 绿色的极光风暴如丝绸般在银河中翻涌
-- 远方北大西洋的白色巨浪拍击着玄武岩柱
-- 在大自然浩瀚的壮美前，一切代码 bug 都不值一提。
-
-#travel #iceland #aurora #nature #adventure`,
+    content: "流水不争先，争的是滔滔不绝 🌊\n\n长期主义不是咬牙切齿的苦苦坚持，而是把热爱融入每一天的微小日常，静待时间的复利发生。\n\n#哲学 #长期主义 #人生思考 #闪念",
   },
   {
-    content: `徒步进入阿尔卑斯山脉的雪山秘境 🏔️
-
-背上轻量化登山包，沿着高山草甸一路向上：
-- 冰川融水汇聚成冰蓝色的湖泊
-- 偶尔从岩壁间跃出的野生岩羚羊
-- 山顶微风吹过脸颊，胸中尽是澄澈。
-
-#hiking #outdoors #alps #mountains`,
+    content: "SQLite FTS5 全文检索引擎在 D1 上的实战技巧 🔍\n\n```sql\nCREATE VIRTUAL TABLE notes_fts USING fts5(\n  rawMarkdown,\n  tags,\n  tokenize='trigram'\n);\n```\n\n采用 Trigram 分词器实现零外部字典依赖的中英文子串极速匹配，在万级卡片量级下，端到端检索耗时始终稳定在 5 毫秒以内。\n\n#sqlite #d1 #fts5 #数据库 #全文检索",
   },
   {
-    content: `寻找城市独立书店的隐秘角落 📚
-
-在街巷深处推开一家推拉木门书店：
-- 满屋旧纸与松木书架的气息
-- 翻到一本绝版的排版设计老画册
-- 实体书的厚度与触感，永远无法被屏幕完全取代。
-
-#books #reading #bookstore #culture`,
-  },
-
-  // --- MINIMALISM & MINDFULNESS ---
-  {
-    content: `给自己的大脑做一次“垃圾回收” (Brain GC) 🧹
-
-就像 V8 引擎定期清理内存垃圾一样，大脑也需要定期清空：
-1. 拿出一张白纸，写下当前所有焦虑和待办
-2. 划掉所有不可控的事情
-3. 只保留 1 件当下最重要的事情立即着手
-
-保持心智轻盈，才能持续输出高价值创造。
-
-#mindset #mentalhealth #zen #productivity`,
+    content: "雨夜书房：一本读了三遍的《设计心理学》 📖\n\n![书房台灯与书本](https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop)\n\n真正的优秀设计是不着痕迹的。好的工具应当像空气一样自然：\n- 示能 (Affordance)：让用户一眼看出如何操作\n- 意符 (Signifiers)：明确传达意图\n- 反馈 (Feedback)：操作后即时给予定心丸\n\n让人在使用时感受不到界面的阻碍，全身心沉浸在创作的流动体验中。\n\n#读书笔记 #设计心理学 #产品思维 #阅读",
   },
   {
-    content: `番茄工作法进阶版：50/10 黄金节律 ⏱️
-
-- **50 分钟全屏专注**：关闭一切通讯工具，戴上降噪耳机
-- **10 分钟彻底离开屏幕**：眺望远方、伸展腰椎、喝一杯温水
-- 持续 3 个周期，产出远胜于连续 8 小时浑浑噩噩的加班。
-
-#focus #pomodoro #habits #wellness`,
+    content: "Tailwind CSS v4 现代化架构升级笔记 🎨\n\n全新基于 Rust 的 Oxide 编译引擎，热更新速度提升 10 倍以上：\n- 彻底告别繁琐的 `tailwind.config.js`\n- 直接在 CSS 中使用 `@theme` 原生变量指令扩展设计令牌\n- 原生原生支持容器查询与现代 CSS 选择器\n\n开发体验纯净得令人惊叹。\n\n#tailwind #css #frontend #webdev",
   },
   {
-    content: `早晨第一杯温水与晨间散步奇迹 ☀️
-
-清晨起床后的前 30 分钟不要碰手机：
-- 喝一杯 45℃ 温开水唤醒肠胃
-- 站在阳台或下楼沐浴晨光 10 分钟，重置皮质醇生物钟
-- 一整天精力充沛的秘密就在这里。
-
-#morning #health #routine #wellness`,
+    content: "手冲单品豆烘焙度风味图谱对照表 🌰\n\n- **浅度烘焙 (Cinnamon / Light)**：保留产区明亮果酸与花香（如瑰夏、水洗耶加）\n- **中度烘焙 (City / Medium)**：焦糖甜感与坚果香气达到完美平衡（如哥伦比亚、危地马拉）\n- **深烘焙 (French / Dark)**：浓郁黑巧克力、雪茄烟熏与醇厚脂感（如苏门答腊曼特宁）\n\n根据季节和心境选择最适合的豆子。\n\n#咖啡知识 #手冲 #咖啡豆 #生活美学",
   },
   {
-    content: `为什么“少即是多”永远是经典设计法则？ 📐
-
-在产品设计中，每增加一个配置项，都是在向用户转嫁决策成本：
-- 优秀的设计不是没有东西可以添加，而是没有东西可以缩减
-- 就像 TagMesh：没有标题框、没有文件夹树，只留下最纯粹的书写区。
-
-#design #philosophy #minimalism #simplicity`,
-  },
-
-  // --- CREATIVE SPARKS & EXTRA INSPIRATIONS ---
-  {
-    content: `游戏化个人知识库的黏土徽章系统 🎮
-
-如果在每一次写完笔记后，系统都能弹出一枚萌系立体黏土印章：
-- 连续 7 天记录 ➜ 获得「☕ 咖啡大师」徽章
-- 积累 100 个标签 ➜ 获得「🕸️ 织网蜘蛛」徽章
-- 探索未分类内容 ➜ 获得「🧭 灵感探险家」徽章
-
-用游戏般的乐趣驱动长久的知识积累！
-
-#gamification #ideas #clay #creativity`,
+    content: "简单的代码比聪明的代码更有生命力 💻\n\n不要为了展示深奥的技巧而编写难以维护的高阶抽象。\n\n清晰可读、易于重构、没有隐式副作用的代码，才是能跨越时间的工程艺术品。\n\n#编程哲学 #clean-code #软件工程 #思考",
   },
   {
-    content: `给未来的自己写一封加密时间胶囊 ⏳
-
-在笔记正文中打上 #timecapsule 标签：
-- 记录下今天最开心的一个瞬间
-- 设定一年后的今天通过邮件或通知提醒自己重温
-- 看看当年的困惑如今是否已然迎刃而解。
-
-#timecapsule #reflection #memories #life`,
+    content: "数字游民（Digital Nomad）极简随行装备清单 🎒\n\n- [x] MacBook Pro 14 寸 + 65W 氮化镓轻量充电头\n- [x] 主动降噪头戴耳机 (Sony WH-1000XM5)\n- [x] 罗技 MX Anywhere 3S 便携无线鼠标\n- [x] 阳极氧化铝合金超薄折叠支架\n- [ ] 护照夹、紧急备份 U 盘与常备药物包\n\n一个双肩包，随时随地开启移动办公。\n\n#数字游民 #数码装备 #极简出行 #效率",
   },
   {
-    content: `黑客松 (Hackathon) 48 小时极速原型指南 💻
-
-在有限时间内交付高亮 demo 的秘诀：
-1. **砍掉 80% 的后台管理功能**，只打透一个惊艳核心路径
-2. **选择开箱即用的前端全家桶** (Vite + Tailwind + Hono)
-3. **视觉设计一定要拉满**，第一眼印象决定最终胜负！
-
-#hackathon #startup #coding #builder`,
+    content: "周末厨房：自制生椰拿铁与热压芝士三明治 🥪\n\n![早午餐与热咖啡](https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=800&auto=format&fit=crop)\n\n周六早晨的厨房时光。厚椰乳 180g 打底加满冰块，缓缓注入双份浓缩咖啡（Espresso），黑白分层如水墨晕染。配上一块烤得金黄酥脆的芝士吐司，治愈感拉满。\n\n慢下来，感受食物带来的最纯粹的快乐。\n\n#早午餐 #咖啡 #美食制作 #治愈日常",
   },
   {
-    content: `从 0 到 1 打造一款独立开发者产品的微日记 🛠️
-
-独立开发最难的不是写代码，而是找到真实用户痛点：
-- 永远尽早发布 (Ship Early)
-- 倾听真实反馈，每天迭代一个微小改进
-- 保持热情，做自己愿意每天使用的好产品。
-
-#indiehacker #product #buildinpublic`,
+    content: "Vite 6 生产构建极致优化指南 ⚡\n\n```typescript\nexport default defineConfig({\n  build: {\n    rollupOptions: {\n      output: {\n        manualChunks: {\n          vendor: ['react', 'react-dom'],\n          editor: ['@tiptap/core', '@tiptap/react'],\n          db: ['dexie', 'dexie-react-hooks'],\n        },\n      },\n    },\n  },\n});\n```\n\n合理拆分 Vendor Chunks，结合 Gzip / Brotli 与 CDN 边缘强缓存，实现百毫秒首屏直出。\n\n#vite #性能优化 #前端构建 #打包优化",
   },
   {
-    content: `晚间断网一小时与纸质书睡前阅读 🌙
-
-睡前远离蓝光屏幕刺激：
-- 点上一盏暖黄色香薰蜡烛
-- 读上 20 页文学小说或自然随笔
-- 伴着木质香气与平静的思绪安然入眠。
-
-#night #reading #sleep #selfcare`,
-  },
-  {
-    content: `在嘈杂的世界里，做一个敏锐的观察者 🔍
-
-灵感从来不需要刻意搜寻，它就藏在日常的细微褶皱里：
-- 咖啡杯壁上缓缓滑落的一滴水珠
-- 窗外电线杆上排列整齐的几只小雀
-- 记录下来，它们就是你最珍贵的精神土壤。
-
-#inspiration #poetry #life #mindset`,
-  },
-  {
-    content: `代码如诗：编写优雅、可读、自解释的现代架构 📜
-
-好的代码就像一段优美的散文：
-- 变量名即注释，函数体即逻辑演绎
-- 没有复杂的深层嵌套，只有扁平清晰的单向数据流
-- 让半年后的自己与协作者读起来如沐春风。
-
-#cleancode #craftsmanship #programming #architecture`,
-  },
-  {
-    content: `TagMesh 的愿景：让每个人享受无压力的灵感流转 ✨
-
-没有传统工具沉重的认知包袱，有的只是像捏泥巴一样随性、快乐的书写体验：
-- 随处敲击的 #标签网
-- 缤纷立体的马卡龙黏土卡片
-- 随时随地与外部 AI 连接的纯净接口
-
-愿你的每一个灵感，都能在这里自由生长。
-
-#tagmesh #vision #future #minimalism #clay`,
+    content: "建造你的数字花园（Digital Garden），而不是知识墓地 🌻\n\n传统笔记常常沦为“收藏从未阅读、记录从未回顾”的数字垃圾场。\n\n数字花园的核心哲学：\n1. **闪念幼苗 (Seedlings)**：零门槛随手捕获灵感碎片；\n2. **标签生长 (Sprouting)**：通过 #标签 网状连接让想法发酵；\n3. **常青结晶 (Evergreen)**：最终汇聚成经久不衰的知识森林。\n\n自由记录，自然生长。\n\n#数字花园 #第二大脑 #卡片盒笔记 #知识管理 #tagmesh",
   },
 ];
 
 /**
- * Seed all 40 sample notes into IndexedDB
+ * Seed all 30 sample notes into IndexedDB
  */
 export async function seed40SampleNotes(): Promise<number> {
   const now = Date.now();
@@ -470,7 +113,9 @@ export async function seed40SampleNotes(): Promise<number> {
     const excerpt = extractExcerptFromMarkdown(item.content, 'Sample note');
     const tags = extractTagsFromMarkdown(item.content);
     const { wordCount, charCount } = countWordsAndChars(item.content);
-    const timeOffset = (SAMPLE_40_NOTES.length - i) * 1000 * 60 * 15; // 15 mins staggered
+    // Stagger dates across recent months (August, July, June, May 2026) for rich timeline milestones
+    const daysOffset = Math.floor(i * 3.2);
+    const timeOffset = daysOffset * 24 * 60 * 60 * 1000 + (i * 1000 * 60 * 15);
 
     const note: Note = {
       id: generateId(),
@@ -505,7 +150,7 @@ export async function seed40SampleNotes(): Promise<number> {
 }
 
 /**
- * Reset all notes in DB with the 40 sample notes
+ * Reset all notes in DB with the sample notes
  */
 export async function resetWith40SampleNotes(): Promise<void> {
   await db.notes.clear();

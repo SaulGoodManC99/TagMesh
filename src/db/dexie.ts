@@ -63,17 +63,25 @@ export function extractExcerptFromMarkdown(markdown: string, fallback = 'Empty n
 
 /**
  * Extract all `#tag` occurrences from anywhere in the Markdown text
+ * Supports tags interspersed seamlessly in sentences, CJK text, punctuation, and hyphens
  */
 export function extractTagsFromMarkdown(markdown: string): string[] {
   if (!markdown) return [];
-  // Matches #hashtag with unicode support (Chinese/English/Alphanumeric/hyphen/underscore)
-  const regex = /(?:^|\s)#([a-zA-Z0-9_\u4e00-\u9fa5-]+)/g;
+
+  // Strip code blocks and inline code to avoid capturing hex colors or code comments
+  const cleanText = markdown
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`\n]+`/g, ' ');
+
+  // Matches # followed by tag characters (CJK/English/Digits/Hyphen/Underscore)
+  // Ensures not preceded by '#' (headings), '&' (entities), or alphanumeric word chars
+  const regex = /(?<![#&a-zA-Z0-9_])#([a-zA-Z0-9_\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af-]+)/g;
   const tags = new Set<string>();
   let match;
-  while ((match = regex.exec(markdown)) !== null) {
-    const tag = `#${match[1].toLowerCase()}`;
-    if (tag !== '#' && !tag.startsWith('#http')) {
-      tags.add(tag);
+  while ((match = regex.exec(cleanText)) !== null) {
+    const raw = match[1];
+    if (raw && raw !== '-' && raw !== '_' && !/^\d+$/.test(raw)) {
+      tags.add(`#${raw.toLowerCase()}`);
     }
   }
   return Array.from(tags);

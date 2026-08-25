@@ -33,28 +33,12 @@ const MODES: Array<{
     descEn: 'Classic Cards',
   },
   {
-    id: 'polaroid',
-    emoji: '📷',
-    nameZh: '拍立得便签墙',
-    nameEn: 'Polaroid Board',
-    descZh: '和纸胶带留白',
-    descEn: 'Film Cards',
-  },
-  {
     id: 'timeline',
     emoji: '⏳',
     nameZh: '时光卷轴',
     nameEn: 'Timeline Stream',
     descZh: '月份里程碑',
     descEn: 'Milestones',
-  },
-  {
-    id: 'carousel',
-    nameZh: '3D 轮播穿梭',
-    nameEn: '3D Carousel',
-    emoji: '🎡',
-    descZh: '沉浸抽卡阅读',
-    descEn: 'Coverflow',
   },
 ];
 

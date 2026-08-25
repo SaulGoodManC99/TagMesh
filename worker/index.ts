@@ -6,6 +6,7 @@ import { uploadRouter } from './routes/upload';
 import { mcpRouter } from './routes/mcp';
 import { telemetryRouter } from './routes/telemetry';
 import { danmakuRouter } from './routes/danmaku';
+import { telegramRouter } from './routes/telegram';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -24,6 +25,7 @@ app.route('/api/upload', uploadRouter);
 app.route('/mcp', mcpRouter);
 app.route('/api/telemetry', telemetryRouter);
 app.route('/api/danmaku', danmakuRouter);
+app.route('/api/telegram', telegramRouter);
 
 app.get('/r2/*', async (c) => {
   const bucket = c.env.BUCKET;

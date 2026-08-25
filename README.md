@@ -1,53 +1,67 @@
 <div align="center">
 
-# 🌸 TagMesh Spark Notes System
-### **Pure Tag-Driven · 3D Claymorphic Aesthetics · Hybrid Edge Knowledge Mesh**
+# 🌸 TagMesh
+### **Serverless, 100% Free & Open-Source Tag-Driven Markdown Notes on Cloudflare with Native MCP**
+### **无需服务器 · 0 费用 · 纯标签驱动 · 原生支持 AI Agent 的开源自托管灵感笔记系统**
 
-*Ditch folders and titles. Weave thoughts organically through `#hashtags` at the edge.*
-
-<br/>
-
-[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-[![D1 SQLite + FTS5](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
-[![R2 Object Storage](https://img.shields.io/badge/R2-Object_Storage-F6821F?style=for-the-badge&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
-[![Local-First](https://img.shields.io/badge/Local--First-Dexie_IndexedDB-10B981?style=for-the-badge)](https://dexie.org/)
-[![Model Context Protocol](https://img.shields.io/badge/MCP-Protocol_Ready-8B5CF6?style=for-the-badge)](https://modelcontextprotocol.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-rose.svg?style=for-the-badge)](./LICENSE)
+*Ditch folders and title friction. Weave thoughts organically across a 3D knowledge mesh at the edge.*
 
 <br/>
 
-[🌐 Live Demo Experience](https://tagmesh.top) • [🇨🇳 简体中文](./README_CN.md) • [🇬🇧 English](./README.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-rose.svg?style=flat-square)](./LICENSE)
+[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![D1 SQLite](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
+[![R2 Storage](https://img.shields.io/badge/R2-Object_Storage-F6821F?style=flat-square&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
+[![Local-First](https://img.shields.io/badge/Local--First-Dexie_IndexedDB-10B981?style=flat-square)](https://dexie.org/)
+[![MCP Ready](https://img.shields.io/badge/MCP-Protocol_Ready-8B5CF6?style=flat-square)](https://modelcontextprotocol.io/)
+
+<br/>
+
+[🌐 Live Demo Experience](https://tagmesh.top) • [🇨🇳 简体中文](./README_CN.md) • [🇬🇧 English](./README.md) • [🚀 Quick Deploy](#-quick-deployment) • [🤖 MCP AI Setup](#-ai-agent--mcp-integration)
 
 </div>
 
 ---
 
-## 💡 Why TagMesh?
+> 💡 **Serverless & 100% Free Forever**  
+> TagMesh operates entirely within Cloudflare's free tiers (Workers + D1 + R2) with zero VPS maintenance and zero egress bandwidth costs.
 
-Traditional note apps force unnecessary friction before you even begin writing: **"Which folder should this go into?"** or **"What should the title be?"**. This heavy cognitive load often kills fleeting creative sparks before they can take root.
+---
 
-**TagMesh redefines the note-taking experience:**
-- **Zero Folders · Zero Titles**: Your thoughts are raw Markdown stream. Organization is powered entirely by `#hashtags` typed anywhere in the body.
-- **3D Claymorphic Aesthetics**: Tactile embossed cards, satisfying acoustic click sounds, responsive particle physics bursts, and 6 mood themes.
-- **Local-First + Global Edge**: Zero-millisecond local responses via IndexedDB, backed by silent debounced syncing to Cloudflare D1 + R2. Write seamlessly even without an internet connection.
-- **AI-Native via MCP**: Native Serverless Model Context Protocol (MCP) gateway allowing Claude, Cursor, and other AI agents to read, search, and weave your notes directly.
+## 💡 Why TagMesh? (Why TagMesh)
+
+Traditional note-taking tools often inflict heavy **cognitive friction** before you can even begin writing:
+
+* 🌲 **Folder-Heavy Apps (Obsidian / Notion / Evernote)**: You are forced to pick a folder and invent a title beforehand. This rigid friction kills fleeting sparks of inspiration.
+* 🔒 **Commercial Memo Tools (Flomo / Yuque)**: Your data is locked in proprietary third-party clouds with expensive subscriptions and zero native AI Agent connectivity.
+* 📄 **Plain Text Markdown Tools**: Monolithic, flat, and lacking tactile delight or multi-dimensional visual roaming.
+
+**TagMesh solves this fundamentally:**
+1. **Zero Folders · Zero Titles**: Your thoughts are raw Markdown streams. Organization is powered entirely by `#hashtags` typed anywhere in the text.
+2. **Dual Immersive Gallery Views**: Seamlessly switch between Bento Masonry Waterfall (column-bucketing layout) and Chronological Timeline Stream (floating time-ruler scrubber with full rich content).
+3. **Local-First & Zero-Delay**: 0-millisecond offline local response via IndexedDB, backed by silent debounced syncing to your private Cloudflare D1 + R2 edge.
+4. **🤖 Telegram Second Brain Bot**: Message your private Telegram bot from anywhere (text, photos, interspersed tags); instant zero-delay sync into your knowledge base.
+5. **Native AI-Native MCP Gateway**: Built-in Model Context Protocol (MCP) server allowing Claude Desktop, Cursor, and AI Agents to query, create, and weave your notes.
+
+> 💡 **Recommended Workflow:**  
+> Use **TagMesh** as your universal inbox on any device to capture fleeting thoughts. Chat with your Telegram bot on the go, and connect **TagMesh MCP** to Claude Desktop or Cursor so your AI assistant can distill tags, organize knowledge clusters, or generate synthesis reports on command.
 
 ---
 
 ## 🏛️ System Architecture
 
-TagMesh is built on a **Local-First + Serverless Edge** hybrid architecture:
+TagMesh is built on a modern **Local-First Web Client + Serverless Cloudflare Edge** dual-engine architecture:
 
 ```mermaid
 flowchart TD
     subgraph Client ["💻 Local-First Web Client"]
-        UI["🎨 3D Claymorphism UI / 5 Note Views"]
+        UI["🎨 3D Tactile UI / 5 Gallery Views"]
         TipTap["✍️ TipTap Rich-Text Editor / #Hashtag Autocomplete"]
         DexieDB[("💾 Dexie.js (IndexedDB Instant Local Storage)")]
-        AudioConfetti["🔊 Tactile Sound Effects & Particle Engine"]
+        AudioConfetti["🔊 Acoustic Tactile Sound Effects & Particle Engine"]
         
         UI <--> TipTap
         TipTap <--> DexieDB
@@ -57,7 +71,7 @@ flowchart TD
     subgraph CloudflareEdge ["☁️ Cloudflare Global Edge Network (tagmesh.top)"]
         Worker["⚡ Cloudflare Workers (Hono REST & MCP Gateway)"]
         D1[("🗄️ Cloudflare D1 (SQLite + FTS5 Search Engine)")]
-        R2[("📦 Cloudflare R2 (Zero-Egress Image Hosting & Snapshots)")]
+        R2[("📦 Cloudflare R2 (Zero-Egress Image Hosting & Cloud Snapshots)")]
         Assets["🌐 Cloudflare Static Assets (SPA Edge CDN)"]
 
         Worker <--> D1
@@ -65,13 +79,12 @@ flowchart TD
     end
 
     subgraph AIAgents ["🤖 AI Agent Ecosystem (MCP Clients)"]
-        Claude["Claude Desktop"]
-        Cursor["Cursor IDE"]
-        Windsurf["Windsurf / Cline"]
+        Claude["Claude Desktop / Cursor"]
+        Antigravity["Antigravity / OpenClaw"]
     end
 
-    DexieDB <-- "1.5s Debounced Silent Sync" --> Worker
-    TipTap <-- "Ctrl+V Screenshot Instant Upload" --> Worker
+    DexieDB <-- "1.5s Debounced Silent Delta Sync" --> Worker
+    TipTap <-- "Ctrl+V Screenshot Direct Upload to R2" --> Worker
     AIAgents <-- "JSON-RPC / Bearer Auth MCP Protocol" --> Worker
 ```
 
@@ -81,150 +94,59 @@ flowchart TD
 
 ### 1. 🏷️ Zero-Folder Tag-Mesh
 - Eliminate rigid folder trees. The first sentence is automatically distilled into an aesthetic card excerpt.
-- Typing `#` triggers an instant hashtag autocomplete menu, aggregating related cards with a single click.
+- Typing `#` triggers an instant hashtag autocomplete menu; clicking any tag aggregates related cards instantly.
 
-### 2. 🧭 5 Immersive Note Views
-- **🍱 Bento Grid**: Dynamic asymmetric masonry waterfall with balanced visual hierarchy.
-- **📷 Polaroid Board**: Vintage retro polaroid cards with masking tape and slight random tilts.
-- **🎠 3D Carousel**: Spatial 3D cylindrical stage supporting smooth mouse-wheel & gesture rotation.
-- **📜 Timeline Scroll**: Chronological stream mapping your creative evolution over time.
-- **🌌 Floating Canvas**: Micro-floating weightless cards gently drifting with ambient particles.
+### 2. 🧭 Dual Gallery Views
+- **🍱 Bento Grid**: True column-bucketing adaptive masonry waterfall with zero vertical gaps and deterministic left-to-right flow, rendering 100% full content with syntax-highlighted code blocks.
+- **📜 Timeline Stream**: Chronological stream mapping your creative evolution over time with milestone dividers and distraction-free typography.
+- **📖 Focus Reader**: Distraction-free, pure Markdown modal reader with instant reactions.
 
-### 3. 📷 Cloudflare R2 Image Hosting & Cloud Snapshots
-- **Instant Screenshot Upload**: Paste screenshots directly with <kbd>Ctrl</kbd> + <kbd>V</kbd> or drag-and-drop external image files. Uploaded directly to R2 with zero egress fees and edge CDN caching.
-- **1-Click Cloud Snapshots**: Backup the entire local IndexedDB database to R2 with one click from the Admin Console. Inspect historical snapshots and perform 1-click time machine restores.
+### 3. 📷 Cloudflare R2 Instant Image Hosting & Time-Machine Snapshots
+- **Instant Screenshot Upload**: Paste screenshots directly with <kbd>Ctrl</kbd> + <kbd>V</kbd> or drag-and-drop images. Uploaded directly to R2 with zero egress fees and edge CDN caching.
+- **1-Click Full Cloud Snapshots**: Backup the entire local IndexedDB database to R2 from the Admin Console; review revision history and restore in 1 click.
 
-### 4. 👑🌱 Dual-Track Curator & Traveler Tag Isolation
-- **Scoped Tag Pools & Counts**: Switching between "All", "Curator", and "Traveler" tabs dynamically recalculates tag frequencies scoped strictly to the active author role.
-- **Smart Auto-Fallback**: If an active tag does not exist under the switched role, the system smoothly resets to `#all`, preventing empty state breaks.
-
-### 5. 🤖 Native Serverless Model Context Protocol (MCP) Gateway
-- 8 standard AI tools available at the edge (Create Note, Search FTS5, Aggregate Tags, Full Sync, Snapshots, etc.).
-- Easily integrated into Claude Desktop, Cursor, and other AI agents via Bearer token authentication.
-
-### 6. 💬 Live Danmaku Plaza
-- Real-time cross-device floating danmaku messages, paw stamp reactions, live server uptime telemetry, and deduplicated visitor tracking.
+### 4. 👑🌱 Dual-Track Curator & Guest Tag Isolation
+- **Role-Scoped Tag Pools**: Switching between "All", "Curator", and "Guest" tabs dynamically recalculates tag frequencies scoped strictly to the active author role.
+- **Smart Auto-Fallback**: If an active tag does not exist under the target role, the system smoothly resets to `#all`, preventing empty state breaks.
 
 ---
 
-## ⚡ Global Keyboard Shortcuts
+## 🚀 Quick Deployment
 
-| Shortcut | Description | Context |
-| :--- | :--- | :--- |
-| <kbd>Cmd</kbd> + <kbd>K</kbd> / <kbd>Ctrl</kbd> + <kbd>K</kbd> | **Open Global Command Center** (Search notes / hit enter to create) | Global |
-| <kbd>Cmd</kbd> + <kbd>\</kbd> / <kbd>Ctrl</kbd> + <kbd>\</kbd> | **Toggle Left Tag-Mesh Sidebar** | Global |
-| <kbd>Cmd</kbd> + <kbd>N</kbd> / <kbd>Ctrl</kbd> + <kbd>N</kbd> | **Create Blank Note Instantly** (100ms response) | Global |
-| <kbd>#</kbd> | **Trigger Hashtag Autocomplete Dropdown** | Inside Editor |
-| <kbd>Ctrl</kbd> + <kbd>V</kbd> | **Paste Clipboard Screenshot & Upload directly to R2** | Inside Editor |
-| <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> | **Toggle Bilingual Interface** (English / 简体中文) | Global |
+### Option A: Deploy with an AI Agent (Recommended)
 
----
+Send this prompt directly to any AI coding assistant (Claude Code, Cursor, Antigravity, OpenClaw, etc.):
 
-## 🚀 Quick Local Development
+```text
+Deploy TagMesh online:
+1. Fork https://github.com/SaulGoodManC99/TagMesh
+2. Connect to Cloudflare Workers & Pages build
+3. Create D1 database `tagmesh-db` and R2 bucket `tagmesh-bucket`, execute `schema.sql`
+4. Deploy and verify https://your-domain.workers.dev/api/health and /mcp
+```
 
-### 1. Clone & Install Dependencies
+### Option B: 3-Step Manual CLI Deployment
+
 ```bash
+# 1. Clone repo & install dependencies
 git clone https://github.com/SaulGoodManC99/TagMesh.git
-cd TagMesh
-npm install
-```
+cd TagMesh && npm install
 
-### 2. Start Frontend Dev Server
-```bash
-npm run dev
-# Open http://localhost:5173 (LAN access supported)
-```
-
-### 3. Start Local Cloudflare Worker Service
-```bash
-npm run worker:dev
-# Worker API running on http://localhost:8787
-```
-
----
-
-## ☁️ Step-by-Step Cloudflare Deployment Guide
-
-TagMesh runs entirely on Cloudflare's free tier (Workers + D1 + R2 + Static Assets) with zero server maintenance costs.
-
-### Step 1: Login via Wrangler CLI
-```bash
-npx wrangler login
-```
-
-### Step 2: Create D1 Database & Execute Schema
-```bash
-# 1. Create D1 database
+# 2. Initialize Cloudflare D1 Database & R2 Bucket
 npx wrangler d1 create tagmesh-db
+npx wrangler r2 bucket create tagmesh-bucket
+npx wrangler d1 execute tagmesh-db --file=./schema.sql --remote
 
-# 2. Execute SQL schema (creates notes table, FTS5 index, telemetry & danmaku tables)
-npx wrangler d1 execute tagmesh-db --remote --file=./schema.sql
-```
-> 💡 Copy the generated `database_id` and ensure it is updated in your `wrangler.toml`.
-
-### Step 3: Create R2 Object Storage Bucket
-```bash
-# Create R2 bucket (apac location recommended for low latency)
-npx wrangler r2 bucket create tagmesh-bucket --location=apac
-```
-
-### Step 4: Verify `wrangler.toml` Configuration
-Ensure your root [`wrangler.toml`](./wrangler.toml) includes the following bindings:
-```toml
-name = "tagmesh-markdown"
-main = "worker/index.ts"
-compatibility_date = "2024-11-01"
-compatibility_flags = ["nodejs_compat"]
-
-[assets]
-directory = "./dist"
-not_found_handling = "single-page-application"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "tagmesh-db"
-database_id = "YOUR_D1_DATABASE_ID"
-
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "tagmesh-bucket"
-
-[vars]
-ENVIRONMENT = "production"
-MCP_AUTH_TOKEN = "tagmesh_mcp_secret_bearer_token"
-```
-
-### Step 5: Build & Deploy to Production
-```bash
-# 1. Build production frontend assets
+# 3. Build and deploy to the global edge
 npm run build
-
-# 2. Deploy Worker and Static Assets to Cloudflare
 npx wrangler deploy
 ```
 
-### Step 6: Bind Custom Domain (Optional)
-In your [Cloudflare Dashboard](https://dash.cloudflare.com/):
-1. Navigate to **Workers & Pages** -> select `tagmesh-markdown`;
-2. Go to **Settings** -> **Domains & Routes** -> **Add Custom Domain**;
-3. Enter your domain (e.g. `tagmesh.top`). Cloudflare will automatically provision SSL certificates and edge routing in seconds!
-
-### Step 7: Configure Automated GitHub Actions CI/CD (Recommended)
-In your GitHub Repository **Settings** -> **Secrets and variables** -> **Actions**, add these 3 secrets:
-- `CLOUDFLARE_API_TOKEN`: Cloudflare API Token with Workers editing permissions
-- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID
-- `CLOUDFLARE_D1_DATABASE_ID`: Your D1 Database ID
-
-> Once configured, every `git push` to the `main` branch will trigger an automated build and deployment in under 30 seconds!
-
 ---
 
-## 🤖 MCP (Model Context Protocol) AI Client Integration
+## 🤖 AI Agent / MCP Configuration (Claude & Cursor)
 
-TagMesh natively exposes a Serverless MCP endpoint to act as a second brain for AI assistants:
-
-### 1. Claude Desktop Configuration
-Edit `claude_desktop_config.json` (On Windows: `%APPDATA%\Claude\claude_desktop_config.json`, on macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`):
+Add the following to your `claude_desktop_config.json` or Cursor to empower AI with your knowledge mesh:
 
 ```json
 {
@@ -234,7 +156,7 @@ Edit `claude_desktop_config.json` (On Windows: `%APPDATA%\Claude\claude_desktop_
       "args": [
         "-y",
         "mcp-remote",
-        "https://tagmesh.top/mcp",
+        "https://your-domain.workers.dev/mcp",
         "--header",
         "Authorization: Bearer tagmesh_mcp_secret_bearer_token"
       ]
@@ -243,37 +165,22 @@ Edit `claude_desktop_config.json` (On Windows: `%APPDATA%\Claude\claude_desktop_
 }
 ```
 
-### 2. Cursor / Windsurf / Cline Configuration
-In your IDE's MCP settings:
-```json
-{
-  "mcpServers": {
-    "tagmesh": {
-      "url": "https://tagmesh.top/mcp",
-      "headers": {
-        "Authorization": "Bearer tagmesh_mcp_secret_bearer_token"
-      }
-    }
-  }
-}
-```
-
 ---
 
-## 📦 Tech Stack
+## ⌨️ Global Keyboard Shortcuts
 
-| Category | Technology Stack |
-| :--- | :--- |
-| **Frontend Core** | React 19, TypeScript, Vite 6 |
-| **Styling & Physics** | Tailwind CSS v4, Lucide Icons, Canvas Particle Physics |
-| **Editor** | TipTap Core, ProseMirror, Hashtag / Emoji / R2 Upload Extensions |
-| **Local Persistence** | Dexie.js (IndexedDB Local-First Wrapper), dexie-react-hooks |
-| **Edge Serverless** | Cloudflare Workers, Hono Web Framework, Nodejs Compat |
-| **Cloud Storage** | Cloudflare D1 (SQLite + FTS5), Cloudflare R2 (Object Storage) |
-| **AI Protocol** | Model Context Protocol (MCP) JSON-RPC 2.0 |
+| Shortcut | Action | Scope |
+| :--- | :--- | :--- |
+| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>N</kbd> | Create blank note instantly | Global |
+| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>K</kbd> | Open Global Command Palette | Global |
+| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> | Force instant sync to Cloudflare D1 | Global |
+| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>B</kbd> | Toggle left Tag-Mesh sidebar | Global |
+| <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> | Cycle to next mood color theme | Global |
+| <kbd>?</kbd> | Open keyboard shortcuts help modal | Global |
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](./LICENSE). Contributions, issues, and feature suggestions are always welcome!
+This project is licensed under the [MIT License](./LICENSE). Contributions, issues, and ideas are warmly welcome!
+

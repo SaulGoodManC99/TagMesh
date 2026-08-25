@@ -383,3 +383,144 @@ export async function restoreR2Snapshot(key: string): Promise<{ success: boolean
     return { success: false, error: err instanceof Error ? err.message : 'Restore failed' };
   }
 }
+
+export interface TelegramConfigResult {
+  ok: boolean;
+  configured: boolean;
+  botTokenMasked: string;
+  hasToken: boolean;
+  userIds: string;
+  webhookUrl: string;
+  enabled: boolean;
+  botInfo?: {
+    id: number;
+    is_bot: boolean;
+    first_name: string;
+    username: string;
+  };
+  error?: string;
+}
+
+function maskTokenHelper(token: string): string {
+  if (!token || token.length < 12) return token ? '********' : '';
+  const prefix = token.slice(0, 10);
+  const suffix = token.slice(-4);
+  return `${prefix}...${suffix}`;
+}
+
+/**
+ * Fetch Telegram Bot configuration
+ */
+export async function fetchTelegramConfigRemote(): Promise<TelegramConfigResult> {
+  try {
+    const res = await fetch(`${API_BASE}/telegram/config`);
+    if (res.ok) {
+      const data = await res.json() as TelegramConfigResult;
+      try {
+        localStorage.setItem('tagmesh_telegram_config_cache', JSON.stringify(data));
+      } catch {}
+      return data;
+    }
+  } catch {
+    // fallback to cache
+  }
+
+  try {
+    const cached = localStorage.getItem('tagmesh_telegram_config_cache');
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch {}
+
+  return {
+    ok: true,
+    configured: false,
+    botTokenMasked: '',
+    hasToken: false,
+    userIds: '',
+    webhookUrl: typeof window !== 'undefined' ? `${window.location.origin}/api/telegram/webhook` : '',
+    enabled: true,
+  };
+}
+
+/**
+ * Save Telegram Bot configuration
+ */
+export async function saveTelegramConfigRemote(config: { botToken?: string; userIds?: string; webhookUrl?: string; enabled?: boolean }): Promise<{ ok: boolean; message?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/telegram/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+    if (res.ok) {
+      return await res.json() as { ok: boolean; message?: string; error?: string };
+    }
+  } catch {
+    // Local fallback
+  }
+
+  // Update local cache
+  try {
+    const cached = localStorage.getItem('tagmesh_telegram_config_cache');
+    const prev = cached ? JSON.parse(cached) : {};
+    const updated: TelegramConfigResult = {
+      ...prev,
+      ok: true,
+      configured: Boolean((config.botToken || prev.hasToken) && (config.userIds || prev.userIds)),
+      botTokenMasked: config.botToken ? maskTokenHelper(config.botToken) : prev.botTokenMasked || '',
+      hasToken: Boolean(config.botToken || prev.hasToken),
+      userIds: config.userIds !== undefined ? config.userIds : prev.userIds || '',
+      webhookUrl: config.webhookUrl !== undefined ? config.webhookUrl : prev.webhookUrl || '',
+      enabled: config.enabled !== undefined ? config.enabled : true,
+    };
+    localStorage.setItem('tagmesh_telegram_config_cache', JSON.stringify(updated));
+    return { ok: true, message: '配置已保存' };
+  } catch {}
+
+  return { ok: true, message: '配置已保存' };
+}
+
+/**
+ * Set Webhook on Telegram API
+ */
+export async function setTelegramWebhookRemote(webhookUrl?: string): Promise<{ ok: boolean; message?: string; webhookUrl?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/telegram/set-webhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ webhookUrl }),
+    });
+    return await res.json() as { ok: boolean; message?: string; webhookUrl?: string; error?: string };
+  } catch (err: unknown) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Set webhook failed' };
+  }
+}
+
+/**
+ * Delete Webhook from Telegram API
+ */
+export async function deleteTelegramWebhookRemote(): Promise<{ ok: boolean; message?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/telegram/delete-webhook`, {
+      method: 'POST',
+    });
+    return await res.json() as { ok: boolean; message?: string; error?: string };
+  } catch (err: unknown) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Delete webhook failed' };
+  }
+}
+
+/**
+ * Send Test Message via Telegram Bot
+ */
+export async function testTelegramBotRemote(): Promise<{ ok: boolean; message?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/telegram/test`, {
+      method: 'POST',
+    });
+    return await res.json() as { ok: boolean; message?: string; error?: string };
+  } catch (err: unknown) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Test failed' };
+  }
+}

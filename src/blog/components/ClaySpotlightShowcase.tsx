@@ -98,7 +98,7 @@ export const ClaySpotlightShowcase: React.FC<ClaySpotlightShowcaseProps> = ({
 
               {/* Markdown Content Snippet */}
               <div className="mb-4 flex-1">
-                {renderCardMarkdownSnippet(note.rawMarkdown || '', 2)}
+                {renderCardMarkdownSnippet(note.rawMarkdown || '')}
               </div>
 
               {/* Bottom Meta & Tags */}

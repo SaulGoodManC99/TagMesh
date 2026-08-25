@@ -40,9 +40,7 @@ export interface ClayGlobalContextMenuProps {
 
 const MODES: Array<{ id: ViewMode; nameZh: string; nameEn: string; emoji: string }> = [
   { id: 'grid', nameZh: '便当瀑布流', nameEn: 'Bento Grid', emoji: '🍱' },
-  { id: 'polaroid', nameZh: '拍立得便签墙', nameEn: 'Polaroid Board', emoji: '📷' },
   { id: 'timeline', nameZh: '时光卷轴', nameEn: 'Timeline Stream', emoji: '⏳' },
-  { id: 'carousel', nameZh: '3D 轮播穿梭', nameEn: '3D Carousel', emoji: '🎡' },
 ];
 
 export const ClayGlobalContextMenu: React.FC<ClayGlobalContextMenuProps> = ({
