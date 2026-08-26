@@ -9,6 +9,8 @@ import {
   ColorMode
 } from '../blog/utils/siteConfig';
 
+export type { ButtonStyle, ColorMode, SiteConfig };
+
 export function useSiteConfig() {
   const [config, setConfig] = useState<SiteConfig>(() => getStoredSiteConfig());
   const [isDark, setIsDark] = useState<boolean>(() => isDarkModeActive(config.colorMode));
@@ -59,8 +61,6 @@ export function useSiteConfig() {
     setIsDark(isDarkModeActive(next.colorMode));
   };
 
-  const setGuestNotesEnabled = (enabled: boolean) => updateConfig({ guestNotesEnabled: enabled });
-  const setDanmakuEnabled = (enabled: boolean) => updateConfig({ danmakuEnabled: enabled });
   const setButtonStyle = (style: ButtonStyle) => updateConfig({ buttonStyle: style });
   const setColorMode = (mode: ColorMode) => updateConfig({ colorMode: mode });
 
@@ -73,13 +73,9 @@ export function useSiteConfig() {
   return {
     config,
     isDark,
-    guestNotesEnabled: config.guestNotesEnabled,
-    danmakuEnabled: config.danmakuEnabled,
     buttonStyle: config.buttonStyle,
     colorMode: config.colorMode,
     updateConfig,
-    setGuestNotesEnabled,
-    setDanmakuEnabled,
     setButtonStyle,
     setColorMode,
     toggleColorMode,

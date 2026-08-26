@@ -1,10 +1,9 @@
 <div align="center">
 
-# 🌸 TagMesh
-### **Serverless, 100% Free & Open-Source Tag-Driven Markdown Notes on Cloudflare with Native MCP**
-### **无需服务器 · 0 费用 · 纯标签驱动 · 原生支持 AI Agent 的开源自托管灵感笔记系统**
+# 🌸 TagMesh 随心笔记
 
-*告别文件夹焦虑与起标题内耗，让每一个灵感在 `#标签` 编织的立体知识网中自由绽放。*
+### **随心记录 · 灵感闪念 · 个人生活与工作备忘**
+### **告别文件夹焦虑与起标题内耗，让灵感在 `#标签` 编织的立体思维网中自由沉淀。**
 
 <br/>
 
@@ -13,173 +12,241 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-[![D1 SQLite](https://img.shields.io/badge/D1-SQLite_FTS5-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://developers.cloudflare.com/d1/)
-[![R2 Storage](https://img.shields.io/badge/R2-Object_Storage-F6821F?style=flat-square&logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/r2/)
 [![Local-First](https://img.shields.io/badge/Local--First-Dexie_IndexedDB-10B981?style=flat-square)](https://dexie.org/)
 [![MCP Ready](https://img.shields.io/badge/MCP-Protocol_Ready-8B5CF6?style=flat-square)](https://modelcontextprotocol.io/)
 
 <br/>
 
-[🌐 在线演示体验 (Live Demo)](https://tagmesh.top) • [🇨🇳 简体中文](./README_CN.md) • [🇬🇧 English](./README.md) • [🚀 一键部署](#-快速部署-deployment) • [🤖 MCP AI 配置](#-ai-agent--mcp-配置指南)
+[🌐 在线演示体验 (Live Demo)](https://tagmesh.top) • [🇨🇳 简体中文](./README_CN.md) • [🇬🇧 English](./README.md) • [🌱 应用场景](#-五大核心应用场景) • [🚀 快速部署教程](#-5-分钟极速部署指南) • [🔄 自动更新 CI/CD](#-github-actions-全自动更新部署)
 
 </div>
 
 ---
 
-> 💡 **Serverless 架构与终生 100% 免费**  
-> TagMesh 完全运行在 Cloudflare 免费层（Workers + D1 + R2）之内，无需购买 VPS 服务器，零出站流量费用。
+> 💡 **100% 免费开源 & 零服务器成本**  
+> TagMesh 完全基于 Cloudflare 免费资源运行（Workers + D1 数据库 + R2 存储），无需购买云服务器 VPS，数据本地优先安全加密，拥有完全自主权。
 
 ---
 
-## 💡 为什么选择 TagMesh？ (Why TagMesh)
+## 💡 为什么需要 TagMesh？
 
-在传统笔记工具中，创作者往往在动笔第一秒就陷入了严重的**认知内耗**：
+在日常记录中，我们常常在动笔前就陷入了烦人的**阻碍与内耗**：
+* 🌲 **传统树状笔记**：每次动笔前都要先思考“放进哪个文件夹”、起什么标题，琐碎的归档流程打断了即时的灵感。
+* 🔒 **商业备忘软件**：数据锁在第三方厂商的云端，导出困难，订阅费昂贵，且无法与自己的 AI 助手自由打通。
+* 📄 **传统纯文本工具**：界面单调，缺乏视觉上的温度与回顾时的愉悦感。
 
-* 🌲 **传统树状笔记 (Obsidian / Notion / Evernote)**：必须先决定“放进哪个文件夹”、起好标题才能写，繁琐的层级关系扼杀了瞬时闪念。
-* 🔒 **商业卡片笔记 (Flomo / 语雀)**：数据深锁在第三方商业云端，无法完全掌控数据所有权，且难以被本地 AI Agent 直接调用。
-* 📄 **传统纯文本 Markdown**：展示单调枯燥，缺少快速视觉漫游体验与触感乐趣。
-
-**TagMesh 填补了这一空白**：
-1. **零文件夹 · 零强制标题**：正文即思维流，在 Markdown 任意位置穿插 `#标签` 自动编织高维知识网。
-2. **双重沉浸式画廊漫游展台**：🍱 便当瀑布流（响应式多列分桶，无缝紧凑贴合）与 📜 时光卷轴（右侧悬浮时光标尺、100% 富文本直接铺开阅读）。
-3. **本地优先 (Local-First) 秒开**：基于 IndexedDB 实现 0 毫秒离线极速响应，后台静默增量同步至私有 Cloudflare D1 + R2。
-4. **🤖 Telegram 闪念同步机器人**：在 Telegram 中随时向专属 Bot 发送文字、图片或随手记，0 延迟自动入库第二大脑。
-5. **原生 AI-Native MCP 网关**：内置 Model Context Protocol，Claude Desktop、Cursor 与各类 AI Agent 可直接读写检索全库。
-
-> 💡 **推荐工作流 (Recommended Workflow):**  
-> 将 **TagMesh** 作为跨设备灵感与闪念的第一收集站。在 Telegram 中随时随手记录，在 Claude Desktop 或 Cursor 中接入 **TagMesh MCP**，让 AI 助手直接帮你归纳整理标签网、梳理思考脉络或一键生成总结周报。
+**TagMesh 让记录回归最自然的状态：**
+1. **零文件夹 · 零强制标题**：打开就写，正文随时敲击 `#标签` 自动归类，首行智能提炼为卡片摘要。
+2. **纯净无干扰工作台**：选词无遮挡，键盘输入 `:` 即可快捷插入纯粹丰富的情绪表情与符号。
+3. **多维沉浸式画廊展台**：提供便当瀑布流、时光卷轴等多种展厅视角，回顾笔记像翻阅手帐般赏心悦目。
+4. **全天候跨端闪念收集**：外出时直接发消息给 Telegram 机器人，0 延迟自动存入个人知识库。
+5. **AI 助手无缝联动**：原生内置标准 MCP 网关，Claude、Cursor、Antigravity 等 AI Agent 可直接读写检索全库。
 
 ---
 
-## 🏛️ 系统架构 (Architecture)
-
-TagMesh 采用 **Local-First（本地优先）+ Cloudflare Serverless Edge（全球边缘服务）** 的双核架构：
+## 🌱 五大核心应用场景
 
 ```mermaid
-flowchart TD
-    subgraph Client ["💻 本地优先客户端 (Local-First Web Client)"]
-        UI["🎨 3D 拟物 UI / 5 大画廊展台"]
-        TipTap["✍️ TipTap 富文本编辑器 / #标签智能补全"]
-        DexieDB[("💾 Dexie.js (IndexedDB 本地毫秒级持久化)")]
-        AudioConfetti["🔊 物理触感音效 & 粒子交互"]
-        
-        UI <--> TipTap
-        TipTap <--> DexieDB
-        UI -.-> AudioConfetti
-    end
-
-    subgraph CloudflareEdge ["☁️ Cloudflare 全球边缘网络 (tagmesh.top)"]
-        Worker["⚡ Cloudflare Workers (Hono REST & MCP 路由)"]
-        D1[("🗄️ Cloudflare D1 (SQLite + FTS5 全文检索)")]
-        R2[("📦 Cloudflare R2 (零流量费图床 & 全库快照)")]
-        Assets["🌐 Cloudflare Static Assets (SPA 边缘分发)"]
-
-        Worker <--> D1
-        Worker <--> R2
-    end
-
-    subgraph AIAgents ["🤖 AI Agent 生态 (MCP Clients)"]
-        Claude["Claude Desktop / Cursor"]
-        Antigravity["Antigravity / OpenClaw"]
-    end
-
-    DexieDB <-- "1.5s 防抖无声增量同步" --> Worker
-    TipTap <-- "Ctrl+V 截图即刻直传 R2" --> Worker
-    AIAgents <-- "JSON-RPC / Bearer 鉴权标准 MCP 协议" --> Worker
+mindmap
+  root((🌸 TagMesh 随心记录))
+    (🌅 晨间日记与生活碎片)
+      情绪碎碎念
+      每日感恩与闪念
+      无压力随手记
+    (💼 工作待办与会议纪要)
+      实时会议记录
+      任务代办清单
+      项目标签分类
+    (📖 读书随笔与学习心得)
+      好书金句摘录
+      学习心得感悟
+      富文本代码高亮
+    (🤖 手机端 Telegram 随手记)
+      外出文字速记
+      照片灵感直传
+      双向无缝云同步
+    (⚡ AI 助手协同与知识梳理)
+      Claude / Cursor 接入
+      自动提炼周报总结
+      全库智能问答
 ```
+
+### 1. 🌅 晨间日记与生活碎片
+* **场景**：清晨记录当日的三个小目标、睡前的生活感悟、旅途中的所见所闻。
+* **体验**：打开工作台直接书写，配合温润的触感音效与背景微动粒子，让记录成为一天中最治愈的仪式。
+
+### 2. 💼 工作待办与会议纪要
+* **场景**：开会时快速捕获讨论重点与行动项。
+* **体验**：在正文中随手打上 `#待办` `#项目A` `#会议纪要`，标签自动归纳，点击标签一秒筛选所有关联笔记。
+
+### 3. 📖 读书随笔与学习心得
+* **场景**：阅读书籍、文章或技术文档时随手记录金句与灵感。
+* **体验**：支持完整的 Markdown 富文本语法、代码块高亮与任务清单，排版精致雅观。
+
+### 4. 🤖 手机外出 Telegram 闪念速记
+* **场景**：在通勤、散步或外出时，随时在手机 Telegram 聊天框中给专属 Bot 发送文字或随手拍的照片。
+* **体验**：无需打开网页，Bot 自动将文字与图片上传至私有存储并同步到 TagMesh，无缝衔接灵感第二大脑。
+
+### 5. ⚡ AI 助手 (MCP) 深度协同
+* **场景**：让 Claude Desktop、Cursor 或本地 AI Agent 协助梳理知识脉络、生成每周工作总结。
+* **体验**：内置标准 MCP 协议，通过安全的 Bearer Token 授权，AI 即可智能检索、分析并归纳你的所有笔记。
 
 ---
 
-## ✨ 核心特性 (Key Features)
+## 🚀 5 分钟极速部署指南
 
-### 1. 🏷️ 纯标签网状编织 (Zero-Folder Tag-Mesh)
-- 彻底摒弃层级文件夹，首行自动提炼为卡片摘要。
-- 键入 `#` 自动唤起智能标签补全菜单，标签点击即刻聚合关联灵感。
+只需一个免费的 [Cloudflare](https://dash.cloudflare.com/) 账号，即可零成本一键自建专属笔记系统！
 
-### 2. 🧭 双重视角画廊展台 (Dual Gallery Views)
-- **🍱 便当瀑布流 (Bento Grid)**：真·多列分桶自适应瀑布流，卡片上下紧密贴合（零空白缝隙），严格按从左到右自然排布，100% 完整呈现正文与代码块。
-- **📜 时光卷轴 (Timeline Stream)**：按时间轴纵向流淌的心路历程，月份里程碑与深度沉浸阅读。
-- **📖 纯粹聚焦阅读 (Focus Reader)**：纯净无干扰 Markdown 弹窗深度阅读与点赞互动。
-
-### 3. 📷 Cloudflare R2 极速图床与全库时光机
-- **截图即刻秒传**：编辑器内支持 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴截图与拖拽图片，直传 R2 存储桶，享全球 CDN 加速与零出站流量费。
-- **一键全库快照**：管理控制台支持一键将本地全库笔记备份至 R2，随时支持历史版本回溯与一键时光机恢复。
-
-### 4. 👑🌱 馆长精选与旅人随笔双轨隔离
-- **独立标签池与计数**：切换「全部 / 馆长精选 / 旅人笔记」时，标签栏实时呈现当前角色拥有的标签与独立统计。
-- **智能平滑退避**：切换角色时，若所选标签在目标视图下不存在，系统自动平滑重置为 `#all`，杜绝空态断层。
+### 准备工作
+1. 注册并登录 [Cloudflare 官网](https://dash.cloudflare.com/)；
+2. 安装 [Node.js (v20+)](https://nodejs.org/) 与 Git。
 
 ---
 
-## 🚀 快速部署 (Deployment)
-
-### 选项 A：使用 AI Agent 一键部署（推荐）
-
-将以下提示词直接发送给 AI 编码助手（如 Claude Code, Cursor, Antigravity, OpenClaw 等）：
-
-```text
-帮我在线部署 TagMesh 笔记系统：
-1. Fork 仓库 https://github.com/SaulGoodManC99/TagMesh
-2. 绑定至 Cloudflare Workers & Pages 构建
-3. 创建 D1 数据库 `tagmesh-db` 与 R2 存储桶 `tagmesh-bucket`，执行 `schema.sql`
-4. 部署并验证 https://your-domain.workers.dev/api/health 与 /mcp
-```
-
-### 选项 B：手动 3 步命令行部署
+### 第一步：克隆仓库与安装依赖
 
 ```bash
-# 1. 克隆项目与安装依赖
+# 1. 克隆本仓库到本地
 git clone https://github.com/SaulGoodManC99/TagMesh.git
-cd TagMesh && npm install
+cd TagMesh
 
-# 2. 初始化 Cloudflare D1 数据库与 R2 存储桶
+# 2. 安装依赖包
+npm install
+```
+
+---
+
+### 第二步：创建 Cloudflare D1 数据库与 R2 存储桶
+
+```bash
+# 1. 登录 Cloudflare 授权
+npx wrangler login
+
+# 2. 创建 D1 数据库（记录终端输出的 database_id）
 npx wrangler d1 create tagmesh-db
+
+# 3. 创建 R2 图片存储桶（用于截图与媒体存储）
 npx wrangler r2 bucket create tagmesh-bucket
-npx wrangler d1 execute tagmesh-db --file=./schema.sql --remote
 
-# 3. 构建并发布到全球边缘
+# 4. 初始化数据库表结构与全文检索索引
+npx wrangler d1 execute tagmesh-db --remote --file=./schema.sql
+```
+
+---
+
+### 第三步：配置 `wrangler.toml`
+
+打开项目根目录下的 `wrangler.toml` 文件，填入上面获得的 `database_id`：
+
+```toml
+name = "tagmesh-markdown"
+main = "worker/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tagmesh-db"
+database_id = "你的_D1_DATABASE_ID" # 👈 替换为您真实的 database_id
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "tagmesh-bucket"
+
+[vars]
+ENVIRONMENT = "production"
+MCP_AUTH_TOKEN = "自定义一段长随机字符串作为_MCP_TOKEN"
+```
+
+---
+
+### 第四步：设置管理员密码与 Telegram Bot（可选）
+
+```bash
+# 设置管理员访问密码（用于后台管理与私密笔记保护）
+npx wrangler secret put ADMIN_PASSWORD
+
+# 如果需要 Telegram 随手记机器人（可选）
+npx wrangler secret put TELEGRAM_BOT_TOKEN
+npx wrangler secret put TELEGRAM_ALLOWED_USER_IDS  # 填入你的 Telegram 数字 ID
+```
+
+---
+
+### 第五步：本地构建与上线部署
+
+```bash
+# 构建前端静态文件
 npm run build
-npx wrangler deploy
+
+# 一键部署至 Cloudflare 全球边缘节点
+npx wrangler deploy worker/index.ts
+```
+
+部署完成后，命令行将输出您的专属域名（例如 `https://tagmesh-markdown.xxx.workers.dev`），直接在浏览器打开即可畅享使用！
+
+---
+
+## 🔄 GitHub Actions 全自动更新部署
+
+配置 GitHub Actions 后，您只需在本地提交代码（`git push`），GitHub 就会自动编译并无缝更新到您的 Cloudflare 线上服务。
+
+### 1. 获取 Cloudflare 凭证
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)；
+2. 点击右上角 **用户头像 -> 我的个人资料 -> API 令牌**；
+3. 点击 **创建令牌**，选择 **“修改 Cloudflare Workers”** 模板，生成并复制 `API Token`；
+4. 在 Cloudflare 概览页右侧获取您的 `Account ID`（账户 ID）。
+
+### 2. 在 GitHub 仓库中添加 Secrets
+进入您的 GitHub 仓库：**Settings -> Secrets and variables -> Actions -> New repository secret**，依次添加以下 3 个变量：
+
+| Secret 变量名称 | 说明 | 示例值 |
+| :--- | :--- | :--- |
+| `CLOUDFLARE_API_TOKEN` | 上文获取的 API 令牌 | `vN8...` |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 账户 ID | `a1b2c3...` |
+| `CLOUDFLARE_D1_DATABASE_ID` | 您的 D1 数据库 ID | `132a4651-9da7-...` |
+
+### 3. 自动部署工作流说明
+项目中已内置好 [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml)，任何推送到 `main` 分支的提交都会自动触发安全构建与全球节点热更新：
+
+```yaml
+name: Deploy TagMesh to Cloudflare Workers
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build
+      - name: Inject D1 ID
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}" ]; then
+            sed -i "s/D1_DATABASE_ID_PLACEHOLDER/${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}/g" wrangler.toml
+          fi
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy worker/index.ts
 ```
 
 ---
 
-## 🤖 AI Agent / MCP 配置指南 (Claude & Cursor)
 
-在 `claude_desktop_config.json` 或 Cursor 中添加以下配置，AI 即可直接读写检索你的笔记：
+## 📄 开源协议 (License)
 
-```json
-{
-  "mcpServers": {
-    "tagmesh": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://your-domain.workers.dev/mcp",
-        "--header",
-        "Authorization: Bearer tagmesh_mcp_secret_bearer_token"
-      ]
-    }
-  }
-}
-```
-
----
-
-## ⌨️ 快捷键速查 (Keyboard Shortcuts)
-
-| 快捷键 | 功能描述 |
-| :--- | :--- |
-| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>N</kbd> | 新建空白灵感笔记 |
-| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>K</kbd> | 唤起全局全局指令面板 (Command Palette) |
-| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> | 强制立即同步至 Cloudflare D1 |
-| <kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>B</kbd> | 展开 / 折叠左侧侧边栏 |
-| <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> | 切换下一套心境色彩主题 |
-| <kbd>?</kbd> | 打开快捷键帮助面板 |
-
----
-
-## 📄 开源许可证 (License)
-
-本项目采用 [MIT License](./LICENSE) 开源协议。欢迎提交 PR 与 Issue 一同共建！
+本项目基于 [MIT License](./LICENSE) 开源发布，欢迎自由 Star、Fork 与共建！

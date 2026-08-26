@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
-  Hash, 
   Layers, 
   Search, 
   Pin, 
@@ -9,25 +8,16 @@ import {
   PanelLeftClose,
   Trash2,
   BookOpen,
-  Calendar,
   CheckSquare,
-  Square,
-  ShieldAlert,
   Check,
   X,
   RotateCcw,
-  AlertTriangle,
   Flame,
-  Clock,
-  Sparkles,
-  List,
   LayoutList,
   Grid,
-  ChevronDown,
-  ChevronUp
 } from 'lucide-react';
-import { Note, TagCount } from '../types/note';
-import { db, getAllTagCounts, searchNotesLocal, getOrCreateActiveNote, getActiveNotes, createNewNote } from '../db/dexie';
+import { Note } from '../types/note';
+import { db, getAllTagCounts, searchNotesLocal, getActiveNotes, createNewNote } from '../db/dexie';
 import { deleteNoteRemote, syncNoteRemote } from '../services/api';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
@@ -35,7 +25,6 @@ import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
 import { triggerConfettiShower } from '../blog/utils/confetti';
 import { ClayDeleteModal } from './ClayDeleteModal';
 import { ClayBatchDeleteModal } from './ClayBatchDeleteModal';
-import { format24HourDateTime } from '../blog/utils/dateFormatter';
 import { useClayTheme } from '../blog/utils/clayThemes';
 
 export interface TagMeshSidebarProps {
@@ -79,12 +68,20 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
-  const { isAdmin, openAuthModal } = useAuth();
-  const [sidebarTab, setSidebarTab] = useState<'notes' | 'trash'>('notes');
-  const [tagSearch, setTagSearch] = useState('');
+  const { isAdmin } = useAuth();
+  
+  // Top-level mode: 'create' (创作模式) | 'manage' (回收管理)
+  const [sidebarMode, setSidebarMode] = useState<'create' | 'manage'>('create');
+  // Sub-tab inside manage mode: 'batch' (批量整理) | 'trash' (废纸篓)
+  const [manageSubTab, setManageSubTab] = useState<'batch' | 'trash'>('batch');
+
+  const isBatchMode = sidebarMode === 'manage' && manageSubTab === 'batch';
+  const sidebarTab = sidebarMode === 'manage' && manageSubTab === 'trash' ? 'trash' : 'notes';
+
+  const [searchQuery, setSearchQuery] = useState('');
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
 
-  // View mode: 'compact' (紧凑高密度单行/双行) | 'comfortable' (舒缓轻量卡片)
+  // View mode: 'compact' (紧凑高密度单行) | 'comfortable' (舒缓轻量卡片)
   const [viewMode, setViewMode] = useState<'compact' | 'comfortable'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('tagmesh_sidebar_view_mode') as 'compact' | 'comfortable') || 'compact';
@@ -92,13 +89,51 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     return 'compact';
   });
 
-  // Expandable Tag Cloud Drawer state
-  const [isTagDrawerOpen, setIsTagDrawerOpen] = useState(false);
-
-  // Batch Management Mode (Admin Only)
-  const [isBatchMode, setIsBatchMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
+
+  // Drag-resizable sidebar width with persistent storage (default 500px, min 320px, max 850px)
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('tagmesh_sidebar_width');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 320 && parsed <= 850) {
+          return parsed;
+        }
+      }
+    }
+    return 500;
+  });
+
+  const isResizingRef = React.useRef(false);
+
+  const startResizing = React.useCallback((mouseDownEvent: React.MouseEvent) => {
+    mouseDownEvent.preventDefault();
+    isResizingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizingRef.current) return;
+      const newWidth = Math.min(Math.max(e.clientX, 320), 850);
+      setSidebarWidth(newWidth);
+      try {
+        localStorage.setItem('tagmesh_sidebar_width', String(newWidth));
+      } catch {}
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }, []);
 
   const handleToggleViewMode = (mode: 'compact' | 'comfortable') => {
     playSoftTick();
@@ -108,10 +143,13 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     } catch {}
   };
 
-  // Reactive live query for all active notes (role-aware)
+  // Visibility filter: 'all' | 'public' | 'private'
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
+
+  // Reactive live query for all active notes (visibility-aware)
   const allActiveNotes = useLiveQuery(
-    () => getActiveNotes(isAdmin ? undefined : 'guest'),
-    [isAdmin]
+    () => getActiveNotes(visibilityFilter),
+    [visibilityFilter]
   ) || [];
 
   // Reactive live query for all trash / deleted notes
@@ -120,27 +158,20 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     []
   ) || [];
 
-  // Reactive live query for aggregated tags (isolated by role)
+  // Reactive live query for aggregated tags (visibility-aware)
   const tags = useLiveQuery(
-    () => getAllTagCounts(isAdmin ? undefined : 'guest'),
-    [isAdmin]
+    () => getAllTagCounts(visibilityFilter),
+    [visibilityFilter]
   ) || [];
 
-  // Reactive live query for filtered notes under selected tag
+  // Reactive live query for filtered notes under selected tag, search query and visibility
   const filteredNotes = useLiveQuery(
-    () => searchNotesLocal('', selectedTag, isAdmin ? undefined : 'guest'),
-    [selectedTag, isAdmin]
+    () => searchNotesLocal(searchQuery, selectedTag, visibilityFilter),
+    [searchQuery, selectedTag, visibilityFilter]
   ) || [];
 
   const totalCount = allActiveNotes.length;
   const deletedCount = deletedNotes.length;
-
-  const filteredTags = useMemo(() => {
-    const list = (tags || []).filter(tItem =>
-      tItem && typeof tItem.tag === 'string' && tItem.tag.toLowerCase().includes(tagSearch.toLowerCase())
-    );
-    return list.sort((a, b) => a.tag.localeCompare(b.tag, 'zh-CN', { numeric: true, sensitivity: 'base' }));
-  }, [tags, tagSearch]);
 
   // Toggle selection for a single note in batch mode
   const handleToggleNoteSelect = (id: string, e?: React.MouseEvent) => {
@@ -189,7 +220,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
     setSelectedIds(new Set());
   };
 
-  // Execute batch deletion (guaranteed 100% atomic on all selected IDs)
+  // Execute batch deletion
   const handleConfirmBatchDelete = async (mode: 'soft' | 'permanent') => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
@@ -209,13 +240,12 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
 
     // If active note was in the deleted list, switch to next available active note
     if (activeNote && ids.includes(activeNote.id)) {
-      const remaining = await getActiveNotes(isAdmin ? undefined : 'guest');
+      const remaining = await getActiveNotes('all');
       if (remaining.length > 0) {
         onSelectNote(remaining[0]);
       } else {
         const next = await createNewNote('', [], {
-          author: isAdmin ? 'admin' : 'guest',
-          isOfficial: Boolean(isAdmin)
+          isPublic: true,
         });
         onSelectNote(next);
       }
@@ -223,7 +253,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
 
     setSelectedIds(new Set());
     setIsBatchDeleteModalOpen(false);
-    setIsBatchMode(false);
+    setSidebarMode('create');
     playChime();
     triggerConfettiShower();
   };
@@ -253,7 +283,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
         await db.notes.update(n.id, { isDeleted: false, isDirty: true, updatedAt: Date.now() });
       }
     });
-    setSidebarTab('notes');
+    setSidebarMode('create');
   };
 
   // Permanently empty entire trash can
@@ -280,155 +310,277 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
       )}
 
       <aside
-        style={{ backgroundColor: `${theme.headerBg}e6` }}
-        className={`fixed md:relative top-0 bottom-0 left-0 h-full border-r border-white/60 dark:border-white/10 backdrop-blur-2xl flex select-none transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1)] shrink-0 z-40 md:z-20 shadow-2xl md:shadow-sm overflow-hidden ${
-          isOpen ? 'w-[85vw] max-w-[380px] md:w-84 lg:w-96 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-full md:translate-x-0 border-r-0 pointer-events-none'
+        style={{ 
+          backgroundColor: `${theme.headerBg}f0`,
+          width: isOpen ? (typeof window !== 'undefined' && window.innerWidth >= 768 ? `${sidebarWidth}px` : undefined) : '0px'
+        }}
+        className={`fixed md:relative top-0 bottom-0 left-0 h-full rounded-[28px] sm:rounded-[32px] border border-white/70 dark:border-white/15 backdrop-blur-2xl flex select-none transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1)] shrink-0 z-40 md:z-20 shadow-xl md:shadow-md overflow-hidden ${
+          isOpen ? 'w-[92vw] max-w-[440px] md:max-w-none md:w-auto opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-full md:translate-x-0 border-r-0 pointer-events-none'
         }`}
       >
-        <div className="w-[85vw] max-w-[380px] md:w-84 lg:w-96 min-w-[290px] md:min-w-[336px] lg:min-w-[384px] h-full flex flex-col">
-          {/* 1. Sidebar Top Header */}
+        <div 
+          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${sidebarWidth}px` : undefined }}
+          className="w-[92vw] max-w-[440px] md:max-w-none md:w-full min-w-[290px] h-full flex flex-col relative"
+        >
+          {/* Horizontal Drag Resize Handle (Desktop Only) */}
+          <div
+            onMouseDown={startResizing}
+            onDoubleClick={() => {
+              setSidebarWidth(500);
+              try { localStorage.setItem('tagmesh_sidebar_width', '500'); } catch {}
+            }}
+            className="hidden md:block absolute top-0 right-0 bottom-0 w-2.5 cursor-col-resize hover:bg-rose-500/30 active:bg-rose-500 transition-colors z-50 group"
+            title={locale === 'zh' ? '左右拖拽调节侧边栏宽度 (双击恢复 500px 默认)' : 'Drag to resize sidebar (Double click to reset)'}
+          >
+            <div className="w-0.5 h-8 bg-neutral-300 dark:bg-neutral-600 group-hover:bg-rose-500 absolute top-1/2 right-1 -translate-y-1/2 rounded-full transition-colors" />
+          </div>
+          
+          {/* ==================== 1. DUAL DEDICATED SIDEBAR HEADERS ==================== */}
           <div 
             style={{ backgroundColor: `${theme.headerBg}cc` }}
-            className="h-15 border-b border-white/60 dark:border-white/10 px-3.5 sm:px-4 flex items-center justify-between shrink-0 backdrop-blur-xl gap-2"
+            className="h-14 border-b border-white/60 dark:border-white/10 px-3.5 sm:px-4 flex items-center justify-between shrink-0 backdrop-blur-xl gap-2 select-none"
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <div className={`w-8.5 h-8.5 rounded-xl flex items-center justify-center shadow-md text-white shrink-0 ${
-                sidebarTab === 'trash'
-                  ? 'bg-neutral-700 dark:bg-neutral-800'
-                  : 'bg-rose-500'
-              }`}>
-                {sidebarTab === 'trash' ? <Trash2 className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="font-bubble font-bold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 block truncate">
-                  {sidebarTab === 'trash'
-                    ? (locale === 'zh' ? '🗑 废纸篓' : 'Recycle Bin')
-                    : isBatchMode
-                    ? (locale === 'zh' ? '👑 批量管理' : 'Batch Manage')
-                    : (locale === 'zh' ? '灵感笔记库' : 'My Notes')}
-                </span>
-                <span className="text-[11px] font-cute text-neutral-400 dark:text-neutral-500 -mt-0.5 block truncate">
-                  {sidebarTab === 'trash'
-                    ? (locale === 'zh' ? `共 ${deletedCount} 篇已删笔记` : `${deletedCount} in trash`)
-                    : isBatchMode 
-                    ? (locale === 'zh' ? `已勾选 ${selectedIds.size} 篇` : `${selectedIds.size} selected`)
-                    : `${totalCount} ${locale === 'zh' ? '篇笔记' : 'notes'}`}
-                </span>
-              </div>
-            </div>
+            {sidebarMode === 'create' ? (
+              /* SIDEBAR 1: ✍️ 灵感创作库 HEADER */
+              <>
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-xs text-white shrink-0 bg-gradient-to-tr ${theme.primaryGradient}`}>
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="font-bubble font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
+                      {locale === 'zh' ? '灵感创作库' : 'My Notes'}
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded-full bg-rose-500/10 dark:bg-white/10 text-rose-600 dark:text-rose-300 text-[11px] font-mono font-bold border border-rose-500/20 dark:border-white/10">
+                      {totalCount}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Admin Batch Mode Toggle Button (Only in notes view) */}
-              {isAdmin && sidebarTab === 'notes' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    playPop();
-                    setIsBatchMode(prev => !prev);
-                    if (isBatchMode) {
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Switch to Management Sidebar Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPop(580);
+                      setSidebarMode('manage');
+                    }}
+                    className="h-8 flex items-center gap-1 px-2.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-300 font-bubble text-xs font-bold transition cursor-pointer active:scale-95 border border-white/40 dark:border-white/10 relative"
+                    title={locale === 'zh' ? '切换至回收管理侧边栏' : 'Switch to Recycle & Management Sidebar'}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+                    <span className="hidden sm:inline">{locale === 'zh' ? '回收管理' : 'Management'}</span>
+                    {deletedCount > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-mono font-bold leading-none">
+                        {deletedCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Primary New Note Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPop();
+                      onNewNote();
+                    }}
+                    className={`h-8 flex items-center gap-1 px-2.5 sm:px-3 rounded-xl bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-xs font-bold shadow-xs hover:shadow-md transition cursor-pointer active:scale-95 shrink-0 border border-white/20`}
+                    title={locale === 'zh' ? '新建笔记 (Alt+N)' : 'New Note (Alt+N)'}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{locale === 'zh' ? '新建' : 'New'}</span>
+                  </button>
+
+                  {/* Collapse Sidebar */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPop();
+                      onToggleSidebar();
+                    }}
+                    className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-white/80 dark:hover:bg-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition cursor-pointer shrink-0 border border-transparent hover:border-white/40 dark:hover:border-white/10"
+                    title={locale === 'zh' ? '收起侧边栏 (Alt+S)' : 'Collapse Sidebar (Alt+S)'}
+                  >
+                    <PanelLeftClose className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* SIDEBAR 2: 🗑️ 空间回收管理 HEADER */
+              <>
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-xs text-white shrink-0 bg-neutral-800 dark:bg-neutral-700">
+                    <Trash2 className="w-4 h-4 text-rose-400" />
+                  </div>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="font-bubble font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
+                      {locale === 'zh' ? '空间回收管理' : 'Recycle Hub'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Switch Back to Creation Sidebar Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPop(560);
+                      setSidebarMode('create');
                       setSelectedIds(new Set());
-                    }
-                  }}
-                  className={`h-7.5 px-2.5 rounded-xl font-bubble font-bold text-xs border transition cursor-pointer flex items-center gap-1 shrink-0 ${
-                    isBatchMode
-                      ? 'bg-rose-500 text-white border-rose-600 shadow-sm'
-                      : 'bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 text-neutral-700 dark:text-neutral-200 border-white/60 dark:border-white/10 shadow-3xs backdrop-blur-md'
-                  }`}
-                  title={locale === 'zh' ? '切换批量管理' : 'Toggle Batch Mode'}
-                >
-                  {isBatchMode ? <X className="w-3.5 h-3.5" /> : <CheckSquare className="w-3.5 h-3.5 text-rose-500" />}
-                  <span>{isBatchMode ? (locale === 'zh' ? '完成' : 'Done') : (locale === 'zh' ? '批量' : 'Batch')}</span>
-                </button>
-              )}
+                    }}
+                    className={`h-8 flex items-center gap-1.5 px-3 rounded-xl bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble text-xs font-bold shadow-xs hover:shadow-md transition cursor-pointer active:scale-95 border border-white/20`}
+                    title={locale === 'zh' ? '返回灵感创作库' : 'Return to Notes'}
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>{locale === 'zh' ? '返回创作' : 'Back to Notes'}</span>
+                    <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-white text-[10px] font-mono font-bold leading-none">
+                      {totalCount}
+                    </span>
+                  </button>
 
-              {/* New Note Button (Only in notes view) */}
-              {!isBatchMode && sidebarTab === 'notes' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    playPop();
-                    onNewNote();
-                  }}
-                  className="h-7.5 flex items-center gap-1 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white font-bubble text-xs font-bold shadow-sm hover:shadow-md transition cursor-pointer active:scale-95 shrink-0 border border-rose-400/80 dark:border-rose-500/50"
-                  title={locale === 'zh' ? '新建笔记 (Alt+N)' : 'New Note (Alt+N)'}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{locale === 'zh' ? '新建' : 'New'}</span>
-                </button>
-              )}
-
-              {/* Collapse Sidebar Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  playPop();
-                  onToggleSidebar();
-                }}
-                className="h-7.5 w-7.5 rounded-xl flex items-center justify-center hover:bg-white/60 dark:hover:bg-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition cursor-pointer shrink-0 border border-transparent hover:border-white/40 dark:hover:border-white/10"
-                title={locale === 'zh' ? '收起侧边栏 (Alt+S)' : 'Collapse Sidebar (Alt+S)'}
-              >
-                <PanelLeftClose className="w-4 h-4" />
-              </button>
-            </div>
+                  {/* Collapse Sidebar */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPop();
+                      onToggleSidebar();
+                    }}
+                    className="h-8 w-8 rounded-xl flex items-center justify-center hover:bg-white/80 dark:hover:bg-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition cursor-pointer shrink-0 border border-transparent hover:border-white/40 dark:hover:border-white/10"
+                    title={locale === 'zh' ? '收起侧边栏 (Alt+S)' : 'Collapse Sidebar (Alt+S)'}
+                  >
+                    <PanelLeftClose className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* 2. Sub Header: [全部笔记] vs [🗑️ 废纸篓] Tabs */}
-          {!isBatchMode && (
-            <div className="p-2 bg-black/5 dark:bg-white/5 backdrop-blur-md border-b border-white/60 dark:border-white/10 flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  playPop();
-                  setSidebarTab('notes');
-                }}
-                className={`flex-1 py-1.5 px-2.5 rounded-xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border ${
-                  sidebarTab === 'notes'
-                    ? 'bg-white/90 dark:bg-white/15 text-rose-700 dark:text-rose-300 shadow-xs border-rose-200/80 dark:border-white/10 backdrop-blur-md'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-white/10 border-transparent'
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5 text-pink-500 shrink-0" />
-                <span>{locale === 'zh' ? '全部笔记' : 'Notes'}</span>
-                <span className="px-1.5 py-0.2 rounded-md bg-rose-50/80 dark:bg-rose-950/80 text-rose-600 dark:text-rose-300 text-[10px] font-bubble font-bold border border-rose-200/40 dark:border-rose-900/40">
-                  {totalCount}
-                </span>
-              </button>
-
-              {isAdmin && (
+          {/* ==================== 1.5 MANAGEMENT SUB-TAB SWITCHER ==================== */}
+          {sidebarMode === 'manage' && (
+            <div className="px-3.5 py-2 bg-white/40 dark:bg-white/5 border-b border-white/60 dark:border-white/10 flex items-center justify-between gap-2 select-none animate-in fade-in">
+              <div className="w-full grid grid-cols-2 p-1 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/60 dark:border-white/10 backdrop-blur-md gap-1">
                 <button
                   type="button"
                   onClick={() => {
-                    playPop();
-                    setSidebarTab('trash');
-                    onSelectTag('#all');
+                    playPop(550);
+                    setManageSubTab('batch');
                   }}
-                  className={`flex-1 py-1.5 px-2.5 rounded-xl font-bubble font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border ${
-                    sidebarTab === 'trash'
-                      ? 'bg-stone-800 dark:bg-neutral-800 text-white shadow-xs border-stone-900 dark:border-white/10'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-white/10 border-transparent'
+                  className={`py-1.5 rounded-xl text-xs font-bubble font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                    manageSubTab === 'batch'
+                      ? 'bg-white dark:bg-neutral-800 text-rose-600 dark:text-rose-400 shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                  <span>{locale === 'zh' ? '废纸篓' : 'Trash'}</span>
-                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-bubble font-bold ${
-                    sidebarTab === 'trash' ? 'bg-stone-700 dark:bg-neutral-700 text-stone-200' : 'bg-neutral-200/80 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                  }`}>
-                    {deletedCount}
-                  </span>
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  <span>{locale === 'zh' ? '批量整理' : 'Batch Select'}</span>
+                  <span className="text-[10px] opacity-70 font-mono">({totalCount})</span>
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    playPop(550);
+                    setManageSubTab('trash');
+                  }}
+                  className={`py-1.5 rounded-xl text-xs font-bubble font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                    manageSubTab === 'trash'
+                      ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{locale === 'zh' ? '废纸篓' : 'Trash'}</span>
+                  <span className={`text-[10px] font-mono font-bold ${deletedCount > 0 ? 'text-rose-500' : 'opacity-70'}`}>({deletedCount})</span>
+                </button>
+              </div>
             </div>
           )}
 
-          {/* 3. Batch Operations Header Bar (When in Batch Mode) */}
-          {isBatchMode && sidebarTab === 'notes' && (
-            <div className="px-3.5 py-2.5 bg-gradient-to-r from-rose-50/90 to-pink-50/90 dark:from-rose-950/80 dark:to-pink-950/80 border-b border-rose-200/80 dark:border-rose-900/60 flex flex-col gap-2 select-none animate-in fade-in">
+          {/* ==================== 2. UNIFIED SEARCH & TAGS STRIP (Creation & Batch Mode) ==================== */}
+          {(sidebarMode === 'create' || (sidebarMode === 'manage' && manageSubTab === 'batch')) && (
+            <div className="px-3 py-2.5 border-b border-white/60 dark:border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-md space-y-2">
+              {/* Universal Real-time Search Input */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={locale === 'zh' ? '快速搜索笔记、内容或标签...' : 'Search notes or tags...'}
+                  className="w-full pl-8 pr-7 py-1.5 bg-white/90 dark:bg-neutral-800/90 border border-white/80 dark:border-white/10 text-neutral-800 dark:text-neutral-100 rounded-xl text-xs font-cute focus:outline-none focus:border-rose-400 dark:focus:border-rose-500 transition shadow-3xs placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300 flex items-center justify-center text-[10px] hover:bg-rose-500 hover:text-white cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Horizontal Tag Pills (Single Clean Row) */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 scroll-smooth">
+                {/* #all Pill */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    playPop(550);
+                    onSelectTag('#all');
+                  }}
+                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold transition cursor-pointer border shrink-0 ${
+                    selectedTag === '#all'
+                      ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
+                      : 'bg-white/80 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 border-white/60 dark:border-white/10 shadow-3xs'
+                  }`}
+                >
+                  <span>#all</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    selectedTag === '#all' ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-neutral-600 dark:text-neutral-300'
+                  }`}>
+                    {totalCount}
+                  </span>
+                </button>
+
+                {/* Tag Pills */}
+                {tags.map((tItem) => {
+                  const isSelected = selectedTag.toLowerCase() === tItem.tag.toLowerCase();
+                  return (
+                    <button
+                      key={tItem.tag}
+                      type="button"
+                      onClick={() => {
+                        playPop(600);
+                        onSelectTag(tItem.tag);
+                      }}
+                      className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold transition cursor-pointer border shrink-0 ${
+                        isSelected
+                          ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
+                          : 'bg-white/80 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 border-white/60 dark:border-white/10 shadow-3xs'
+                      }`}
+                    >
+                      <span>{tItem.tag}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                        isSelected ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-neutral-600 dark:text-neutral-300'
+                      }`}>
+                        {tItem.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ==================== 3. BATCH OPERATIONS ACTION STRIP ==================== */}
+          {sidebarMode === 'manage' && manageSubTab === 'batch' && (
+            <div className="px-3.5 py-2.5 bg-rose-500/5 dark:bg-rose-500/10 border-b border-white/60 dark:border-white/10 flex flex-col gap-2 select-none animate-in fade-in">
               <div className="flex items-center justify-between text-xs font-bubble">
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={handleSelectAllVisible}
-                    className="h-7 px-2.5 rounded-full bg-white dark:bg-neutral-800 border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 font-bold hover:bg-rose-50 transition shadow-3xs cursor-pointer active:scale-95 flex items-center gap-1 text-[11px]"
+                    className="h-7 px-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 font-bold hover:bg-rose-50 dark:hover:bg-rose-950 transition shadow-3xs cursor-pointer active:scale-95 flex items-center gap-1 text-[11px]"
                   >
                     <span>☑️</span>
                     <span>{locale === 'zh' ? `全选 (${filteredNotes.length})` : `All (${filteredNotes.length})`}</span>
@@ -436,7 +588,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                   <button
                     type="button"
                     onClick={handleDeselectAll}
-                    className="h-7 px-2.5 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 text-neutral-600 dark:text-neutral-300 font-bold hover:bg-neutral-50 transition shadow-3xs cursor-pointer active:scale-95 flex items-center gap-1 text-[11px]"
+                    className="h-7 px-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 text-neutral-600 dark:text-neutral-300 font-bold hover:bg-neutral-50 dark:hover:bg-white/10 transition shadow-3xs cursor-pointer active:scale-95 flex items-center gap-1 text-[11px]"
                   >
                     <span>⬜</span>
                     <span>{locale === 'zh' ? '清空' : 'Clear'}</span>
@@ -447,7 +599,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                 </span>
               </div>
 
-              {/* Direct Prominent Batch Delete Trigger */}
+              {/* Batch Delete Trigger Button */}
               <button
                 type="button"
                 disabled={selectedIds.size === 0}
@@ -455,210 +607,42 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                   playPop();
                   setIsBatchDeleteModalOpen(true);
                 }}
-                className="w-full h-8 px-3 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-bubble font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition"
+                className="w-full h-8 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bubble font-extrabold text-xs shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>
-                  {locale === 'zh' ? `立即批量删除已选 (${selectedIds.size}) 篇笔记` : `Delete Selected (${selectedIds.size}) Notes`}
+                  {locale === 'zh' ? `立即批量删除 (${selectedIds.size}) 篇笔记` : `Delete Selected (${selectedIds.size}) Notes`}
                 </span>
               </button>
             </div>
           )}
 
-          {/* 4. Trash View Top Action Bar */}
-          {sidebarTab === 'trash' && (
-            <div className="px-3 py-2 bg-stone-100 dark:bg-neutral-900 border-b border-stone-200 dark:border-white/10 flex items-center justify-between text-xs font-bubble">
-              <span className="text-stone-600 dark:text-neutral-300 font-bold">
-                {deletedCount === 0 ? (locale === 'zh' ? '废纸篓空空如也' : 'Trash is empty') : `共 ${deletedCount} 篇已删笔记`}
+          {/* ==================== 4. TRASH TOP ACTION STRIP ==================== */}
+          {sidebarMode === 'manage' && manageSubTab === 'trash' && (
+            <div className="px-3.5 py-2.5 bg-white/40 dark:bg-white/5 border-b border-white/60 dark:border-white/10 flex items-center justify-between text-xs font-bubble select-none">
+              <span className="text-neutral-700 dark:text-neutral-300 font-bold">
+                {deletedCount === 0 ? (locale === 'zh' ? '废纸篓空空如也 🍃' : 'Trash is empty 🍃') : `共 ${deletedCount} 篇已删笔记`}
               </span>
               {deletedCount > 0 && (
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={handleRestoreAllTrash}
-                    className="px-2.5 py-1 rounded-xl bg-white dark:bg-neutral-800 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition shadow-3xs flex items-center gap-1 cursor-pointer active:scale-95"
+                    className="px-2.5 py-1 rounded-xl bg-white dark:bg-neutral-800 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition shadow-3xs flex items-center gap-1 cursor-pointer active:scale-95 text-xs"
                     title="Restore All Notes"
                   >
-                    <RotateCcw className="w-3 h-3" />
+                    <RotateCcw className="w-3 h-3 text-emerald-500" />
                     <span>{locale === 'zh' ? '全部恢复' : 'Restore All'}</span>
                   </button>
                   <button
                     type="button"
                     onClick={handleEmptyTrash}
-                    className="px-2.5 py-1 rounded-xl bg-rose-500 text-white font-bold hover:bg-rose-600 transition shadow-3xs flex items-center gap-1 cursor-pointer active:scale-95"
+                    className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-rose-500 to-red-500 text-white font-bold hover:shadow-xs transition shadow-3xs flex items-center gap-1 cursor-pointer active:scale-95 text-xs"
                     title="Empty Trash Permanently"
                   >
                     <Flame className="w-3 h-3" />
-                    <span>{locale === 'zh' ? '清空' : 'Empty'}</span>
+                    <span>{locale === 'zh' ? '彻底清空' : 'Empty'}</span>
                   </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 5. Tags Filter Section: Single-Line Horizontal Smooth Scroller OR Expanded Search Drawer (Mutually Exclusive) */}
-          {sidebarTab === 'notes' && (
-            <div className="border-b border-white/60 dark:border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-md transition-all duration-300">
-              {!isTagDrawerOpen ? (
-                /* Mode A: Compact Single-Row Horizontal Scroller */
-                <div className="px-3 py-1.5 flex items-center justify-between gap-1.5 animate-in fade-in duration-200">
-                  <div className="flex-1 min-w-0 overflow-x-auto flex items-center gap-1.5 no-scrollbar py-0.5 scroll-smooth">
-                    {/* Pinned #all Capsule */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPop(550);
-                        onSelectTag('#all');
-                      }}
-                      className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold transition cursor-pointer border shrink-0 ${
-                        selectedTag === '#all'
-                          ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
-                          : 'bg-white/80 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 border-white/60 dark:border-white/10 shadow-3xs'
-                      }`}
-                    >
-                      <span>#all</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                        selectedTag === '#all' ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-neutral-600 dark:text-neutral-300'
-                      }`}>
-                        {totalCount}
-                      </span>
-                    </button>
-
-                    {/* Quick Horizontal Tag Pills */}
-                    {tags.map((tItem) => {
-                      const isSelected = selectedTag.toLowerCase() === tItem.tag.toLowerCase();
-                      return (
-                        <button
-                          key={tItem.tag}
-                          type="button"
-                          onClick={() => {
-                            playPop(600);
-                            onSelectTag(tItem.tag);
-                          }}
-                          className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold transition cursor-pointer border shrink-0 ${
-                            isSelected
-                              ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
-                              : 'bg-white/80 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 border-white/60 dark:border-white/10 shadow-3xs'
-                          }`}
-                        >
-                          <span>{tItem.tag}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                            isSelected ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-neutral-600 dark:text-neutral-300'
-                          }`}>
-                            {tItem.count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Open Tag Search / Full Drawer Button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playPop();
-                      setIsTagDrawerOpen(true);
-                    }}
-                    className="h-6.5 px-2 rounded-lg text-xs font-bubble font-bold flex items-center gap-1 border transition cursor-pointer shrink-0 bg-white/80 dark:bg-white/10 hover:bg-white hover:dark:bg-white/20 text-neutral-600 dark:text-neutral-300 border-white/60 dark:border-white/10 shadow-3xs"
-                    title={locale === 'zh' ? '展开全量标签与检索' : 'Search All Tags'}
-                  >
-                    <Search className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                /* Mode B: Morphed Search & Tag Cloud Drawer (Single Unified Tag Area) */
-                <div className="p-2.5 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                  <div className="flex items-center gap-1.5">
-                    <div className="relative flex-1">
-                      <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        type="text"
-                        value={tagSearch}
-                        onChange={(e) => setTagSearch(e.target.value)}
-                        placeholder={locale === 'zh' ? '检索全部标签分类...' : 'Filter tags...'}
-                        className="w-full pl-8 pr-7 py-1 bg-white/90 dark:bg-neutral-800/90 border border-white/60 dark:border-white/10 text-neutral-800 dark:text-neutral-100 rounded-xl text-xs font-cute focus:outline-none focus:border-rose-400 transition shadow-3xs placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
-                        autoFocus
-                      />
-                      {tagSearch && (
-                        <button
-                          type="button"
-                          onClick={() => setTagSearch('')}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300 flex items-center justify-center text-[10px] hover:bg-rose-500 hover:text-white"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Close Search Drawer Button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPop();
-                        setIsTagDrawerOpen(false);
-                        setTagSearch('');
-                      }}
-                      className="h-7 px-2.5 rounded-xl bg-white/80 dark:bg-white/10 hover:bg-rose-500 hover:text-white text-neutral-600 dark:text-neutral-300 border border-white/60 dark:border-white/10 text-xs font-bubble font-bold transition flex items-center gap-1 cursor-pointer shrink-0 shadow-3xs"
-                      title={locale === 'zh' ? '收起搜索' : 'Close search'}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      <span className="text-[11px]">{locale === 'zh' ? '收起' : 'Close'}</span>
-                    </button>
-                  </div>
-
-                  {/* Single Clean Tag Cloud Grid */}
-                  <div className="max-h-36 overflow-y-auto flex flex-wrap gap-1.5 py-0.5 no-scrollbar">
-                    {/* Always include #all in drawer */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPop(550);
-                        onSelectTag('#all');
-                        setIsTagDrawerOpen(false);
-                        setTagSearch('');
-                      }}
-                      className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold transition cursor-pointer border shrink-0 ${
-                        selectedTag === '#all'
-                          ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
-                          : 'bg-white/80 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 border-white/60 dark:border-white/10 shadow-3xs'
-                      }`}
-                    >
-                      <span>#all</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                        selectedTag === '#all' ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-neutral-600 dark:text-neutral-300'
-                      }`}>
-                        {totalCount}
-                      </span>
-                    </button>
-
-                    {filteredTags.map((tItem) => {
-                      const isSelected = selectedTag.toLowerCase() === tItem.tag.toLowerCase();
-                      return (
-                        <button
-                          key={tItem.tag}
-                          type="button"
-                          onClick={() => {
-                            playPop(600);
-                            onSelectTag(tItem.tag);
-                            setIsTagDrawerOpen(false);
-                            setTagSearch('');
-                          }}
-                          className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold transition cursor-pointer border shrink-0 ${
-                            isSelected
-                              ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
-                              : 'bg-white/80 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 border-white/60 dark:border-white/10 shadow-3xs'
-                          }`}
-                        >
-                          <span>{tItem.tag}</span>
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                            isSelected ? 'bg-white/25 text-white' : 'bg-black/5 dark:bg-white/10 text-neutral-600 dark:text-neutral-300'
-                          }`}>
-                            {tItem.count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
               )}
             </div>
@@ -668,14 +652,48 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
           <div className={`flex-1 overflow-y-auto select-none ${viewMode === 'compact' ? 'p-2 space-y-1' : 'p-3 space-y-2.5'}`}>
             {sidebarTab === 'notes' ? (
               <>
-                <div className="px-2 py-1 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bubble font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider truncate">
-                    <span>{selectedTag === '#all' ? (locale === 'zh' ? '笔记清单' : 'Notes List') : `${selectedTag}`}</span>
-                    <span className="text-[11px] font-mono">({filteredNotes.length})</span>
+                <div className="px-2 py-1 flex items-center justify-between gap-2 flex-wrap">
+                  {/* Visibility Filter Switcher [ 全部 | 🌐 公开 | 🔒 私密 ] */}
+                  <div className="flex items-center p-0.5 rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-md border border-white/60 dark:border-white/10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => { playSoftTick(); setVisibilityFilter('all'); }}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-bubble font-bold transition cursor-pointer ${
+                        visibilityFilter === 'all'
+                          ? 'bg-white/90 dark:bg-white/20 text-neutral-900 dark:text-white shadow-3xs'
+                          : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400'
+                      }`}
+                    >
+                      {locale === 'zh' ? '全部' : 'All'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { playSoftTick(); setVisibilityFilter('public'); }}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-bubble font-bold transition cursor-pointer flex items-center gap-1 ${
+                        visibilityFilter === 'public'
+                          ? 'bg-sky-500 text-white shadow-3xs'
+                          : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400'
+                      }`}
+                    >
+                      <span>🌐</span>
+                      <span className="text-[11px]">{locale === 'zh' ? '公开' : 'Public'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { playSoftTick(); setVisibilityFilter('private'); }}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-bubble font-bold transition cursor-pointer flex items-center gap-1 ${
+                        visibilityFilter === 'private'
+                          ? 'bg-neutral-800 dark:bg-neutral-700 text-white shadow-3xs'
+                          : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400'
+                      }`}
+                    >
+                      <span>🔒</span>
+                      <span className="text-[11px]">{locale === 'zh' ? '私密' : 'Private'}</span>
+                    </button>
                   </div>
 
                   {/* View Mode Toggle Switcher [ ☰ 紧凑 | 🗂️ 舒缓 ] */}
-                  <div className="flex items-center p-0.5 rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-md border border-white/60 dark:border-white/10 shrink-0">
+                  <div className="flex items-center p-0.5 rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-md border border-white/60 dark:border-white/10 shrink-0 ml-auto">
                     <button
                       type="button"
                       onClick={() => handleToggleViewMode('compact')}
@@ -708,7 +726,27 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                 {filteredNotes.length === 0 ? (
                   <div className="py-12 text-center text-neutral-400 font-cute flex flex-col items-center gap-2">
                     <span className="text-3xl">📝</span>
-                    <p className="text-xs font-bold">{locale === 'zh' ? '暂无匹配的灵感笔记' : 'No notes found'}</p>
+                    <p className="text-xs font-bold">{locale === 'zh' ? '暂无匹配的灵感笔记' : 'No matching notes found'}</p>
+                    {searchQuery ? (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="mt-1 px-3 py-1 rounded-xl bg-white/80 dark:bg-white/10 hover:bg-white text-xs font-bubble font-bold text-rose-600 dark:text-rose-400 border border-white/60 dark:border-white/10 shadow-3xs cursor-pointer active:scale-95 transition"
+                      >
+                        {locale === 'zh' ? '清除搜索词' : 'Clear search'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playPop();
+                          onNewNote();
+                        }}
+                        className={`mt-1 px-3.5 py-1.5 rounded-xl bg-gradient-to-r ${theme.primaryGradient} text-white text-xs font-bubble font-bold shadow-xs hover:shadow-md cursor-pointer active:scale-95 transition`}
+                      >
+                        {locale === 'zh' ? '+ 立即创建第一篇' : '+ Create Note'}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   filteredNotes.map((note) => {
@@ -755,7 +793,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                             </div>
                           )}
 
-                          {/* Note Title + Pin */}
+                          {/* Note Title + Pin + Visibility icon */}
                           <div className="flex items-center gap-1.5 min-w-0 flex-1">
                             {note.isPinned && !isBatchMode && (
                               <button
@@ -766,6 +804,11 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                               >
                                 <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0 hover:scale-110 active:scale-90 transition-transform" />
                               </button>
+                            )}
+                            {note.isPublic === false && (
+                              <span className="text-neutral-500 dark:text-neutral-400 text-[11px] shrink-0" title={locale === 'zh' ? '仅自己可见 (私密)' : 'Private note'}>
+                                🔒
+                              </span>
                             )}
                             <span className={`font-bubble text-[13.5px] truncate ${
                               isActive && !isBatchMode 
@@ -800,8 +843,8 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                               {formatShortDate(note.createdAt || Date.now(), locale)}
                             </span>
 
-                            {/* Delete button (Admin non-batch) */}
-                            {!isBatchMode && isAdmin && (
+                            {/* Delete button */}
+                            {!isBatchMode && (
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -830,12 +873,12 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                               onSelectNote(note);
                             }
                           }}
-                          className={`p-3 rounded-2xl border transition cursor-pointer group flex flex-col justify-between relative select-none backdrop-blur-md ${
+                          className={`p-3 rounded-2xl border transition cursor-pointer group flex flex-col justify-between relative select-none backdrop-blur-xl ${
                             isChecked
-                              ? 'bg-rose-50/90 dark:bg-rose-950/80 border-rose-400 shadow-sm ring-2 ring-rose-400/30'
+                              ? 'bg-rose-50/80 dark:bg-rose-950/70 border-rose-400 shadow-sm ring-2 ring-rose-400/30'
                               : isActive && !isBatchMode
-                              ? 'bg-white dark:bg-[#18181B] border-rose-400 dark:border-rose-500/50 shadow-md ring-2 ring-rose-400/20'
-                              : 'bg-white/70 dark:bg-[#18181B]/60 hover:bg-white dark:hover:bg-[#18181B] border-neutral-200/60 dark:border-white/10 hover:border-rose-200/80 hover:shadow-xs'
+                              ? 'bg-white/85 dark:bg-[#18181B]/85 backdrop-blur-2xl border-rose-400 dark:border-rose-500/60 shadow-md ring-2 ring-rose-400/25'
+                              : 'bg-white/60 dark:bg-[#18181B]/60 backdrop-blur-xl hover:bg-white/80 dark:hover:bg-[#18181B]/80 border-white/60 dark:border-white/10 hover:border-rose-300/80 hover:shadow-xs'
                           }`}
                         >
                           {/* Left Accent Bar for Active Card */}
@@ -843,7 +886,7 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                             <div className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-rose-500" />
                           )}
 
-                          {/* Line 1: Title + Pin + Time */}
+                          {/* Line 1: Title + Pin + Visibility + Time */}
                           <div className={`flex items-start justify-between gap-2 mb-1 ${isBatchMode ? 'pr-7' : ''} ${isActive && !isBatchMode ? 'pl-1.5' : ''}`}>
                             <div className="flex items-center gap-1.5 min-w-0 flex-1">
                               {note.isPinned && !isBatchMode && (
@@ -855,6 +898,11 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                                 >
                                   <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0 hover:scale-110 active:scale-90 transition-transform" />
                                 </button>
+                              )}
+                              {note.isPublic === false && (
+                                <span className="text-neutral-500 dark:text-neutral-400 text-xs shrink-0" title={locale === 'zh' ? '仅自己可见 (私密)' : 'Private'}>
+                                  🔒
+                                </span>
                               )}
                               <h4 className={`font-bubble text-sm font-bold truncate leading-snug ${
                                 isChecked
@@ -900,10 +948,15 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                                 </span>
                               ))}
                               <span>{note.wordCount || 0} 字</span>
+                              {note.isPublic === false && (
+                                <span className="px-1.5 py-0.2 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-[10px] font-bubble font-bold border border-neutral-200 dark:border-neutral-700">
+                                  🔒 仅自己可见
+                                </span>
+                              )}
                             </div>
 
-                            {/* Delete Action (Admin non-batch) */}
-                            {!isBatchMode && isAdmin && (
+                            {/* Delete Action */}
+                            {!isBatchMode && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -939,14 +992,41 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                         <div
                           key={note.id}
                           onClick={() => onSelectNote(note)}
-                          className="px-3 py-2 rounded-xl border border-stone-200/80 dark:border-white/10 bg-stone-50/90 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 transition cursor-pointer flex items-center justify-between gap-2 text-xs select-none"
+                          className="px-3 py-2 rounded-xl border border-white/60 dark:border-white/10 bg-white/70 dark:bg-neutral-800/70 hover:bg-white dark:hover:bg-neutral-800 transition cursor-pointer flex items-center justify-between gap-2 text-xs select-none shadow-3xs group"
                         >
                           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <span className="font-bubble font-bold text-stone-800 dark:text-neutral-200 truncate">
+                            <span className="text-neutral-400">🗑️</span>
+                            <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-200 truncate group-hover:text-rose-600 dark:group-hover:text-rose-400">
                               {note.excerpt || (locale === 'zh' ? '已删笔记' : 'Deleted Note')}
                             </span>
                           </div>
-                          <span className="text-[10px] font-mono text-stone-400 shrink-0">{formattedDate}</span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-[10px] font-mono text-neutral-400">{formattedDate}</span>
+                            <button
+                              type="button"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                playChime();
+                                await db.notes.update(note.id, { isDeleted: false, isDirty: true, updatedAt: Date.now() });
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-950 text-emerald-600 dark:text-emerald-400 transition"
+                              title={locale === 'zh' ? '恢复笔记' : 'Restore'}
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                playPop(400);
+                                await db.notes.delete(note.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-950 text-rose-600 dark:text-rose-400 transition"
+                              title={locale === 'zh' ? '永久粉碎' : 'Purge'}
+                            >
+                              <Flame className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
                       );
                     }
@@ -955,17 +1035,46 @@ export const TagMeshSidebar: React.FC<TagMeshSidebarProps> = ({
                       <div
                         key={note.id}
                         onClick={() => onSelectNote(note)}
-                        className="p-3 rounded-2xl border border-stone-200/80 dark:border-white/10 bg-stone-50/90 dark:bg-neutral-900/80 hover:bg-white dark:hover:bg-neutral-800 transition cursor-pointer flex flex-col justify-between gap-1.5 shadow-3xs"
+                        className="p-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/70 dark:bg-neutral-800/70 hover:bg-white dark:hover:bg-neutral-800 transition cursor-pointer flex flex-col justify-between gap-1.5 shadow-3xs group backdrop-blur-md"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <h4 className="font-bubble text-sm font-bold text-stone-700 dark:text-neutral-100 truncate">
-                            {note.excerpt || (locale === 'zh' ? '已删笔记' : 'Deleted Note')}
-                          </h4>
-                          <span className="text-[10px] font-mono text-stone-400 shrink-0">{formattedDate}</span>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-sm">🗑️</span>
+                            <h4 className="font-bubble text-sm font-bold text-neutral-800 dark:text-neutral-100 truncate group-hover:text-rose-600 dark:group-hover:text-rose-400">
+                              {note.excerpt || (locale === 'zh' ? '已删笔记' : 'Deleted Note')}
+                            </h4>
+                          </div>
+                          <span className="text-[10px] font-mono text-neutral-400 shrink-0">{formattedDate}</span>
                         </div>
-                        <p className="font-cute text-xs text-stone-500 dark:text-neutral-400 line-clamp-1">
+                        <p className="font-cute text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">
                           {(note.rawMarkdown || '').replace(/^[#>*`\-\d.]+\s*/gm, '').substring(0, 60) || (locale === 'zh' ? '暂无内容...' : 'No content...')}
                         </p>
+                        <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-black/5 dark:border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              playChime();
+                              await db.notes.update(note.id, { isDeleted: false, isDirty: true, updatedAt: Date.now() });
+                            }}
+                            className="px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bubble text-[11px] font-bold hover:bg-emerald-100 transition flex items-center gap-1"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>{locale === 'zh' ? '恢复' : 'Restore'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              playPop(400);
+                              await db.notes.delete(note.id);
+                            }}
+                            className="px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bubble text-[11px] font-bold hover:bg-rose-100 transition flex items-center gap-1"
+                          >
+                            <Flame className="w-3 h-3" />
+                            <span>{locale === 'zh' ? '粉碎' : 'Purge'}</span>
+                          </button>
+                        </div>
                       </div>
                     );
                   })

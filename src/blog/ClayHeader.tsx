@@ -8,21 +8,20 @@ import {
   VolumeX, 
   Home, 
   Layers, 
-  MessageSquare, 
   PenTool, 
   Menu, 
-  ChevronRight 
+  ChevronRight,
+  Palette
 } from 'lucide-react';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
-import { useSiteConfig } from '../hooks/useSiteConfig';
 import { isSoundEnabled, toggleSound, playPop, playSoftTick } from './utils/soundEffects';
 import { useClayTheme } from './utils/clayThemes';
 import { SPRING_MICRO, HOVER_BUTTON_PRESS } from './utils/motionSystem';
 
 export interface ClayHeaderProps {
   onGoToEditor?: () => void;
-  currentRoute?: 'home' | 'gallery' | 'danmaku' | 'editor';
+  currentRoute?: 'home' | 'gallery' | 'editor';
 }
 
 export const ClayHeader: React.FC<ClayHeaderProps> = ({
@@ -30,9 +29,8 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
   currentRoute = 'home',
 }) => {
   const { locale, toggleLocale } = useI18n();
-  const { theme } = useClayTheme();
+  const { theme, openThemeModal, randomTheme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
-  const { guestNotesEnabled, danmakuEnabled, buttonStyle } = useSiteConfig();
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -50,15 +48,8 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
     }
   };
 
-  let basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-bold text-xs bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
-  let activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl font-bubble font-extrabold text-xs ${theme.activeBtnClass} shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
-
-  if (buttonStyle === 'clay') {
-    activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl font-bubble font-extrabold text-xs ${theme.activeBtnClass} shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
-  } else if (buttonStyle === 'glass') {
-    basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-bold text-xs bg-white/30 dark:bg-white/5 backdrop-blur-md text-neutral-700 dark:text-neutral-200 hover:bg-white/50 dark:hover:bg-white/10 border border-white/40 dark:border-white/10 shadow-3xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
-    activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl font-bubble font-extrabold text-xs ${theme.activeBtnClass} shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
-  }
+  const basePillClass = "h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-bold text-xs bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0";
+  const activePillClass = `h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl font-bubble font-extrabold text-xs ${theme.activeBtnClass} shadow-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0`;
 
   return (
     <header 
@@ -74,7 +65,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
           }}
           className="flex items-center gap-2 sm:gap-3 cursor-pointer group select-none shrink-0"
         >
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-rose-500 flex items-center justify-center text-white shadow-md group-hover:rotate-12 group-hover:scale-110 transition-transform">
+          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr ${theme.primaryGradient} flex items-center justify-center text-white shadow-md group-hover:rotate-12 group-hover:scale-110 transition-transform`}>
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
@@ -125,25 +116,6 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             <span>{locale === 'zh' ? '笔记' : 'Notes'}</span>
           </motion.button>
 
-          {/* 3. Danmaku Plaza */}
-          {danmakuEnabled && (
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.05, y: -1 }}
-              whileTap={{ scale: 0.94 }}
-              transition={SPRING_MICRO}
-              onClick={() => {
-                playPop();
-                window.location.hash = '#/danmaku';
-              }}
-              className={currentRoute === 'danmaku' ? activePillClass : basePillClass}
-              title={locale === 'zh' ? '前往灵感弹幕广场' : 'Enter Danmaku Plaza'}
-            >
-              <MessageSquare className="w-3.5 h-3.5 text-cyan-500" />
-              <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku'}</span>
-            </motion.button>
-          )}
-
           {/* 4. Admin/Guest Role Identity */}
           <motion.button
             type="button"
@@ -165,20 +137,43 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
             <span>{isAdmin ? (locale === 'zh' ? '馆长' : 'Admin') : (locale === 'zh' ? '游客' : 'Guest')}</span>
           </motion.button>
 
-          {/* 5. Jump to Workspace CTA (Visible if Admin or Guest mode is open) */}
-          {(guestNotesEnabled || isAdmin) && (
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.06, y: -1 }}
-              whileTap={{ scale: 0.93 }}
-              transition={SPRING_MICRO}
-              onClick={handleGoEditor}
-              className="h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white font-bubble font-bold text-xs border border-rose-400/80 dark:border-rose-500/50 shadow-3xs hover:shadow-md flex items-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <PenTool className="w-3.5 h-3.5" />
-              <span>{locale === 'zh' ? '工作台 ➜' : 'Workspace ➜'}</span>
-            </motion.button>
-          )}
+          {/* 4.5. Theme Studio Dimension Pill */}
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.05, y: -1 }}
+            whileTap={{ scale: 0.94 }}
+            transition={SPRING_MICRO}
+            onClick={openThemeModal}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              randomTheme();
+            }}
+            className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl font-bubble font-bold text-xs bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-200 hover:text-rose-600 dark:hover:text-rose-400 border border-neutral-200/80 dark:border-white/10 shadow-3xs flex items-center gap-1.5 cursor-pointer shrink-0"
+            title={locale === 'zh' ? '点击打开「次元主题工坊」• 右键随机惊喜换肤' : 'Open Theme Studio • Right-click to randomize theme'}
+          >
+            <span>{theme.emoji}</span>
+            <span>{locale === 'zh' ? theme.nameZh : theme.nameEn}</span>
+          </motion.button>
+
+          {/* 5. Jump to Workspace CTA */}
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.06, y: -1 }}
+            whileTap={{ scale: 0.93 }}
+            transition={SPRING_MICRO}
+            onClick={() => {
+              playPop();
+              if (isAdmin) {
+                handleGoEditor();
+              } else {
+                openAuthModal();
+              }
+            }}
+            className={`h-8.5 sm:h-9 px-3.5 sm:px-4 rounded-xl bg-gradient-to-r ${theme.primaryGradient} text-white font-bubble font-bold text-xs border border-white/20 shadow-3xs hover:shadow-md flex items-center gap-1.5 cursor-pointer shrink-0`}
+          >
+            <PenTool className="w-3.5 h-3.5" />
+            <span>{locale === 'zh' ? '工作台 ➜' : 'Workspace ➜'}</span>
+          </motion.button>
         </div>
 
         {/* Mobile Navigation Header (< 1024px) */}
@@ -206,7 +201,7 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               playPop(550);
               setIsMobileMenuOpen(true);
             }}
-            className="h-8.5 px-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white border border-rose-400 shadow-3xs flex items-center gap-1.5 text-xs font-bubble font-extrabold cursor-pointer active:scale-90"
+            className={`h-8.5 px-3.5 rounded-xl bg-gradient-to-r ${theme.primaryGradient} text-white border border-white/20 shadow-3xs flex items-center gap-1.5 text-xs font-bubble font-extrabold cursor-pointer active:scale-90`}
             title="Open Menu"
           >
             <Menu className="w-3.5 h-3.5" />
@@ -288,54 +283,47 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
                 <ChevronRight className={`w-4 h-4 ${currentRoute === 'gallery' ? 'text-white/80' : 'text-neutral-400'}`} />
               </button>
 
-              {danmakuEnabled && (
-                <button
-                  onClick={() => {
-                    playPop();
-                    setIsMobileMenuOpen(false);
-                    window.location.hash = '#/danmaku';
-                  }}
-                  className={`w-full p-3 rounded-2xl flex items-center justify-between font-bubble font-bold text-sm transition cursor-pointer border ${
-                    currentRoute === 'danmaku'
-                      ? `bg-gradient-to-r ${theme.primaryGradient} text-white border-white/60 shadow-md`
-                      : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border-neutral-100 dark:border-white/10 hover:bg-pink-50 dark:hover:bg-neutral-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <MessageSquare className={`w-4 h-4 shrink-0 ${currentRoute === 'danmaku' ? 'text-white' : 'text-cyan-500'}`} />
-                    <span>{locale === 'zh' ? '弹幕广场' : 'Danmaku Plaza'}</span>
-                  </div>
-                  <ChevronRight className={`w-4 h-4 ${currentRoute === 'danmaku' ? 'text-white/80' : 'text-neutral-400'}`} />
-                </button>
-              )}
-
-              {(guestNotesEnabled || isAdmin) && (
-                <button
-                  onClick={() => {
-                    playPop();
-                    setIsMobileMenuOpen(false);
+              <button
+                onClick={() => {
+                  playPop();
+                  setIsMobileMenuOpen(false);
+                  if (isAdmin) {
                     handleGoEditor();
-                  }}
-                  className={`w-full p-3 rounded-2xl flex items-center justify-between font-bubble font-extrabold text-sm text-white bg-gradient-to-r ${theme.primaryGradient} shadow-md transition cursor-pointer active:scale-95`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <PenTool className="w-4 h-4 shrink-0" />
-                    <span>{locale === 'zh' ? '进入写作工作台' : 'Open Workspace'}</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-white/80" />
-                </button>
-              )}
+                  } else {
+                    openAuthModal();
+                  }
+                }}
+                className={`w-full p-3 rounded-2xl flex items-center justify-between font-bubble font-extrabold text-sm text-white bg-gradient-to-r ${theme.primaryGradient} shadow-md transition cursor-pointer active:scale-95`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <PenTool className="w-4 h-4 shrink-0" />
+                  <span>{locale === 'zh' ? '进入笔记工作台' : 'Open Workspace'}</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-white/80" />
+              </button>
             </div>
 
             {/* Preferences */}
-            <div className="pt-2 border-t border-amber-900/10 grid grid-cols-2 gap-2 text-xs font-bubble font-bold shrink-0">
+            <div className="pt-2 border-t border-amber-900/10 dark:border-white/10 grid grid-cols-3 gap-2 text-xs font-bubble font-bold shrink-0">
+              {/* Theme Studio Button */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openThemeModal();
+                }}
+                className="p-2.5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 flex flex-col items-center gap-1 cursor-pointer hover:bg-rose-50 dark:hover:bg-neutral-700"
+              >
+                <Palette className="w-4 h-4 text-rose-500" />
+                <span>{locale === 'zh' ? '主题工坊' : 'Themes'}</span>
+              </button>
+
               {/* Language Switch */}
               <button
                 onClick={() => {
                   playSoftTick();
                   toggleLocale();
                 }}
-                className="p-2.5 rounded-2xl bg-white border border-neutral-200/80 text-neutral-700 flex flex-col items-center gap-1 cursor-pointer hover:bg-amber-50"
+                className="p-2.5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 flex flex-col items-center gap-1 cursor-pointer hover:bg-amber-50 dark:hover:bg-neutral-700"
               >
                 <Globe className="w-4 h-4 text-amber-500" />
                 <span>{locale === 'zh' ? '中 / EN' : 'EN / 中'}</span>
@@ -344,10 +332,10 @@ export const ClayHeader: React.FC<ClayHeaderProps> = ({
               {/* Sound Toggle */}
               <button
                 onClick={handleToggleSound}
-                className="p-2.5 rounded-2xl bg-white border border-neutral-200/80 text-neutral-700 flex flex-col items-center gap-1 cursor-pointer hover:bg-pink-50"
+                className="p-2.5 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 flex flex-col items-center gap-1 cursor-pointer hover:bg-pink-50 dark:hover:bg-neutral-700"
               >
                 {soundOn ? <Volume2 className="w-4 h-4 text-pink-500" /> : <VolumeX className="w-4 h-4 text-neutral-400" />}
-                <span>{soundOn ? (locale === 'zh' ? '音效开启' : 'SFX On') : (locale === 'zh' ? '静音' : 'Muted')}</span>
+                <span>{soundOn ? (locale === 'zh' ? '音效开' : 'SFX On') : (locale === 'zh' ? '静音' : 'Muted')}</span>
               </button>
             </div>
           </div>

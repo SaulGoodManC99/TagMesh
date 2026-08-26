@@ -14,7 +14,6 @@ import { ClayTagCloud } from './ClayTagCloud';
 import { ViewMode } from './ClayModeDock';
 import { BentoGridView } from './views/BentoGridView';
 import { TimelineListView } from './views/TimelineListView';
-import { ClayReadingModal } from './ClayReadingModal';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
 import { ClayFloatingActions } from './components/ClayFloatingActions';
 import { ClayGlobalContextMenu } from './components/ClayGlobalContextMenu';
@@ -36,31 +35,29 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
   const { locale } = useI18n();
   const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
-  const { guestNotesEnabled } = useSiteConfig();
 
   const [selectedTag, setSelectedTag] = useState<string>('#all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [authorFilter, setAuthorFilter] = useState<'all' | 'admin' | 'guest'>('all');
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
   const [transitionType, setTransitionType] = useState<'slide-right' | 'slide-left' | 'view-switch'>('slide-right');
-  const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCardRefreshing, setIsCardRefreshing] = useState(false);
 
-  const handleAuthorFilterChange = (newFilter: 'all' | 'admin' | 'guest', pitch: number) => {
+  const handleVisibilityFilterChange = (newFilter: 'all' | 'public' | 'private', pitch: number) => {
     playPop(pitch);
-    const filterOrder: Record<'all' | 'admin' | 'guest', number> = { all: 0, admin: 1, guest: 2 };
-    const currentOrder = filterOrder[authorFilter];
+    const filterOrder: Record<'all' | 'public' | 'private', number> = { all: 0, public: 1, private: 2 };
+    const currentOrder = filterOrder[visibilityFilter];
     const newOrder = filterOrder[newFilter];
     setTransitionType(newOrder >= currentOrder ? 'slide-right' : 'slide-left');
-    setAuthorFilter(newFilter);
+    setVisibilityFilter(newFilter);
 
-    // Smooth auto-fallback: If selected tag does not exist under target role, reset to #all
+    // Smooth auto-fallback: If selected tag does not exist under target filter, reset to #all
     if (selectedTag && selectedTag !== '#all' && selectedTag !== '#untagged') {
-      const targetNotes = publicNotes.filter((note) => {
+      const targetNotes = allNotes.filter((note) => {
         if (!note) return false;
-        if (newFilter === 'admin') return note.isOfficial === true || note.author === 'admin';
-        if (newFilter === 'guest') return note.isOfficial !== true && note.author !== 'admin';
+        if (newFilter === 'public') return note.isPublic !== false;
+        if (newFilter === 'private') return note.isPublic === false;
         return true;
       });
       const hasTag = targetNotes.some((n) =>
@@ -82,10 +79,10 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     setSelectedTag(tg);
   };
 
-  // Dynamic Live Query: Retrieve all active notes so author badge counts always remain accurate
+  // Dynamic Live Query: Retrieve all active notes according to admin vs visitor
   const rawNotes = useLiveQuery(
-    () => getActiveNotes(),
-    [refreshTick]
+    () => getActiveNotes(isAdmin ? visibilityFilter : 'public'),
+    [isAdmin, visibilityFilter, refreshTick]
   );
 
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
@@ -225,37 +222,10 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     return () => window.removeEventListener('hashchange', handleHashParams);
   }, []);
 
-  // Filter out #draft or #private notes for public blog view
-  const publicNotes = useMemo(() => {
-    return allNotes.filter((note) => {
-      if (!note) return false;
-      const tags = Array.isArray(note.tags) ? note.tags : [];
-      const isDraftOrPrivate = tags.some((t) => {
-        if (typeof t !== 'string') return false;
-        const lower = t.toLowerCase();
-        return lower === '#draft' || lower === '#private' || lower === '#草稿';
-      });
-      return !isDraftOrPrivate;
-    });
-  }, [allNotes]);
-
-  const effectiveAuthorFilter = guestNotesEnabled ? authorFilter : 'admin';
-
-  // Dynamic Real-time Tag counts scoped strictly to active effectiveAuthorFilter
+  // Dynamic Real-time Tag counts scoped to current active notes
   const authorTagCounts = useMemo(() => {
-    const targetNotes = publicNotes.filter((note) => {
-      if (!note) return false;
-      if (effectiveAuthorFilter === 'admin') {
-        return note.isOfficial === true || note.author === 'admin';
-      }
-      if (effectiveAuthorFilter === 'guest') {
-        return note.isOfficial !== true && note.author !== 'admin';
-      }
-      return true;
-    });
-
     const map = new Map<string, number>();
-    targetNotes.forEach((note) => {
+    allNotes.forEach((note) => {
       const tags = Array.isArray(note.tags) ? note.tags : [];
       tags.forEach((tag) => {
         if (typeof tag === 'string') {
@@ -270,32 +240,22 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
     return Array.from(map.entries())
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count);
-  }, [publicNotes, effectiveAuthorFilter]);
+  }, [allNotes]);
 
   // Calculate live stats
-  const totalNotes = guestNotesEnabled ? publicNotes.length : publicNotes.filter(n => n.isOfficial === true || n.author === 'admin').length;
-  const totalTags = authorTagCounts.length;
-  const adminNotesCount = useMemo(() => publicNotes.filter(n => n.isOfficial === true || n.author === 'admin').length, [publicNotes]);
-  const guestNotesCount = useMemo(() => publicNotes.filter(n => n.isOfficial !== true && n.author !== 'admin').length, [publicNotes]);
+  const totalNotes = allNotes.length;
+  const publicNotesCount = useMemo(() => allNotes.filter(n => n.isPublic !== false).length, [allNotes]);
+  const privateNotesCount = useMemo(() => allNotes.filter(n => n.isPublic === false).length, [allNotes]);
   const totalWords = useMemo(() => {
-    const activeList = guestNotesEnabled ? publicNotes : publicNotes.filter(n => n.isOfficial === true || n.author === 'admin');
-    return activeList.reduce((acc, curr) => acc + (curr?.wordCount || 0), 0);
-  }, [publicNotes, guestNotesEnabled]);
+    return allNotes.reduce((acc, curr) => acc + (curr?.wordCount || 0), 0);
+  }, [allNotes]);
 
-  // Filter notes by selected tag and author
+  // Filter notes by selected tag
   const filteredNotes = useMemo(() => {
-    return publicNotes
+    return allNotes
       .filter((note) => {
         if (!note) return false;
         const tags = Array.isArray(note.tags) ? note.tags : [];
-
-        // Author filter
-        if (effectiveAuthorFilter === 'admin' && note.isOfficial !== true && note.author !== 'admin') {
-          return false;
-        }
-        if (effectiveAuthorFilter === 'guest' && (note.isOfficial === true || note.author === 'admin')) {
-          return false;
-        }
 
         // Tag filter
         if (selectedTag && selectedTag !== '#all') {
@@ -321,36 +281,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           new Date(a.createdAt || 0).getTime()
         );
       });
-  }, [publicNotes, selectedTag, authorFilter]);
-
-  // Sync hash routing for articles
-  useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash;
-      const match = hash.match(/^#\/post\/(.+)$/);
-      if (match) {
-        const id = match[1];
-        const found = publicNotes.find((n) => n.id === id);
-        if (found) {
-          setActiveReadingNote(found);
-        }
-      }
-    };
-
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
-  }, [publicNotes]);
-
-  const handleCardClick = (note: Note) => {
-    window.location.hash = `#/post/${note.id}`;
-    setActiveReadingNote(note);
-  };
-
-  const handleCloseReadingModal = () => {
-    window.location.hash = '#/gallery';
-    setActiveReadingNote(null);
-  };
+  }, [allNotes, selectedTag]);
 
   return (
     <div 
@@ -405,69 +336,64 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-bubble text-lg sm:text-2xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 dark:from-white dark:via-neutral-100 dark:to-neutral-300 bg-clip-text text-transparent">
-                {locale === 'zh' ? (guestNotesEnabled ? '笔记' : '馆长精选笔记') : (guestNotesEnabled ? 'Notes Space' : 'Curator Notes')}
+                {locale === 'zh' ? (isAdmin ? '灵感笔记展厅' : '公开笔记展厅') : 'Inspiration Notes Gallery'}
               </h1>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 text-[11px] font-bubble font-bold border border-pink-200 dark:border-pink-900/60 shadow-3xs">
-                <Sparkles className="w-3 h-3 text-pink-500" />
-                <span>{locale === 'zh' ? '双重视角自由切换' : 'Dual Note Views'}</span>
-              </span>
+              {isAdmin && (
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-[11px] font-bubble font-bold border border-amber-200 dark:border-amber-900/60 shadow-3xs">
+                  <span>👑 馆长管理视图</span>
+                </span>
+              )}
             </div>
             <p className="font-cute text-xs text-neutral-500 dark:text-neutral-400 hidden sm:block mt-0.5">
               {locale === 'zh'
-                ? `共收录 ${totalNotes} 篇笔记 • 点击右下角 🍱 / 🎞️ 轻松切换`
+                ? `共收录 ${totalNotes} 篇展品 • 点击右下角 🍱 / 🎞️ 轻松切换`
                 : `${totalNotes} notes exhibited • Click bottom right to toggle views`}
             </p>
           </div>
         </div>
 
-        {/* Author Dimension Filter Pills (Only shown when Guest notes are enabled) */}
-        {guestNotesEnabled ? (
+        {/* Visibility Filter Pills (Only shown when Admin is logged in) */}
+        {isAdmin && (
           <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end overflow-x-auto no-scrollbar">
-            {/* Author Switcher */}
             <div 
               className="inline-flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 rounded-2xl bg-black/[0.04] dark:bg-black/40 backdrop-blur-xl border border-black/[0.06] dark:border-white/10 shadow-inner text-xs font-bubble font-bold shrink-0"
             >
               <button
                 type="button"
-                onClick={() => handleAuthorFilterChange('all', 520)}
+                onClick={() => handleVisibilityFilterChange('all', 520)}
                 className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 hover:scale-105 ${
-                  authorFilter === 'all'
+                  visibilityFilter === 'all'
                     ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs border border-neutral-200/90 dark:border-white/15 scale-102'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10'
                 }`}
               >
-                <span>🌟 {locale === 'zh' ? '全部' : 'All'} ({publicNotes.length})</span>
+                <span>🌟 {locale === 'zh' ? '全部' : 'All'} ({allNotes.length})</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleAuthorFilterChange('admin', 540)}
+                onClick={() => handleVisibilityFilterChange('public', 540)}
                 className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
-                  authorFilter === 'admin'
-                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-neutral-900 shadow-xs border border-amber-300/60 scale-102'
-                    : 'text-amber-700 dark:text-amber-300 hover:bg-amber-100/60 dark:hover:bg-amber-950/40'
+                  visibilityFilter === 'public'
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white shadow-xs border border-sky-300/60 scale-102'
+                    : 'text-sky-700 dark:text-sky-300 hover:bg-sky-100/60 dark:hover:bg-sky-950/40'
                 }`}
               >
-                <span>👑 {locale === 'zh' ? '馆长精选' : 'Curator'} ({adminNotesCount})</span>
+                <span>🌐 {locale === 'zh' ? '公开' : 'Public'} ({publicNotesCount})</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleAuthorFilterChange('guest', 560)}
+                onClick={() => handleVisibilityFilterChange('private', 560)}
                 className={`px-3.5 py-1.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1 active:scale-95 hover:scale-105 ${
-                  authorFilter === 'guest'
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs border border-emerald-300/60 scale-102'
-                    : 'text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-950/40'
+                  visibilityFilter === 'private'
+                    ? 'bg-gradient-to-r from-neutral-700 to-neutral-900 text-white shadow-xs border border-neutral-600/60 scale-102'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100/60 dark:hover:bg-neutral-800/40'
                 }`}
               >
-                <span>🌱 {locale === 'zh' ? '旅人笔记' : 'Guests'} ({guestNotesCount})</span>
+                <span>🔒 {locale === 'zh' ? '仅自己可见' : 'Private'} ({privateNotesCount})</span>
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/90 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-bubble font-bold text-xs border border-amber-200/80 dark:border-amber-900/60 shadow-3xs shrink-0 backdrop-blur-md">
-            <span>👑</span>
-            <span>{locale === 'zh' ? '已开启馆长精选专属展台' : 'Curator Exclusive Exhibition'}</span>
           </div>
         )}
       </div>
@@ -476,10 +402,9 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
       <div className="max-w-7xl mx-auto px-3 sm:px-8 w-full select-none">
         <ClayTagCloud
           tags={authorTagCounts}
-          totalNotesCount={authorFilter === 'admin' ? adminNotesCount : authorFilter === 'guest' ? guestNotesCount : totalNotes}
+          totalNotesCount={totalNotes}
           selectedTag={selectedTag}
           onSelectTag={(tg) => handleSelectTagWithTransition(tg)}
-          authorFilter={authorFilter}
         />
       </div>
 
@@ -497,25 +422,25 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             className="text-center py-16 px-4 bg-[#FAF7F2]/95 dark:bg-[#12111A]/90 backdrop-blur-2xl clay-card max-w-md mx-auto my-8 border-2 border-white/80 dark:border-white/10 shadow-xl rounded-[32px] select-none"
           >
             <div className="text-5xl mb-3 select-none">
-              {authorFilter === 'admin' ? '👑' : authorFilter === 'guest' ? '🌱' : '🎈'}
+              {visibilityFilter === 'private' ? '🔒' : '🎈'}
             </div>
-            <h3 className="font-bubble text-xl font-bold text-neutral-800 mb-1.5">
-              {authorFilter === 'admin'
-                ? (locale === 'zh' ? '暂无馆长官方笔记' : 'No curator notes')
-                : authorFilter === 'guest'
-                ? (locale === 'zh' ? '暂无旅人随笔笔记' : 'No guest notes')
+            <h3 className="font-bubble text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-1.5">
+              {visibilityFilter === 'private'
+                ? (locale === 'zh' ? '暂无仅自己可见的私密笔记' : 'No private notes')
                 : (locale === 'zh' ? '当前分类暂无笔记' : 'No notes under this tag')}
             </h3>
-            <p className="font-cute text-xs text-neutral-500 mb-6 max-w-xs mx-auto leading-relaxed">
-              {authorFilter === 'admin'
-                ? (locale === 'zh' ? '馆长尚未在当前标签下创作官方笔记，可在工作台以馆长身份新建。' : 'No curator notes under this tag.')
-                : authorFilter === 'guest'
-                ? (locale === 'zh' ? '还没有旅人在当前分类下留下笔记，快去工作台写下第一篇灵感吧！' : 'No guest notes yet. Create your first note in workspace!')
-                : (locale === 'zh' ? '可以尝试切换其他标签，或前往工作台记录新的想法！' : 'Try switching tags or create a note in workspace!')}
+            <p className="font-cute text-xs text-neutral-500 dark:text-neutral-400 mb-6 max-w-xs mx-auto leading-relaxed">
+              {locale === 'zh' ? '可以尝试切换其他标签，或前往工作台记录新的想法！' : 'Try switching tags or create a note in workspace!'}
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
-                onClick={onGoToEditor}
+                onClick={() => {
+                  if (isAdmin) {
+                    onGoToEditor();
+                  } else {
+                    openAuthModal();
+                  }
+                }}
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white font-bubble text-xs font-bold clay-btn shadow-md cursor-pointer hover:shadow-lg hover:scale-105 active:scale-95 transition"
               >
                 <PenTool className="w-4 h-4" />
@@ -525,7 +450,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
           </div>
         ) : (
           <div 
-            key={`${authorFilter}-${selectedTag}-${viewMode}`} 
+            key={`${visibilityFilter}-${selectedTag}-${viewMode}`} 
             className={`w-full ${
               transitionType === 'slide-right'
                 ? 'slide-in-right'
@@ -538,7 +463,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             {viewMode === 'grid' && (
               <BentoGridView
                 notes={filteredNotes}
-                onNoteClick={handleCardClick}
+                onEdit={onGoToEditorWithNote}
                 onTagClick={(tg) => setSelectedTag(tg)}
               />
             )}
@@ -547,29 +472,13 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             {viewMode === 'timeline' && (
               <TimelineListView
                 notes={filteredNotes}
-                onNoteClick={handleCardClick}
+                onEdit={onGoToEditorWithNote}
                 onTagClick={(tg) => setSelectedTag(tg)}
               />
             )}
             </div>
         )}
       </main>
-
-      {/* Reading Showcase Modal */}
-      <ClayReadingModal
-        note={activeReadingNote}
-        allNotes={filteredNotes}
-        onClose={handleCloseReadingModal}
-        onGoToEditorWithNote={(note) => {
-          setActiveReadingNote(null);
-          onGoToEditorWithNote(note);
-        }}
-        onTagClick={(tg) => {
-          setSelectedTag(tg);
-        }}
-        onSelectNote={handleCardClick}
-        onDeleteNote={handleDeleteNote}
-      />
 
       {/* Clean & Elegant Minimal Gallery Footer */}
       <footer 
@@ -582,7 +491,7 @@ export const ClayBlogHome: React.FC<ClayBlogHomeProps> = ({
             <span className="text-neutral-400 dark:text-neutral-600">•</span>
             <span>{totalNotes} {locale === 'zh' ? '篇笔记' : 'notes'}</span>
             <span className="text-neutral-400 dark:text-neutral-600">•</span>
-            <span>{totalTags} {locale === 'zh' ? '个标签' : 'tags'}</span>
+            <span>{authorTagCounts.length} {locale === 'zh' ? '个标签' : 'tags'}</span>
             <span className="text-neutral-400 dark:text-neutral-600">•</span>
             <span>{totalWords.toLocaleString()} {locale === 'zh' ? '字' : 'words'}</span>
             <span className="text-neutral-400 dark:text-neutral-600">•</span>

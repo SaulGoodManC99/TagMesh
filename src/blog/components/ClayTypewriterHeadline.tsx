@@ -14,35 +14,35 @@ interface SloganItem {
 const SLOGANS: SloganItem[] = [
   {
     prefixZh: '捕获瞬时闪念，\n记录',
-    highlightZh: '日常灵感与碎片',
+    highlightZh: '工作待办与生活灵感',
     suffixZh: ' ✨',
     prefixEn: 'Capture fleeting thoughts, \nrecord ',
-    highlightEn: 'Every Spark & Fragment',
+    highlightEn: 'Work Tasks & Daily Sparks',
     suffixEn: ' ✨',
   },
   {
-    prefixZh: '随手打上 #标签，\n自动编织',
-    highlightZh: '多维知识网',
-    suffixZh: ' 🕸️',
-    prefixEn: 'Type #hashtags anytime to \nweave a ',
-    highlightEn: 'Multi-Dimensional Mesh',
-    suffixEn: ' 🕸️',
+    prefixZh: '随手打上 #标签，\n井井有条整理',
+    highlightZh: '会议纪要与学习笔记',
+    suffixZh: ' 📑',
+    prefixEn: 'Type #hashtags anytime, \nneatly organize ',
+    highlightEn: 'Meeting Notes & Learnings',
+    suffixEn: ' 📑',
   },
   {
-    prefixZh: '告别繁琐文件夹，\n自由切换',
-    highlightZh: '5 种笔记展示视角',
-    suffixZh: ' 🎡',
-    prefixEn: 'Zero folder hierarchy, \nswitch across ',
-    highlightEn: '5 Dynamic Note Views',
-    suffixEn: ' 🎡',
+    prefixZh: '晨间日记与读书随笔，\n随时开启',
+    highlightZh: '轻松愉悦的记录时光',
+    suffixZh: ' ☕',
+    prefixEn: 'Daily journals & reading reflections, \nenjoy ',
+    highlightEn: 'Pleasant Writing Moments',
+    suffixEn: ' ☕',
   },
   {
-    prefixZh: '专注于 Markdown，\n回归',
-    highlightZh: '纯粹无干扰写作',
-    suffixZh: ' ✍️',
-    prefixEn: 'Focus on Markdown, \nembrace ',
-    highlightEn: 'Pure Distraction-Free Writing',
-    suffixEn: ' ✍️',
+    prefixZh: '无需复杂设置，\n随时记录',
+    highlightZh: '每一个心动与闪光点',
+    suffixZh: ' 💡',
+    prefixEn: 'Zero complicated setup, \nfreely record ',
+    highlightEn: 'Every Inspiring Moment',
+    suffixEn: ' 💡',
   },
 ];
 
@@ -131,12 +131,31 @@ export const ClayTypewriterHeadline: React.FC = () => {
     }
   };
 
+  // Find the longest slogan representation for ghost overlay to lock exact layout height across devices
+  const longestSloganZh = "晨间日记与读书随笔，\n随时开启轻松愉悦的记录时光 ☕";
+  const longestSloganEn = "Daily journals & reading reflections, \nenjoy Pleasant Writing Moments ☕";
+  const ghostText = locale === 'zh' ? longestSloganZh : longestSloganEn;
+
   return (
-    <div className="min-h-[7.5rem] sm:min-h-[9.5rem] lg:min-h-[12rem] flex items-center justify-center text-center mb-4 sm:mb-6">
-      <h1 className="font-bubble text-3xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 dark:text-white leading-[1.15] tracking-tight text-center drop-shadow-sm">
-        {renderStyledText()}
-        <span className="inline-block w-1.5 sm:w-2 h-8 sm:h-12 lg:h-14 ml-2 bg-gradient-to-b from-pink-500 to-rose-500 rounded-full animate-pulse align-middle shadow-md" />
-      </h1>
+    <div className="grid grid-cols-1 grid-rows-1 items-center justify-center text-center mb-4 sm:mb-6 w-full max-w-4xl mx-auto">
+      {/* Invisible Ghost Pre-allocation Layer to eliminate CLS (Layout Shift) on all screen sizes */}
+      <div 
+        aria-hidden="true" 
+        className="col-start-1 row-start-1 invisible select-none pointer-events-none opacity-0 flex items-center justify-center text-center w-full"
+      >
+        <h1 className="font-bubble text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.18] tracking-tight whitespace-pre-line text-center">
+          <span>{ghostText}</span>
+          <span className="inline-block w-1.5 sm:w-2 h-8 sm:h-12 lg:h-14 ml-2" />
+        </h1>
+      </div>
+
+      {/* Real Animated Typewriter Layer */}
+      <div className="col-start-1 row-start-1 z-10 flex items-center justify-center text-center w-full">
+        <h1 className="font-bubble text-3xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 dark:text-white leading-[1.18] tracking-tight text-center drop-shadow-sm">
+          {renderStyledText()}
+          <span className="inline-block w-1.5 sm:w-2 h-8 sm:h-12 lg:h-14 ml-2 bg-gradient-to-b from-pink-500 to-rose-500 rounded-full animate-pulse align-middle shadow-md" />
+        </h1>
+      </div>
     </div>
   );
 };

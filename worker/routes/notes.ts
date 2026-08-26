@@ -54,8 +54,9 @@ notesRouter.get('/search', async (c) => {
   const query = c.req.query('q') || '';
   const tag = c.req.query('tag');
   const limit = parseInt(c.req.query('limit') || '30', 10);
+  const isPublicOnly = c.req.query('public_only') === '1';
 
-  const notes = await searchNotesFts(c.env.DB, query, tag, limit);
+  const notes = await searchNotesFts(c.env.DB, query, tag, limit, isPublicOnly);
   return c.json({ notes });
 });
 
@@ -66,8 +67,9 @@ notesRouter.get('/search', async (c) => {
 notesRouter.get('/', async (c) => {
   const limit = parseInt(c.req.query('limit') || '50', 10);
   const offset = parseInt(c.req.query('offset') || '0', 10);
+  const isPublicOnly = c.req.query('public_only') === '1';
 
-  const notes = await listNotes(c.env.DB, limit, offset);
+  const notes = await listNotes(c.env.DB, limit, offset, isPublicOnly);
   return c.json({ notes });
 });
 

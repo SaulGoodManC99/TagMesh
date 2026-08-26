@@ -1,14 +1,18 @@
 import { Hono, Context } from 'hono';
 import { Env } from '../env';
 import { McpToolCallRequest, McpToolCallResponse } from '../../src/types/mcp';
-import { searchNotesFts, getNoteById, syncNote } from '../db/queries';
+import { searchNotesFts, getNoteById, syncNote, listNotes } from '../db/queries';
 
 export const mcpRouter = new Hono<{ Bindings: Env }>();
 
 /**
- * Bearer Token Auth Middleware
+ * Bearer Token Auth Middleware (Applies to POST / RPC calls, allows GET / OPTIONS for service discovery)
  */
 mcpRouter.use('*', async (c, next) => {
+  if (c.req.method === 'GET' || c.req.method === 'OPTIONS') {
+    return await next();
+  }
+
   const authHeader = c.req.header('Authorization');
   const expectedToken = c.env.MCP_AUTH_TOKEN || 'tagmesh_mcp_secret_bearer_token';
 
@@ -17,7 +21,7 @@ mcpRouter.use('*', async (c, next) => {
       {
         jsonrpc: '2.0',
         id: null,
-        error: { code: -32000, message: 'Unauthorized: Missing Bearer token' },
+        error: { code: -32000, message: 'Unauthorized: Missing Bearer token in Authorization header' },
       },
       401
     );
@@ -39,6 +43,31 @@ mcpRouter.use('*', async (c, next) => {
 });
 
 const MCP_TOOLS = [
+  {
+    name: 'list_notes',
+    description: 'List recent notes from TagMesh repository with pagination, tag filtering, and visibility metadata.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Maximum number of notes to return (default: 20, max: 100)',
+        },
+        offset: {
+          type: 'number',
+          description: 'Number of notes to skip for pagination (default: 0)',
+        },
+        tag: {
+          type: 'string',
+          description: 'Optional hashtag to filter by, e.g. #architecture',
+        },
+        publicOnly: {
+          type: 'boolean',
+          description: 'If true, only return public notes; if false or omitted, return all notes.',
+        },
+      },
+    },
+  },
   {
     name: 'search_by_tag',
     description: 'Search Markdown notes filtered by a specific hashtag in the TagMesh knowledge base.',
@@ -77,7 +106,7 @@ const MCP_TOOLS = [
   },
   {
     name: 'read_note',
-    description: 'Retrieve the raw Markdown content, tags, and metadata of a specific note by ID.',
+    description: 'Retrieve the raw Markdown content, tags, visibility status, and metadata of a specific note by ID.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -91,7 +120,7 @@ const MCP_TOOLS = [
   },
   {
     name: 'create_or_update_note',
-    description: 'Create a new Markdown note or overwrite a note stream in TagMesh repository.',
+    description: 'Create a new Markdown note or overwrite a note in TagMesh repository with optional visibility.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -107,6 +136,10 @@ const MCP_TOOLS = [
           type: 'array',
           items: { type: 'string' },
           description: 'Array of hashtags (e.g. ["#ideas", "#ai"])',
+        },
+        isPublic: {
+          type: 'boolean',
+          description: 'Whether the note is public in the gallery (true) or private/curator-only (false). Defaults to true.',
         },
       },
       required: ['markdown'],
@@ -222,6 +255,50 @@ async function handleMcpRpc(c: Context<{ Bindings: Env }>) {
     const db = c.env.DB;
 
     try {
+      if (toolName === 'list_notes') {
+        const limit = Math.min(Number(args.limit || 20), 100);
+        const offset = Math.max(Number(args.offset || 0), 0);
+        const publicOnly = Boolean(args.publicOnly);
+        const tag = args.tag ? String(args.tag).trim() : '';
+
+        let notes = tag 
+          ? await searchNotesFts(db, '', tag, limit)
+          : await listNotes(db, limit, offset, publicOnly);
+
+        if (publicOnly && tag) {
+          notes = notes.filter(n => n.isPublic !== false);
+        }
+
+        return c.json<McpToolCallResponse>({
+          jsonrpc: '2.0',
+          id,
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({
+                  total: notes.length,
+                  limit,
+                  offset,
+                  publicOnly,
+                  tag: tag || undefined,
+                  notes: notes.map(n => ({
+                    id: n.id,
+                    excerpt: n.excerpt,
+                    tags: n.tags,
+                    isPublic: n.isPublic !== false,
+                    isPinned: Boolean(n.isPinned),
+                    wordCount: n.wordCount,
+                    createdAt: new Date(n.createdAt).toISOString(),
+                    updatedAt: new Date(n.updatedAt).toISOString(),
+                  })),
+                }, null, 2),
+              },
+            ],
+          },
+        });
+      }
+
       if (toolName === 'search_by_tag') {
         const rawTag = String(args.tag || '');
         const tag = rawTag.startsWith('#') ? rawTag : `#${rawTag}`;
@@ -242,6 +319,7 @@ async function handleMcpRpc(c: Context<{ Bindings: Env }>) {
                     id: n.id,
                     excerpt: n.excerpt,
                     tags: n.tags,
+                    isPublic: n.isPublic !== false,
                     wordCount: n.wordCount,
                     updatedAt: new Date(n.updatedAt).toISOString(),
                   })),
@@ -271,6 +349,7 @@ async function handleMcpRpc(c: Context<{ Bindings: Env }>) {
                     id: n.id,
                     excerpt: n.excerpt,
                     tags: n.tags,
+                    isPublic: n.isPublic !== false,
                     preview: n.rawMarkdown.substring(0, 200),
                     updatedAt: new Date(n.updatedAt).toISOString(),
                   })),
@@ -313,6 +392,7 @@ async function handleMcpRpc(c: Context<{ Bindings: Env }>) {
         const markdown = String(args.markdown || '');
         const now = Date.now();
         const noteId = args.id ? String(args.id) : `tm_mcp_${now.toString(36)}`;
+        const isPublic = args.isPublic !== undefined ? Boolean(args.isPublic) : true;
         
         const lines = markdown.split('\n').map(l => l.trim()).filter(Boolean);
         const excerpt = lines[0] ? lines[0].replace(/^[#>*`\-\d.]+\s*/, '').substring(0, 80) : 'MCP note';
@@ -331,6 +411,7 @@ async function handleMcpRpc(c: Context<{ Bindings: Env }>) {
           version: 1,
           isPinned: false,
           isDeleted: false,
+          isPublic,
           createdAt: now,
           updatedAt: now,
           author: 'admin' as const,

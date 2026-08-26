@@ -7,14 +7,12 @@ export interface ClayHeroProps {
   totalNotes: number;
   totalTags: number;
   totalWords: number;
-  onOpenGacha?: () => void;
 }
 
 export const ClayHero: React.FC<ClayHeroProps> = ({
   totalNotes,
   totalTags,
   totalWords,
-  onOpenGacha,
 }) => {
   const { locale } = useI18n();
 
@@ -35,25 +33,12 @@ export const ClayHero: React.FC<ClayHeroProps> = ({
           </div>
 
           <div>
-            {/* Top Pill Badge & Lucky Dip Trigger */}
+            {/* Top Pill Badge */}
             <div className="flex items-center gap-2 mb-4 flex-wrap">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 font-bubble text-xs font-bold shadow-xs">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin" style={{ animationDuration: '6s' }} />
                 <span>{locale === 'zh' ? '零标题 · 纯标签 · 黏土乐园' : 'Zero Titles · Pure Tags · Clay Paradise'}</span>
               </div>
-
-              {onOpenGacha && (
-                <button
-                  onClick={() => {
-                    playPop();
-                    onOpenGacha();
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-pink-500 hover:from-amber-500 hover:to-pink-600 text-white font-bubble text-xs font-bold shadow-md hover:shadow-lg transition cursor-pointer active:scale-95 animate-pulse"
-                >
-                  <Dices className="w-3.5 h-3.5" />
-                  <span>{locale === 'zh' ? '🎲 灵感扭蛋机' : '🎲 Lucky Dip'}</span>
-                </button>
-              )}
             </div>
 
             {/* Bubbly Gradient Title */}

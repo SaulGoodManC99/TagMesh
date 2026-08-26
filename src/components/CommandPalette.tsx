@@ -19,13 +19,16 @@ import {
   Sparkles,
   PenTool,
   CornerDownLeft,
-  Tag as TagIcon
+  Tag as TagIcon,
+  Palette,
+  Dices
 } from 'lucide-react';
 import { Note, TagCount } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
 import { db, searchNotesLocal, getAllTagCounts } from '../db/dexie';
 import { playPop, playChime } from '../blog/utils/soundEffects';
+import { useClayTheme, CLAY_THEMES } from '../blog/utils/clayThemes';
 
 export interface CommandPaletteProps {
   isOpen: boolean;
@@ -66,12 +69,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 }) => {
   const { t, locale } = useI18n();
   const { isAdmin } = useAuth();
+  const { openThemeModal, setTheme, randomTheme } = useClayTheme();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [searchedNotes, setSearchedNotes] = useState<Note[]>([]);
 
-  // 100% Real-time dynamic live query for all tags in Dexie DB (role-scoped)
-  const liveTags = useLiveQuery(() => getAllTagCounts(isAdmin ? undefined : 'guest'), [isAdmin]) || [];
+  // 100% Real-time dynamic live query for all tags in Dexie DB
+  const liveTags = useLiveQuery(() => getAllTagCounts('all'), []) || [];
 
   // Reset search when opening palette
   useEffect(() => {
@@ -88,7 +92,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     let mounted = true;
     const load = async () => {
       try {
-        const found = await searchNotesLocal(search, undefined, isAdmin ? undefined : 'guest');
+        const found = await searchNotesLocal(search, undefined, 'all');
         if (mounted) {
           setSearchedNotes(found.slice(0, 15));
         }
@@ -431,34 +435,68 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   <span>{locale === 'zh' ? '📑 匹配笔记清单' : 'Notes Found'}</span>
                 </div>
               }>
-                {searchedNotes.map((note) => (
-                  <Command.Item
-                    key={note.id}
-                    onSelect={() => {
-                      playPop();
-                      onSelectNote(note);
-                      onClose();
-                    }}
-                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-pink-50/70 dark:hover:bg-pink-950/40 text-neutral-800 dark:text-neutral-100 text-sm cursor-pointer transition group border border-neutral-200/70 dark:border-white/10 hover:border-pink-300 dark:hover:border-pink-700 shadow-3xs mb-1.5"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shrink-0">
-                        <FileText className="w-4 h-4" />
+                {searchedNotes.map((note) => {
+                  // Extract matching snippet from rawMarkdown
+                  let snippet = '';
+                  if (note.rawMarkdown) {
+                    const clean = note.rawMarkdown.replace(/[#*`_~[\]()>-]/g, ' ').replace(/\s+/g, ' ').trim();
+                    if (search) {
+                      const idx = clean.toLowerCase().indexOf(search.toLowerCase());
+                      if (idx !== -1) {
+                        const start = Math.max(0, idx - 20);
+                        const end = Math.min(clean.length, idx + search.length + 40);
+                        snippet = (start > 0 ? '…' : '') + clean.slice(start, end) + (end < clean.length ? '…' : '');
+                      } else {
+                        snippet = clean.slice(0, 60);
+                      }
+                    } else {
+                      snippet = clean.slice(0, 60);
+                    }
+                  }
+
+                  return (
+                    <Command.Item
+                      key={note.id}
+                      onSelect={() => {
+                        playPop();
+                        onSelectNote(note);
+                        onClose();
+                      }}
+                      className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-pink-50/70 dark:hover:bg-pink-950/40 text-neutral-800 dark:text-neutral-100 text-sm cursor-pointer transition group border border-neutral-200/70 dark:border-white/10 hover:border-pink-300 dark:hover:border-pink-700 shadow-3xs mb-1.5"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shrink-0">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bubble font-bold text-sm sm:text-base text-neutral-800 dark:text-neutral-100 truncate group-hover:text-rose-600 dark:group-hover:text-rose-400">
+                              {note.excerpt || (locale === 'zh' ? '空白笔记' : 'Untitled Note')}
+                            </p>
+                            <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500 shrink-0">
+                              {note.wordCount || 0} 字
+                            </span>
+                          </div>
+                          {snippet && (
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5 font-sans">
+                              {snippet}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            {(note.tags || []).slice(0, 4).map(t => (
+                              <span key={t} className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-300 border border-pink-200/60 dark:border-pink-900/60">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-bubble font-bold text-sm sm:text-base text-neutral-800 dark:text-neutral-100 truncate group-hover:text-rose-600 dark:group-hover:text-rose-400">
-                          {note.excerpt || '空白笔记'}
-                        </p>
-                        <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
-                          {(note.tags || []).length > 0 ? note.tags.join(' ') : '无标签'} • {note.wordCount || 0} 字
-                        </p>
-                      </div>
-                    </div>
-                    {note.isPinned && (
-                      <Pin className="w-4 h-4 text-amber-500 shrink-0 fill-amber-400" />
-                    )}
-                  </Command.Item>
-                ))}
+                      {note.isPinned && (
+                        <Pin className="w-4 h-4 text-amber-500 shrink-0 fill-amber-400 ml-2" />
+                      )}
+                    </Command.Item>
+                  );
+                })}
               </Command.Group>
             )}
 

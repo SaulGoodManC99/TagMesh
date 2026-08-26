@@ -4,7 +4,8 @@ import { ClayNoteCard } from '../ClayNoteCard';
 
 export interface BentoGridViewProps {
   notes: Note[];
-  onNoteClick: (note: Note) => void;
+  onNoteClick?: (note: Note) => void;
+  onEdit?: (note: Note) => void;
   onTagClick: (tag: string) => void;
 }
 
@@ -25,6 +26,7 @@ function getColumnCount(): number {
 export const BentoGridView: React.FC<BentoGridViewProps> = ({
   notes,
   onNoteClick,
+  onEdit,
   onTagClick,
 }) => {
   const [columnsCount, setColumnsCount] = useState<number>(getColumnCount);
@@ -66,7 +68,8 @@ export const BentoGridView: React.FC<BentoGridViewProps> = ({
               <ClayNoteCard
                 note={note}
                 index={originalIndex}
-                onClick={() => onNoteClick(note)}
+                onClick={onNoteClick ? () => onNoteClick(note) : undefined}
+                onEdit={onEdit}
                 onTagClick={onTagClick}
               />
             </div>

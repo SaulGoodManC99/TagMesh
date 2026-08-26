@@ -12,8 +12,9 @@ export interface Note {
   updatedAt: number;        // Epoch ms
   syncedAt?: number;        // Epoch ms
   isDirty?: boolean;        // Local-only
-  isOfficial?: boolean;     // True if created by Admin (馆长精选/官方卡片)
-  author?: string;          // 'admin' | 'guest' | custom nickname
+  isPublic?: boolean;       // True if public in gallery, false if private/curator only
+  isOfficial?: boolean;     // True if created by Admin
+  author?: string;          // 'admin'
   likes?: number;           // D1 & local persistent like counter
 }
 

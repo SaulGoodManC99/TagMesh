@@ -22,7 +22,6 @@ export interface ClayTagCloudProps {
   totalNotesCount: number;
   selectedTag: string;
   onSelectTag: (tag: string) => void;
-  authorFilter?: 'all' | 'admin' | 'guest';
 }
 
 export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
@@ -30,7 +29,6 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
   totalNotesCount,
   selectedTag,
   onSelectTag,
-  authorFilter = 'all',
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
@@ -40,32 +38,12 @@ export const ClayTagCloud: React.FC<ClayTagCloudProps> = ({
 
   const safeTags = Array.isArray(tags) ? tags : [];
 
-  const getHeaderStyle = () => {
-    if (authorFilter === 'admin') {
-      return {
-        icon: '👑',
-        title: locale === 'zh' ? '馆长精选标签网' : 'Curator Tags Mesh',
-        badgeBg: 'bg-amber-100/90 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border-amber-300/80 dark:border-amber-700',
-        sparkleColor: 'text-amber-500',
-      };
-    }
-    if (authorFilter === 'guest') {
-      return {
-        icon: '🌱',
-        title: locale === 'zh' ? '旅人灵感标签网' : 'Traveler Tags Mesh',
-        badgeBg: 'bg-emerald-100/90 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 border-emerald-300/80 dark:border-emerald-700',
-        sparkleColor: 'text-emerald-500',
-      };
-    }
-    return {
-      icon: '🌈',
-      title: locale === 'zh' ? '灵感标签分类网' : 'Tag Mesh Explorer',
-      badgeBg: 'bg-white dark:bg-[#18181B] text-neutral-800 dark:text-neutral-100 border border-neutral-200/80 dark:border-white/10 shadow-3xs',
-      sparkleColor: 'text-rose-500',
-    };
+  const headerStyle = {
+    icon: '🌈',
+    title: locale === 'zh' ? '灵感标签分类网' : 'Tag Mesh Explorer',
+    badgeBg: 'bg-white dark:bg-[#18181B] text-neutral-800 dark:text-neutral-100 border border-neutral-200/80 dark:border-white/10 shadow-3xs',
+    sparkleColor: 'text-rose-500',
   };
-
-  const headerStyle = getHeaderStyle();
 
   // Filter and sort tags
   const processedTags = useMemo(() => {

@@ -9,18 +9,16 @@ import {
   Coffee,
   Sparkles,
   ArrowRight,
-  Github
+  Github,
+  MessageSquare
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { db, getAllTagCounts, getActiveNotes } from '../db/dexie';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
-import { useSiteConfig } from '../hooks/useSiteConfig';
 import { fetchSystemTelemetry, recordVisitSession, submitGlobalStamp, deleteNoteRemote } from '../services/api';
 import { APP_VERSION, getFormattedBuildTime } from '../constants/version';
 import { ClayHeader } from './ClayHeader';
-import { ClayGachaModal } from './components/ClayGachaModal';
-import { ClayReadingModal } from './ClayReadingModal';
 import { ClayAtmosphereCanvas } from './components/ClayAtmosphereCanvas';
 import { ClayGlobalContextMenu } from './components/ClayGlobalContextMenu';
 import { ClayTypewriterHeadline } from './components/ClayTypewriterHeadline';
@@ -46,20 +44,18 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
   const { locale } = useI18n();
   const { theme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
-  const { guestNotesEnabled } = useSiteConfig();
-  const [isGachaOpen, setIsGachaOpen] = useState(false);
   const [activeReadingNote, setActiveReadingNote] = useState<Note | null>(null);
 
-  // Live Query notes from Dexie (role-aware)
+  // Live Query notes from Dexie (Admin sees all, visitors see public only)
   const rawNotes = useLiveQuery(
-    () => getActiveNotes(isAdmin ? undefined : 'guest'),
+    () => getActiveNotes(isAdmin ? 'all' : 'public'),
     [isAdmin]
   );
   const allNotes = useMemo(() => rawNotes || [], [rawNotes]);
 
-  // Live Query tag counts (role-aware)
+  // Live Query tag counts (Admin sees all, visitors see public only)
   const allTagCounts = useLiveQuery(
-    () => getAllTagCounts(isAdmin ? undefined : 'guest'),
+    () => getAllTagCounts(isAdmin ? 'all' : 'public'),
     [isAdmin]
   ) || [];
 
@@ -322,7 +318,6 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             }
           });
         }}
-        onTriggerGacha={() => setIsGachaOpen(true)}
         onGoToEditor={onGoToEditor}
       />
 
@@ -335,47 +330,49 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
       {/* 2. Dead-Center Immersive Center Stage Gateway */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 max-w-5xl mx-auto w-full select-none pt-4 sm:pt-8 pb-3 sm:pb-5">
         
-        {/* Cute Studio Badge */}
+        {/* Cute Scenario Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-neutral-900/90 border border-rose-200/90 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 font-bubble text-xs sm:text-sm font-bold mb-4 sm:mb-6 shadow-3xs hover:scale-102 transition-transform">
-          <span className="text-lg">🎈</span>
-          <span>{locale === 'zh' ? 'TagMesh 黏土工坊 • 灵感笔记系统' : 'TagMesh Studio • Thought Mesh System'}</span>
+          <span className="text-base">🌱</span>
+          <span>{locale === 'zh' ? '随心记录 • 灵感闪念 • 生活与工作备忘' : 'Fleeting Thoughts • Life & Work Memos'}</span>
         </div>
 
         {/* Giant Borderless Typewriter Headline */}
         <ClayTypewriterHeadline />
 
         {/* Healing Subtitle */}
-        <p className="font-cute text-sm sm:text-lg text-neutral-700/90 dark:text-neutral-300 leading-relaxed mb-6 sm:mb-8 max-w-2xl mx-auto">
+        <p className="font-cute text-sm sm:text-lg text-neutral-700/90 dark:text-neutral-300 leading-relaxed mb-6 sm:mb-8 max-w-2xl mx-auto min-h-[3rem] sm:min-h-[2.5rem] flex items-center justify-center">
           {locale === 'zh'
-            ? '零文件夹焦虑，正文随时敲击 #标签 织就立体思维网，在 5 种沉浸式笔记展示模式中自由漫游、沉淀灵感。'
-            : 'Zero folder anxiety. Type #hashtags anywhere to weave a thought mesh, and roam across 5 immersive note views.'}
+            ? '随手记下工作待办、读书感悟、生活碎片与突发奇想，通过 #标签 轻松分类，随时随地优雅回顾。'
+            : 'Quickly note down work tasks, reading reflections, daily moments, and creative sparks. Organize with #tags and revisit anytime.'}
         </p>
 
         {/* Chunky Center Action Candy Buttons (Uiverse.io Kinetic Animated Flow) */}
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mb-6 sm:mb-8">
-          {/* Button 1: Start Writing */}
-          {(guestNotesEnabled || isAdmin) && (
-            <button
-              onClick={() => {
-                playPop();
+          {/* Button 1: Start Writing (If admin -> Workspace; If visitor -> Admin login modal) */}
+          <button
+            onClick={() => {
+              playPop();
+              if (isAdmin) {
                 onGoToEditor();
-              }}
-              className="uiverse-animated-btn bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white font-bubble text-base sm:text-lg border-rose-400/80 dark:border-rose-500/50"
-            >
-              {/* Expanding Circle Wave */}
-              <span className="btn-circle bg-white/25 dark:bg-white/20 backdrop-blur-xs" />
-              
-              {/* Main Content Wrap with shift */}
-              <span className="btn-text-wrap">
-                <PenTool className="w-5 h-5" />
-                <span>{locale === 'zh' ? '开启写作' : 'Start Writing'}</span>
-              </span>
+              } else {
+                openAuthModal();
+              }
+            }}
+            className="uiverse-animated-btn bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white font-bubble text-base sm:text-lg border-rose-400/80 dark:border-rose-500/50"
+          >
+            {/* Expanding Circle Wave */}
+            <span className="btn-circle bg-white/25 dark:bg-white/20 backdrop-blur-xs" />
+            
+            {/* Main Content Wrap with shift */}
+            <span className="btn-text-wrap">
+              <PenTool className="w-5 h-5" />
+              <span>{locale === 'zh' ? '开始笔记' : 'Start Notes'}</span>
+            </span>
 
-              {/* Dual Kinetic Arrows */}
-              <ArrowRight className="w-5 h-5 arr-1 text-white/90" />
-              <ArrowRight className="w-5 h-5 arr-2 text-white/90" />
-            </button>
-          )}
+            {/* Dual Kinetic Arrows */}
+            <ArrowRight className="w-5 h-5 arr-1 text-white/90" />
+            <ArrowRight className="w-5 h-5 arr-2 text-white/90" />
+          </button>
 
           {/* Button 2: Explore Notes */}
           <button
@@ -397,28 +394,6 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             {/* Dual Kinetic Arrows */}
             <ArrowRight className="w-5 h-5 arr-1 text-rose-500" />
             <ArrowRight className="w-5 h-5 arr-2 text-rose-500" />
-          </button>
-
-          {/* Button 3: Inspiration Gacha */}
-          <button
-            onClick={() => {
-              playPop();
-              setIsGachaOpen(true);
-            }}
-            className="uiverse-animated-btn bg-amber-50 dark:bg-neutral-800 hover:bg-amber-100/70 dark:hover:bg-neutral-750 text-amber-900 dark:text-amber-200 font-bubble text-base sm:text-lg border-amber-200/90 dark:border-white/10"
-          >
-            {/* Expanding Circle Wave */}
-            <span className="btn-circle bg-amber-100 dark:bg-amber-950/40" />
-
-            {/* Main Content Wrap with shift */}
-            <span className="btn-text-wrap">
-              <Dices className="w-5 h-5 text-amber-600 dark:text-amber-400 group-hover:rotate-180 transition-transform duration-500" />
-              <span>{locale === 'zh' ? '灵感扭蛋' : 'Inspiration Gacha'}</span>
-            </span>
-
-            {/* Dual Kinetic Arrows */}
-            <ArrowRight className="w-5 h-5 arr-1 text-amber-600 dark:text-amber-400" />
-            <ArrowRight className="w-5 h-5 arr-2 text-amber-600 dark:text-amber-400" />
           </button>
         </div>
       </main>
@@ -502,9 +477,9 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
             <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-200">TagMesh {APP_VERSION}</span>
           </div>
 
-          {/* Cloudflare Edge Tech Stack */}
+          {/* Cloud Sync & Storage */}
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-[#18181B]/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs backdrop-blur-xl text-amber-600 dark:text-amber-400 font-medium">
-            <span>⚡ Cloudflare Workers + D1 + R2</span>
+            <span>{locale === 'zh' ? '☁️ 随时随地云端同步与持久保存' : '☁️ Cloud Sync & Safe Storage'}</span>
           </div>
 
           {/* Build Time */}
@@ -528,28 +503,6 @@ export const ClayLandingPortal: React.FC<ClayLandingPortalProps> = ({
           </a>
         </div>
       </footer>
-
-      {/* Lucky Gacha Modal */}
-      <ClayGachaModal
-        isOpen={isGachaOpen}
-        notes={publicNotes}
-        onClose={() => setIsGachaOpen(false)}
-        onReadNote={(note) => {
-          setIsGachaOpen(false);
-          setActiveReadingNote(note);
-        }}
-      />
-
-      {/* Full Reading Modal */}
-      <ClayReadingModal
-        note={activeReadingNote}
-        allNotes={publicNotes}
-        onClose={() => setActiveReadingNote(null)}
-        onGoToEditorWithNote={(n) => onGoToEditorWithNote(n)}
-        onTagClick={(tg) => onGoToExplore('grid', tg)}
-        onSelectNote={(n) => setActiveReadingNote(n)}
-        onDeleteNote={handleDeleteNote}
-      />
     </div>
   );
 };

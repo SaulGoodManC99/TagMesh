@@ -32,10 +32,11 @@ import {
   Undo,
   Redo,
   Sparkles,
-  Smile,
   Minus,
   UploadCloud,
-  Loader2
+  Loader2,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { db, getAllTagCounts, getOrCreateActiveNote } from '../db/dexie';
@@ -47,12 +48,11 @@ import Image from '@tiptap/extension-image';
 import { HashtagExtension } from './extensions/HashtagExtension';
 import { EmojiColonExtension } from './extensions/EmojiColonExtension';
 import { ClayContextMenu } from './components/ClayContextMenu';
-import { ClayEmojiPickerModal } from './components/ClayEmojiPickerModal';
-import { EmojiItem } from './data/emojiMemeData';
 import { playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
 import { triggerParticleBurst } from '../blog/utils/confetti';
 import { format24HourDateTime } from '../blog/utils/dateFormatter';
 import { useClayTheme } from '../blog/utils/clayThemes';
+import { toast } from '../components/ClayToast';
 
 export interface TagMeshEditorProps {
   note: Note | null;
@@ -86,12 +86,9 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
 }) => {
   const { locale } = useI18n();
   const { theme } = useClayTheme();
-  const { isAdmin, isGuest, openAuthModal } = useAuth();
+  const { isAdmin, openAuthModal } = useAuth();
   const isTrashNote = Boolean(note?.isDeleted);
-  // Guest can ONLY edit their own created notes (author === 'guest' and not official); trash notes are always protected
-  const isNoteProtected = Boolean(
-    isTrashNote || (isGuest && (note?.isOfficial === true || note?.author === 'admin' || (note?.author && note.author !== 'guest')))
-  );
+  const isNoteProtected = isTrashNote;
 
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTagInput, setNewTagInput] = useState('');
@@ -106,13 +103,11 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
     position: { x: 0, y: 0 },
   });
 
-  // Emoji Picker Modal
-  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 100% Real-time dynamic live query for all tags in the database
-  const allDbTags = useLiveQuery(() => getAllTagCounts(isAdmin ? undefined : 'guest'), [isAdmin]) || [];
+  const allDbTags = useLiveQuery(() => getAllTagCounts(), []) || [];
 
   // Keep a ref to active note id to prevent stale closures
   const activeNoteIdRef = useRef<string | null>(null);
@@ -165,21 +160,6 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
   }, [note, onNoteChange]);
 
   const editorRef = useRef<any>(null);
-
-  /**
-   * Handle Emoji selection from modal
-   */
-  const handleSelectEmojiItem = useCallback((item: EmojiItem) => {
-    const currentEditor = editorRef.current;
-    if (!currentEditor) return;
-
-    if (item.type === 'emoji') {
-      currentEditor.chain().focus().insertContent(item.value).run();
-    } else {
-      currentEditor.chain().focus().setImage({ src: item.value, alt: item.nameZh }).run();
-    }
-    setEmojiPickerOpen(false);
-  }, []);
 
   /**
    * Upload image file to Cloudflare R2 (or fallback to local base64/blob) and insert into TipTap editor
@@ -399,14 +379,13 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
   }, [editor, isNoteProtected]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-2 sm:px-8 py-3 sm:py-8 animate-in fade-in duration-300">
+    <div className="w-full h-full flex-1 mx-auto animate-in fade-in duration-300 min-h-0 flex flex-col">
       {/* Clay Paper Pad Workspace */}
       <div 
         onContextMenu={isNoteProtected ? undefined : handleEditorContextMenu}
-        className="relative w-full rounded-[24px] sm:rounded-[44px] bg-white dark:bg-[#18181B] backdrop-blur-xl border-2 sm:border-3 border-neutral-200/80 dark:border-white/10 shadow-lg sm:shadow-2xl clay-card p-3.5 sm:p-10 md:p-14 overflow-hidden flex flex-col justify-between min-h-[72vh] sm:min-h-[82vh] transition-all text-neutral-800 dark:text-neutral-100"
+        style={{ backgroundColor: `${theme.headerBg}c8` }}
+        className="relative w-full h-full rounded-[28px] sm:rounded-[36px] backdrop-blur-2xl border-2 sm:border-3 border-white/70 dark:border-white/15 shadow-xl clay-card p-4 sm:p-6 md:p-8 flex flex-col justify-between transition-all text-neutral-800 dark:text-neutral-100 overflow-hidden min-h-0"
       >
-        {/* Top Rainbow Accent Strip */}
-        <div className="absolute top-0 left-0 right-0 h-2 sm:h-2.5 bg-gradient-to-r from-pink-400 via-rose-400 via-amber-300 to-cyan-400" />
 
         {/* 🗑️ Trash Note Preview Banner */}
         {isTrashNote && (
@@ -441,70 +420,44 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
           </div>
         )}
 
-        {/* 🔒 Guest Mode Protection Banner for Admin/Other Notes (when not in trash) */}
-        {!isTrashNote && isNoteProtected && (
-          <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-50/95 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-700/60 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-cute text-amber-900 dark:text-amber-200 select-none animate-in fade-in">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl select-none">🔒</span>
-              <div>
-                <div className="font-bubble font-bold text-sm sm:text-base text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
-                  <span>
-                    {note?.isOfficial || note?.author === 'admin'
-                      ? (locale === 'zh' ? '👑 馆长官方精选笔记 • 只读保护生效中' : '👑 Curator Card • Read-Only Active')
-                      : (locale === 'zh' ? '🔒 他人笔记 • 游客只读保护生效中' : '🔒 Protected Note • Read-Only Active')}
-                  </span>
-                </div>
-                <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
-                  {locale === 'zh'
-                    ? '当前为游客模式，不可修改他人笔记。请点击右上角「新建」创建属于你的专属灵感笔记！'
-                    : 'Other notes are protected from editing in guest mode. Click "New" to start your own note!'}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={openAuthModal}
-              className="px-4 py-2.5 rounded-xl bg-amber-400 dark:bg-amber-500 hover:bg-amber-500 text-neutral-900 font-bubble font-extrabold text-xs shadow-xs hover:scale-105 active:scale-95 transition shrink-0 cursor-pointer"
-            >
-              {locale === 'zh' ? '👑 登录馆长解锁' : '👑 Admin Unlock'}
-            </button>
-          </div>
-        )}
-
         {/* 1. Top Clean Meta Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-white/60 dark:border-white/10 select-none text-sm font-cute text-neutral-500 dark:text-neutral-400">
+        <div className="shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 mb-2 border-b border-white/60 dark:border-white/10 select-none text-sm font-cute text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-2xl select-none">✍️</span>
             <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100 text-base sm:text-lg">
               {formattedDate}
             </span>
-            {note?.author === 'admin' ? (
-              <span className="px-2.5 py-0.5 rounded-xl bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs">
-                👑 馆长精选
-              </span>
-            ) : (
-              <span className="px-2.5 py-0.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bubble font-bold border border-emerald-200 dark:border-emerald-800 shadow-3xs">
-                🌱 旅人笔记
-              </span>
+
+            {/* Note Visibility Switcher (Public vs Private) */}
+            {note && !isTrashNote && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const nextPublic = note.isPublic === false ? true : false;
+                  playPop(640);
+                  await db.notes.update(note.id, { isPublic: nextPublic, isDirty: true, updatedAt: Date.now() });
+                  onNoteChange({ ...note, isPublic: nextPublic });
+                  toast.show(
+                    nextPublic 
+                      ? (locale === 'zh' ? '🌐 笔记已设为「展厅公开」' : '🌐 Note is now Public in gallery') 
+                      : (locale === 'zh' ? '🔒 笔记已设为「仅自己可见」' : '🔒 Note is now Private'),
+                    'info'
+                  );
+                }}
+                className={`px-2.5 py-0.5 rounded-xl text-xs font-bubble font-bold border transition cursor-pointer flex items-center gap-1 shadow-3xs active:scale-95 ${
+                  note.isPublic !== false
+                    ? 'bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800 hover:bg-sky-200 dark:hover:bg-sky-900'
+                    : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-700'
+                }`}
+                title={locale === 'zh' ? '点击切换公开 / 私密可见性' : 'Toggle Public / Private visibility'}
+              >
+                <span>{note.isPublic !== false ? '🌐' : '🔒'}</span>
+                <span>{note.isPublic !== false ? (locale === 'zh' ? '展厅公开' : 'Public') : (locale === 'zh' ? '仅自己可见' : 'Private')}</span>
+              </button>
             )}
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3.5 font-medium flex-wrap">
-            {/* Emoji Picker Button */}
-            {!isNoteProtected && (
-              <button
-                type="button"
-                onClick={() => {
-                  playPop(580);
-                  setEmojiPickerOpen(true);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60 text-xs font-bubble font-bold transition-all cursor-pointer active:scale-95 shadow-3xs"
-                title={locale === 'zh' ? '插入情绪表情与手势' : 'Insert Emojis & Gestures'}
-              >
-                <Smile className="w-3.5 h-3.5 text-rose-500" />
-                <span>{locale === 'zh' ? '表情 / 手势' : 'Emojis'}</span>
-              </button>
-            )}
 
             {/* R2 Image / Screenshot Upload Button */}
             {!isNoteProtected && (
@@ -557,13 +510,13 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
           </div>
         </div>
 
-        {/* 2. Pure Distraction-Free Writing Canvas with Generous Breathing Space */}
-        <div className="relative flex-1 cursor-text py-2">
+        {/* 2. Pure Distraction-Free Writing Canvas (Zero intrusive popup menus) */}
+        <div className="relative flex-1 overflow-y-auto min-h-0 custom-scrollbar cursor-text py-2 pr-1 select-text">
           <EditorContent editor={editor} />
         </div>
 
         {/* 4. Bottom 3D Macaron Pill Tag Dock (精美轻盈的灵感胶囊收纳盒) */}
-        <div className="mt-6 sm:mt-12 pt-4 sm:pt-6 border-t border-white/60 dark:border-white/10 select-none">
+        <div className="shrink-0 mt-2 pt-3 border-t border-white/60 dark:border-white/10 select-none">
           <div className="flex items-center justify-between mb-2.5 sm:mb-3.5">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bubble font-bold text-neutral-800 dark:text-neutral-100">
               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs">
@@ -740,13 +693,6 @@ export const TagMeshEditor: React.FC<TagMeshEditorProps> = ({
           }
           setContextMenu(prev => ({ ...prev, isOpen: false }));
         }}
-      />
-
-      {/* Emoji Picker Modal */}
-      <ClayEmojiPickerModal
-        isOpen={emojiPickerOpen}
-        onClose={() => setEmojiPickerOpen(false)}
-        onSelectEmoji={handleSelectEmojiItem}
       />
     </div>
   );

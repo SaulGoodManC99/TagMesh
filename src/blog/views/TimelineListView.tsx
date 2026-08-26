@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom';
 import { 
   Pin, 
   Hash,
+  PenTool,
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
 import { Note } from '../../types/note';
 import { useI18n } from '../../hooks/useI18n';
+import { useAuth } from '../../hooks/useAuth';
 import { playPop, playSoftTick } from '../utils/soundEffects';
 import { renderRichMarkdown } from '../utils/markdownRenderer';
 import { useClayTheme } from '../utils/clayThemes';
@@ -17,7 +19,8 @@ import { syncNoteRemote } from '../../services/api';
 
 export interface TimelineListViewProps {
   notes: Note[];
-  onNoteClick: (note: Note) => void;
+  onNoteClick?: (note: Note) => void;
+  onEdit?: (note: Note) => void;
   onTagClick: (tag: string) => void;
 }
 
@@ -29,10 +32,11 @@ export interface TimelineListViewProps {
  */
 export const TimelineListView: React.FC<TimelineListViewProps> = ({
   notes,
-  onNoteClick,
+  onEdit,
   onTagClick,
 }) => {
   const { locale } = useI18n();
+  const { isAdmin } = useAuth();
   const { theme } = useClayTheme();
 
   // Group all notes by Month Key
@@ -206,7 +210,7 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
                 <span>🗓️</span>
               </div>
               <div 
-                className="px-5 py-2 rounded-full bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-xl border border-neutral-200/80 dark:border-white/10 shadow-sm flex items-center gap-2.5"
+                className="px-5 py-2 rounded-full bg-white/75 dark:bg-[#18181B]/75 backdrop-blur-2xl border border-white/70 dark:border-white/10 shadow-sm flex items-center gap-2.5"
               >
                 <h3 className="font-bubble font-black text-base sm:text-lg text-neutral-900 dark:text-neutral-100 m-0">
                   {locale === 'zh' ? milestone.labelZh : milestone.labelEn}
@@ -226,23 +230,23 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
                 return (
                   <article
                     key={note.id}
-                    className="relative p-5 sm:p-7 rounded-[28px] bg-white dark:bg-[#18181B] border border-neutral-200/80 dark:border-white/10 shadow-sm hover:shadow-md hover:border-pink-300/70 dark:hover:border-pink-500/40 transition-[border-color,box-shadow] duration-200 group flex flex-col justify-between overflow-hidden select-text"
+                    className="relative p-5 sm:p-7 rounded-[28px] bg-white/75 dark:bg-[#18181B]/75 backdrop-blur-2xl border border-white/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-pink-300/70 dark:hover:border-pink-500/40 transition-all duration-200 group flex flex-col justify-between overflow-hidden select-text"
                   >
                     {/* Timeline Dot on the line */}
-                    <div className="absolute -left-12 sm:-left-16 top-7 w-8 h-8 rounded-full bg-white dark:bg-[#18181B] border border-neutral-200/80 dark:border-white/10 flex items-center justify-center text-xs shadow-md group-hover:scale-115 transition-transform duration-200 z-10 select-none">
+                    <div className="absolute -left-12 sm:-left-16 top-7 w-8 h-8 rounded-full bg-white/80 dark:bg-[#18181B]/80 backdrop-blur-xl border border-white/70 dark:border-white/10 flex items-center justify-center text-xs shadow-md group-hover:scale-115 transition-transform duration-200 z-10 select-none">
                       <span>{cardTheme.emoji}</span>
                     </div>
 
                     {/* Header Row */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-neutral-200/40 dark:border-white/5 select-none">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {note.isOfficial || note.author === 'admin' ? (
-                          <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs sm:text-sm font-bubble font-extrabold shadow-3xs">
-                            👑 {locale === 'zh' ? '馆长精选' : 'Curator'}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-white/80 dark:bg-white/10 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-white/10 text-xs sm:text-sm font-bubble font-bold shadow-3xs">
-                            🌱 {locale === 'zh' ? '旅人笔记' : 'Guest Note'}
+                        <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs sm:text-sm font-bubble font-extrabold shadow-3xs">
+                          👑 {locale === 'zh' ? '馆长' : 'Curator'}
+                        </span>
+                        {note.isPublic === false && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-neutral-800 text-white text-xs font-bubble font-bold shadow-3xs">
+                            <span>🔒</span>
+                            <span>{locale === 'zh' ? '仅自己可见' : 'Private'}</span>
                           </span>
                         )}
                         {note.isPinned && (
@@ -285,27 +289,40 @@ export const TimelineListView: React.FC<TimelineListViewProps> = ({
                       {renderRichMarkdown(note.rawMarkdown, { onTagClick })}
                     </div>
 
-                    {/* Bottom Tags */}
-                    {(note.tags || []).length > 0 && (
-                      <div className="flex items-center justify-between pt-3 border-t border-neutral-200/40 dark:border-white/5 select-none">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {(note.tags || []).map((tg) => (
-                            <span
-                              key={tg}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                playPop();
-                                onTagClick(tg);
-                              }}
-                              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs sm:text-sm font-bubble font-bold border border-white/60 dark:border-white/10 transition-all hover:scale-105 active:scale-90 cursor-pointer bg-white/80 dark:bg-white/10 backdrop-blur-md text-neutral-800 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 shadow-3xs"
-                            >
-                              <Hash className="w-3.5 h-3.5 opacity-70 text-rose-500" />
-                              <span>{tg.replace(/^#/, '')}</span>
-                            </span>
-                          ))}
-                        </div>
+                    {/* Bottom Tags & Admin Action */}
+                    <div className="flex items-center justify-between pt-3 border-t border-neutral-200/40 dark:border-white/5 select-none">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {(note.tags || []).map((tg) => (
+                          <span
+                            key={tg}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playPop();
+                              onTagClick(tg);
+                            }}
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs sm:text-sm font-bubble font-bold border border-white/60 dark:border-white/10 transition-all hover:scale-105 active:scale-90 cursor-pointer bg-white/80 dark:bg-white/10 backdrop-blur-md text-neutral-800 dark:text-neutral-200 hover:bg-white hover:dark:bg-white/20 shadow-3xs"
+                          >
+                            <Hash className="w-3.5 h-3.5 opacity-70 text-rose-500" />
+                            <span>{tg.replace(/^#/, '')}</span>
+                          </span>
+                        ))}
                       </div>
-                    )}
+
+                      {isAdmin && onEdit && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playPop();
+                            onEdit(note);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-100/90 dark:bg-amber-950/60 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-200 text-xs font-bubble font-bold transition active:scale-95 cursor-pointer shadow-3xs border border-amber-300/60 dark:border-amber-700/60"
+                        >
+                          <PenTool className="w-3 h-3 text-amber-700 dark:text-amber-400" />
+                          <span>{locale === 'zh' ? '编辑' : 'Edit'}</span>
+                        </button>
+                      )}
+                    </div>
                   </article>
                 );
               })}

@@ -1,9 +1,7 @@
-export type ButtonStyle = 'neon' | 'laser' | 'blob' | 'tint' | 'clay' | 'glass';
+export type ButtonStyle = 'neon' | 'laser' | 'jelly' | 'tint' | 'clay' | 'glass';
 export type ColorMode = 'auto' | 'light' | 'dark';
 
 export interface SiteConfig {
-  guestNotesEnabled: boolean;
-  danmakuEnabled: boolean;
   buttonStyle: ButtonStyle;
   colorMode: ColorMode;
 }
@@ -11,8 +9,6 @@ export interface SiteConfig {
 const STORAGE_KEY = 'tagmesh_site_config_v1';
 
 const DEFAULT_CONFIG: SiteConfig = {
-  guestNotesEnabled: true,
-  danmakuEnabled: true,
   buttonStyle: 'neon',
   colorMode: 'auto',
 };
@@ -22,10 +18,14 @@ export function getStoredSiteConfig(): SiteConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_CONFIG;
     const parsed = JSON.parse(raw);
+    let resolvedStyle: ButtonStyle = 'neon';
+    if (parsed.buttonStyle === 'blob' || parsed.buttonStyle === 'jelly') {
+      resolvedStyle = 'jelly';
+    } else if (['neon', 'laser', 'tint', 'clay', 'glass'].includes(parsed.buttonStyle)) {
+      resolvedStyle = parsed.buttonStyle;
+    }
     return {
-      guestNotesEnabled: typeof parsed.guestNotesEnabled === 'boolean' ? parsed.guestNotesEnabled : true,
-      danmakuEnabled: typeof parsed.danmakuEnabled === 'boolean' ? parsed.danmakuEnabled : true,
-      buttonStyle: ['neon', 'laser', 'blob', 'tint', 'clay', 'glass'].includes(parsed.buttonStyle) ? parsed.buttonStyle : 'neon',
+      buttonStyle: resolvedStyle,
       colorMode: ['auto', 'light', 'dark'].includes(parsed.colorMode) ? parsed.colorMode : 'auto',
     };
   } catch {

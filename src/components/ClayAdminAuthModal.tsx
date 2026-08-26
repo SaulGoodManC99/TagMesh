@@ -57,22 +57,23 @@ import { toast } from './ClayToast';
 export const ClayAdminAuthModal: React.FC = () => {
   const { role, isAdmin, loginAsAdmin, logoutToGuest, updateAdminPassword, isAuthModalOpen, closeAuthModal } = useAuth();
   const { locale } = useI18n();
-  const { 
-    guestNotesEnabled, 
-    danmakuEnabled,
-    buttonStyle, 
-    colorMode, 
-    setGuestNotesEnabled, 
-    setDanmakuEnabled,
-    setButtonStyle, 
-    setColorMode 
-  } = useSiteConfig();
 
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Admin Top Navigation Tab
-  const [adminTab, setAdminTab] = useState<'settings' | 'telegram' | 'r2'>('settings');
+  const [adminTab, setAdminTab] = useState<'settings' | 'telegram' | 'r2' | 'mcp'>('settings');
+
+  // MCP Gateway State
+  const [mcpClientType, setMcpClientType] = useState<'claude' | 'cursor' | 'windsurf' | 'cline' | 'agy' | 'curl'>('claude');
+  const [isTestingMcp, setIsTestingMcp] = useState(false);
+  const [mcpTestResult, setMcpTestResult] = useState<{
+    success: boolean;
+    latencyMs: number;
+    toolsCount: number;
+    tools: string[];
+    error?: string;
+  } | null>(null);
 
   // Tab for changing password
   const [pwdTabActive, setPwdTabActive] = useState(false);
@@ -91,11 +92,151 @@ export const ClayAdminAuthModal: React.FC = () => {
   const [tgBotToken, setTgBotToken] = useState('');
   const [tgUserIds, setTgUserIds] = useState('');
   const [tgWebhookUrl, setTgWebhookUrl] = useState('');
+  const [tgDefaultPublic, setTgDefaultPublic] = useState(true);
   const [showTgToken, setShowTgToken] = useState(false);
   const [isLoadingTg, setIsLoadingTg] = useState(false);
   const [isSavingTg, setIsSavingTg] = useState(false);
   const [isSettingWebhook, setIsSettingWebhook] = useState(false);
   const [isTestingTg, setIsTestingTg] = useState(false);
+
+  const handleCopyText = (text: string, label: string) => {
+    try {
+      navigator.clipboard.writeText(text);
+      playPop(650);
+      triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
+      triggerAdminToast(locale === 'zh' ? `📋 ${label} 已复制到剪贴板！` : `📋 ${label} copied to clipboard!`);
+    } catch {
+      triggerAdminToast(locale === 'zh' ? '复制失败，请手动复制' : 'Failed to copy', 'error');
+    }
+  };
+
+  const handleTestMcp = async () => {
+    setIsTestingMcp(true);
+    setMcpTestResult(null);
+    playSoftTick();
+    const startTime = performance.now();
+    try {
+      const res = await fetch('/mcp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer tagmesh_mcp_secret_bearer_token',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: Date.now(),
+          method: 'tools/list',
+        }),
+      });
+      const data = (await res.json()) as any;
+      const latency = Math.round(performance.now() - startTime);
+      if (data?.result?.tools && Array.isArray(data.result.tools)) {
+        setMcpTestResult({
+          success: true,
+          latencyMs: latency,
+          toolsCount: data.result.tools.length,
+          tools: data.result.tools.map((t: any) => t.name),
+        });
+        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 30);
+        triggerAdminToast(locale === 'zh' ? `⚡ MCP 连通性测试通过！响应延迟 ${latency}ms，已加载 ${data.result.tools.length} 个工具` : `⚡ MCP OK! ${latency}ms, ${data.result.tools.length} tools loaded`);
+      } else {
+        setMcpTestResult({
+          success: false,
+          latencyMs: latency,
+          toolsCount: 0,
+          tools: [],
+          error: data?.error?.message || 'Invalid RPC response',
+        });
+      }
+    } catch (err: any) {
+      setMcpTestResult({
+        success: false,
+        latencyMs: 0,
+        toolsCount: 0,
+        tools: [],
+        error: err.message || 'Connection failed',
+      });
+    } finally {
+      setIsTestingMcp(false);
+    }
+  };
+
+  const getMcpSnippet = (client: typeof mcpClientType): string => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.workers.dev';
+    const mcpUrl = `${origin}/mcp`;
+    const token = 'tagmesh_mcp_secret_bearer_token';
+
+    if (client === 'claude') {
+      return JSON.stringify({
+        mcpServers: {
+          tagmesh: {
+            command: 'npx',
+            args: [
+              '-y',
+              'mcp-remote',
+              mcpUrl,
+              '--header',
+              `Authorization: Bearer ${token}`
+            ]
+          }
+        }
+      }, null, 2);
+    }
+
+    if (client === 'cursor') {
+      return JSON.stringify({
+        mcpServers: {
+          tagmesh: {
+            url: mcpUrl,
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        }
+      }, null, 2);
+    }
+
+    if (client === 'windsurf') {
+      return JSON.stringify({
+        mcpServers: {
+          tagmesh: {
+            serverUrl: mcpUrl,
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        }
+      }, null, 2);
+    }
+
+    if (client === 'cline') {
+      return JSON.stringify({
+        mcpServers: {
+          tagmesh: {
+            url: mcpUrl,
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+            disabled: false,
+            autoApprove: []
+          }
+        }
+      }, null, 2);
+    }
+
+    if (client === 'agy') {
+      return `# Antigravity CLI / Sidecar Test
+curl -X POST "${mcpUrl}" \\
+  -H "Authorization: Bearer ${token}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`;
+    }
+
+    return `curl -X POST "${mcpUrl}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${token}" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_notes","arguments":{"limit":5}}}'`;
+  };
 
   const loadR2Info = useCallback(async () => {
     setIsLoadingR2(true);
@@ -122,6 +263,7 @@ export const ClayAdminAuthModal: React.FC = () => {
       const config = await fetchTelegramConfigRemote();
       setTgConfig(config);
       if (config.userIds) setTgUserIds(config.userIds);
+      if (config.defaultPublic !== undefined) setTgDefaultPublic(config.defaultPublic);
       if (config.webhookUrl) {
         setTgWebhookUrl(config.webhookUrl);
       } else if (typeof window !== 'undefined') {
@@ -206,6 +348,7 @@ export const ClayAdminAuthModal: React.FC = () => {
         userIds: tgUserIds,
         webhookUrl: tgWebhookUrl,
         enabled: true,
+        defaultPublic: tgDefaultPublic,
       });
       if (res.ok) {
         triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 20);
@@ -234,6 +377,7 @@ export const ClayAdminAuthModal: React.FC = () => {
           userIds: tgUserIds,
           webhookUrl: tgWebhookUrl,
           enabled: true,
+          defaultPublic: tgDefaultPublic,
         });
       }
       const res = await setTelegramWebhookRemote(tgWebhookUrl || undefined);
@@ -414,10 +558,24 @@ export const ClayAdminAuthModal: React.FC = () => {
               }`}
             >
               <Cloud className="w-3.5 h-3.5" />
-              <span>{locale === 'zh' ? 'R2 云端快照备份' : 'R2 Snapshots'}</span>
+              <span>{locale === 'zh' ? 'R2 快照' : 'R2'}</span>
               {r2Status?.connected && (
                 <span className="w-2 h-2 rounded-full bg-emerald-500 ml-0.5" />
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { playPop(); setAdminTab('mcp'); }}
+              className={`flex-1 py-2 px-3 rounded-xl font-bubble font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 cursor-pointer relative ${
+                adminTab === 'mcp'
+                  ? 'bg-white dark:bg-neutral-800 text-purple-600 dark:text-purple-400 shadow-xs'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
+              }`}
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span>{locale === 'zh' ? 'AI / MCP 网关' : 'MCP Gateway'}</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
             </button>
           </div>
         )}
@@ -431,145 +589,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                 <div className="space-y-4 animate-in fade-in duration-200">
                   <div className="p-4 sm:p-5 rounded-3xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10 space-y-4">
                     
-                    {/* 1. Guest Notes & Access Toggle */}
-                    <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs">
-                      <div>
-                        <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
-                          <span>🌱</span>
-                          <span>{locale === 'zh' ? '开放旅人笔记展示与工作台创作' : 'Allow Guest Notes & Workspace'}</span>
-                        </div>
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400 font-cute mt-0.5">
-                          {locale === 'zh' 
-                            ? (guestNotesEnabled ? '当前开启：游客可浏览旅人笔记并使用工作台记录灵感' : '已关闭：游客仅能浏览馆长笔记，工作台入口隐藏')
-                            : (guestNotesEnabled ? 'Guests can explore & write notes' : 'Closed: Guests only see Curator notes')}
-                        </div>
-                      </div>
-                      <label className="liquid-switch-wrap shrink-0">
-                        <span className="font-bubble font-bold text-xs text-neutral-600 dark:text-neutral-300">
-                          {guestNotesEnabled ? (locale === 'zh' ? '已开启' : 'ON') : (locale === 'zh' ? '已关闭' : 'OFF')}
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={guestNotesEnabled}
-                          onChange={() => {
-                            const next = !guestNotesEnabled;
-                            setGuestNotesEnabled(next);
-                            triggerAdminToast(next 
-                              ? (locale === 'zh' ? '🌱 已开放旅人笔记展示与工作台创作！' : '🌱 Guest notes & workspace enabled!') 
-                              : (locale === 'zh' ? '🔒 旅人笔记与工作台已对游客隐藏' : '🔒 Guest notes & workspace closed'));
-                          }}
-                          className="liquid-switch"
-                        />
-                      </label>
-                    </div>
-
-                    {/* 2. Danmaku Plaza Toggle */}
-                    <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs">
-                      <div>
-                        <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
-                          <span>💌</span>
-                          <span>{locale === 'zh' ? '开放灵感弹幕广场互动通道' : 'Allow Danmaku Plaza'}</span>
-                        </div>
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400 font-cute mt-0.5">
-                          {locale === 'zh' 
-                            ? (danmakuEnabled ? '当前开启：所有访客可在弹幕广场发送与漫游弹幕' : '已关闭：Header 隐藏入口，访问显示温馨关闭提示')
-                            : (danmakuEnabled ? 'Danmaku plaza is active for all visitors' : 'Closed: Header hidden & direct route paused')}
-                        </div>
-                      </div>
-                      <label className="liquid-switch-wrap shrink-0">
-                        <span className="font-bubble font-bold text-xs text-neutral-600 dark:text-neutral-300">
-                          {danmakuEnabled ? (locale === 'zh' ? '已开启' : 'ON') : (locale === 'zh' ? '已关闭' : 'OFF')}
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={danmakuEnabled}
-                          onChange={() => {
-                            const next = !danmakuEnabled;
-                            setDanmakuEnabled(next);
-                            triggerAdminToast(next 
-                              ? (locale === 'zh' ? '💌 灵感弹幕广场互动通道已正式开放！' : '💌 Danmaku plaza active!') 
-                              : (locale === 'zh' ? '🔒 灵感弹幕广场互动通道已暂停开放' : '🔒 Danmaku plaza paused'));
-                          }}
-                          className="liquid-switch danmaku-switch"
-                        />
-                      </label>
-                    </div>
-
-                    {/* 3. Button Aesthetic Selector */}
-                    <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
-                          <span>🎨</span>
-                          <span>{locale === 'zh' ? '前台交互按钮风格' : 'Button Aesthetic Style'}</span>
-                        </div>
-                        <span className="text-[11px] font-cute text-neutral-500 dark:text-neutral-400">
-                          {locale === 'zh' ? '实时全站生效' : 'Live Sync'}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { id: 'neon', emoji: '🔮', labelZh: '错位霓虹', labelEn: 'Neon Shadow' },
-                          { id: 'laser', emoji: '⚡', labelZh: '极光流刃', labelEn: 'Laser Border' },
-                          { id: 'blob', emoji: '🫧', labelZh: '流体彩斑', labelEn: 'Fluid Glass' },
-                        ].map((b) => (
-                          <button
-                            key={b.id}
-                            type="button"
-                            onClick={() => {
-                              setButtonStyle(b.id as any);
-                              triggerAdminToast(locale === 'zh' ? `🎨 按钮风格已更新为【${b.labelZh}】！` : `🎨 Button style set to ${b.labelEn}!`);
-                            }}
-                            className={`p-2.5 rounded-xl text-center text-xs font-bubble font-bold border transition cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 ${
-                              buttonStyle === b.id
-                                ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-500/60 shadow-xs'
-                                : 'bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
-                            }`}
-                          >
-                            <span className="text-sm">{b.emoji}</span>
-                            <span className="truncate">{locale === 'zh' ? b.labelZh : b.labelEn}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 4. Color Mode Selector */}
-                    <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
-                          <span>🌙</span>
-                          <span>{locale === 'zh' ? '色彩主题模式' : 'Color Theme Mode'}</span>
-                        </div>
-                        <span className="text-[11px] font-cute text-neutral-500 dark:text-neutral-400">
-                          {locale === 'zh' ? '自动响应跟随' : 'Auto Sync'}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { id: 'auto', emoji: '⚙️', labelZh: '跟随系统', labelEn: 'Auto System' },
-                          { id: 'light', emoji: '☀️', labelZh: '浅色明亮', labelEn: 'Light' },
-                          { id: 'dark', emoji: '🌙', labelZh: '深度暗黑', labelEn: 'Dark' },
-                        ].map((c) => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() => {
-                              setColorMode(c.id as any);
-                              triggerAdminToast(locale === 'zh' ? `🌙 色彩模式已切换为【${c.labelZh}】！` : `🌙 Color mode set to ${c.labelEn}!`);
-                            }}
-                            className={`p-2.5 rounded-xl text-center text-xs font-bubble font-bold border transition cursor-pointer active:scale-95 flex items-center justify-center gap-1.5 ${
-                              colorMode === c.id
-                                ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-900 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/60 shadow-xs'
-                                : 'bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200/80 dark:border-white/10'
-                            }`}
-                          >
-                            <span className="text-sm">{c.emoji}</span>
-                            <span className="truncate">{locale === 'zh' ? c.labelZh : c.labelEn}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 5. Telemetry Reset */}
+                    {/* 1. Telemetry Reset */}
                     <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-sm flex items-center gap-1.5">
@@ -668,7 +688,7 @@ export const ClayAdminAuthModal: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* 6. Change Password Form / Trigger */}
+                    {/* 2. Change Password Form / Trigger */}
                     <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs">
                       {pwdTabActive ? (
                         <form onSubmit={handleChangePassword} className="space-y-3">
@@ -878,6 +898,52 @@ export const ClayAdminAuthModal: React.FC = () => {
                         </div>
                       </div>
 
+                      {/* Input 4: Telegram Default Visibility */}
+                      <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs flex items-center justify-between gap-3">
+                        <div>
+                          <div className="font-bubble font-bold text-neutral-900 dark:text-neutral-100 text-xs sm:text-sm flex items-center gap-1.5">
+                            <span>{tgDefaultPublic ? '🌐' : '🔒'}</span>
+                            <span>{locale === 'zh' ? 'Telegram 发送内容默认可见性' : 'Telegram Default Visibility'}</span>
+                          </div>
+                          <div className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-cute mt-0.5">
+                            {locale === 'zh'
+                              ? (tgDefaultPublic ? '当前默认：入库后在展厅公开可见（可发 #私密 或 #private 强制私密）' : '当前默认：仅馆长自己可见（可发 #公开 或 #public 强制公开）')
+                              : (tgDefaultPublic ? 'Default: Public in gallery (add #private to override)' : 'Default: Private only (add #public to override)')}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200/80 dark:border-white/10 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPop();
+                              setTgDefaultPublic(true);
+                            }}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bubble font-bold transition cursor-pointer ${
+                              tgDefaultPublic
+                                ? 'bg-sky-500 text-white shadow-xs'
+                                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                            }`}
+                          >
+                            <span>🌐 {locale === 'zh' ? '公开' : 'Public'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPop();
+                              setTgDefaultPublic(false);
+                            }}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bubble font-bold transition cursor-pointer ${
+                              !tgDefaultPublic
+                                ? 'bg-neutral-800 dark:bg-neutral-700 text-white shadow-xs'
+                                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                            }`}
+                          >
+                            <span>🔒 {locale === 'zh' ? '私密' : 'Private'}</span>
+                          </button>
+                        </div>
+                      </div>
+
                     </div>
 
                     {/* Action Buttons Row */}
@@ -1046,15 +1112,187 @@ export const ClayAdminAuthModal: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* TAB 4: 🤖 TagMesh AI 原生 MCP 网关 */}
+              {adminTab === 'mcp' && (
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="p-4 sm:p-5 rounded-3xl bg-neutral-50/90 dark:bg-neutral-900/80 border border-neutral-200/80 dark:border-white/10 text-neutral-800 dark:text-neutral-100 space-y-4 shadow-sm">
+                    {/* Header */}
+                    <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-white/10 pb-3">
+                      <div className="flex items-center gap-2 font-bubble font-extrabold text-sm sm:text-base text-purple-700 dark:text-purple-300">
+                        <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <span>{locale === 'zh' ? 'TagMesh AI 原生 MCP 网关' : 'AI-Native MCP Gateway'}</span>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bubble font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>JSON-RPC 2.0 / Streamable HTTP</span>
+                      </span>
+                    </div>
+
+                    <p className="font-cute text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                      {locale === 'zh'
+                        ? 'TagMesh 原生实现 Model Context Protocol (MCP) 标准协议。Claude Desktop、Cursor、Windsurf、Cline 及各类 AI Agent 可直接通过该网关读写笔记库、查询标签网与检索闪念。'
+                        : 'Built-in Model Context Protocol (MCP) server for Claude Desktop, Cursor, Windsurf, Cline, and AI agents.'}
+                    </p>
+
+                    {/* Gateway Endpoint & Token Badges */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-white/10 shadow-3xs space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-bubble font-bold text-neutral-500 dark:text-neutral-400">
+                          <span>🌐 {locale === 'zh' ? 'MCP 服务地址' : 'MCP Endpoint'}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(`${typeof window !== 'undefined' ? window.location.origin : ''}/mcp`, 'MCP URL')}
+                            className="text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-0.5 cursor-pointer font-bubble"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>{locale === 'zh' ? '复制' : 'Copy'}</span>
+                          </button>
+                        </div>
+                        <div className="font-mono text-xs text-neutral-900 dark:text-neutral-100 truncate font-semibold">
+                          {typeof window !== 'undefined' ? `${window.location.origin}/mcp` : '/mcp'}
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-white/10 shadow-3xs space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-bubble font-bold text-neutral-500 dark:text-neutral-400">
+                          <span>🔑 {locale === 'zh' ? 'Bearer Auth Token' : 'Bearer Auth Token'}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText('tagmesh_mcp_secret_bearer_token', 'MCP Bearer Token')}
+                            className="text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-0.5 cursor-pointer font-bubble"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>{locale === 'zh' ? '复制' : 'Copy'}</span>
+                          </button>
+                        </div>
+                        <div className="font-mono text-xs text-neutral-900 dark:text-neutral-100 truncate font-semibold">
+                          tagmesh_mcp_secret_bearer_token
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Live Test Button */}
+                    <button
+                      type="button"
+                      disabled={isTestingMcp}
+                      onClick={handleTestMcp}
+                      className="w-full p-3 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bubble font-bold text-xs sm:text-sm shadow-3xs flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer disabled:opacity-50"
+                    >
+                      {isTestingMcp ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 text-amber-300" />}
+                      <span>{isTestingMcp ? (locale === 'zh' ? '正在连接测试 MCP 网关...' : 'Testing connection...') : (locale === 'zh' ? '⚡ 实时测试 MCP 连通性 (List Tools)' : '⚡ Test MCP Connection')}</span>
+                    </button>
+
+                    {/* Test Result Display */}
+                    {mcpTestResult && (
+                      <div className={`p-3 rounded-2xl border text-xs font-cute animate-in fade-in space-y-1.5 ${
+                        mcpTestResult.success 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200'
+                          : 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60 text-rose-900 dark:text-rose-200'
+                      }`}>
+                        <div className="flex items-center justify-between font-bubble font-bold">
+                          <span className="flex items-center gap-1.5">
+                            {mcpTestResult.success ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-rose-600" />}
+                            <span>{mcpTestResult.success ? (locale === 'zh' ? '网关通信正常 (Online)' : 'MCP Online') : (locale === 'zh' ? '通信测试失败' : 'MCP Error')}</span>
+                          </span>
+                          {mcpTestResult.success && (
+                            <span className="font-mono text-[11px] bg-emerald-200/60 dark:bg-emerald-900 px-2 py-0.5 rounded-full">
+                              {mcpTestResult.latencyMs}ms
+                            </span>
+                          )}
+                        </div>
+                        {mcpTestResult.success ? (
+                          <div className="text-[11px] space-y-1">
+                            <p>{locale === 'zh' ? `已成功发现 ${mcpTestResult.toolsCount} 个核心工具：` : `Discovered ${mcpTestResult.toolsCount} tools:`}</p>
+                            <div className="flex flex-wrap gap-1 font-mono text-[10px]">
+                              {mcpTestResult.tools.map((t) => (
+                                <span key={t} className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/80 border border-emerald-300 dark:border-emerald-700">
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-[11px] font-mono">{mcpTestResult.error}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* One-Click Agent Config Switcher & Code Box */}
+                    <div className="pt-2 border-t border-neutral-200/80 dark:border-white/10 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bubble font-bold text-neutral-800 dark:text-neutral-200">
+                          🤖 {locale === 'zh' ? '一键接入各大 AI Agent 客户端' : 'One-Click AI Agent Exporter'}
+                        </span>
+                        <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 font-bold">
+                          Copy & Paste
+                        </span>
+                      </div>
+
+                      {/* Client Pills */}
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                        {[
+                          { id: 'claude', label: 'Claude Desktop', icon: '🟣' },
+                          { id: 'cursor', label: 'Cursor', icon: '⚡' },
+                          { id: 'windsurf', label: 'Windsurf', icon: '🌊' },
+                          { id: 'cline', label: 'Cline/Roo', icon: '🤖' },
+                          { id: 'agy', label: 'Antigravity', icon: '🚀' },
+                          { id: 'curl', label: 'cURL / Shell', icon: '💻' },
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => { playSoftTick(); setMcpClientType(item.id as any); }}
+                            className={`p-2 rounded-xl text-xs font-bubble font-bold transition flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                              mcpClientType === item.id
+                                ? 'bg-purple-600 text-white shadow-xs'
+                                : 'bg-white dark:bg-neutral-800 hover:bg-purple-50 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-200/80 dark:border-white/10'
+                            }`}
+                          >
+                            <span>{item.icon}</span>
+                            <span className="text-[10px] truncate w-full text-center">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Config Code Box */}
+                      <div className="p-3 rounded-2xl bg-neutral-900 text-neutral-100 font-mono text-xs space-y-2 relative border border-neutral-800 shadow-inner">
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400 border-b border-neutral-800 pb-1.5">
+                          <span className="font-bubble">
+                            {mcpClientType === 'claude' && '📁 claude_desktop_config.json'}
+                            {mcpClientType === 'cursor' && '📁 .cursor/mcp.json'}
+                            {mcpClientType === 'windsurf' && '📁 ~/.codeium/windsurf/mcp_config.json'}
+                            {mcpClientType === 'cline' && '📁 cline_mcp_settings.json'}
+                            {mcpClientType === 'agy' && '🚀 Antigravity CLI / Sidecar'}
+                            {mcpClientType === 'curl' && '💻 Terminal cURL Command'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(getMcpSnippet(mcpClientType), `${mcpClientType} config`)}
+                            className="px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-bubble font-bold text-[11px] flex items-center gap-1 transition active:scale-95 cursor-pointer border border-purple-500/30"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>{locale === 'zh' ? '一键复制' : 'Copy'}</span>
+                          </button>
+                        </div>
+
+                        <pre className="overflow-x-auto custom-scrollbar max-h-48 text-[11px] text-emerald-300/90 leading-relaxed select-all">
+                          {getMcpSnippet(mcpClientType)}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
-            /* Guest Login Form */
+            /* Admin Login Form */
             <form onSubmit={handleLogin} className="space-y-4">
-              <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200 text-xs sm:text-sm leading-relaxed">
-                <span className="font-bold block mb-1">🌱 游客模式说明：</span>
+              <div className="p-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/60 text-amber-900 dark:text-amber-200 text-xs sm:text-sm leading-relaxed">
+                <span className="font-bold block mb-1">👑 馆长私人工作台：</span>
                 {locale === 'zh'
-                  ? '游客可自由阅读公开笔记并创建临时笔记。馆长官方卡片受防篡改保护，Telegram 与 MCP 云端密钥已隐匿。'
-                  : 'Guests can read public notes & write local memos. Admin official cards, Telegram & MCP keys are protected.'}
+                  ? '工作台为馆长私人创作空间。验证口令登录后，可管理公开/私密笔记、配置 Telegram 闪念同步与导出 AI Agent MCP 接口。'
+                  : 'Workspace is the curator space. Sign in with password to manage public/private notes, Telegram sync, and export MCP gateway.'}
               </div>
 
               <div>
@@ -1100,11 +1338,11 @@ export const ClayAdminAuthModal: React.FC = () => {
               className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-200/60 dark:border-white/10 font-bubble font-bold text-xs sm:text-sm transition cursor-pointer"
             >
               <LogOut className="w-4 h-4 text-rose-500" />
-              <span>{locale === 'zh' ? '🌱 退出为游客模式' : '🌱 Switch to Guest'}</span>
+              <span>{locale === 'zh' ? '🔒 退出馆长登录' : '🔒 Sign Out Admin'}</span>
             </button>
           ) : (
             <span className="text-xs text-neutral-400 font-cute">
-              {locale === 'zh' ? '处于游客沙盒中' : 'In Guest Sandbox'}
+              {locale === 'zh' ? '未登录状态' : 'Not signed in'}
             </span>
           )}
 

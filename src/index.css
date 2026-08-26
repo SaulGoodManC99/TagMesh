@@ -54,10 +54,16 @@
     margin: 0;
     padding: 0;
     color: #262626;
-    background-color: #f8f5ee;
+    background-color: var(--theme-bg, #f8f5ee);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    transition: background-color 0.4s ease, color 0.3s ease;
+  }
+
+  ::selection {
+    background-color: var(--theme-selection-bg, rgba(244, 114, 182, 0.35));
+    color: var(--theme-selection-text, #881337);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -201,7 +207,7 @@ html.dark {
 }
 
 html.dark body {
-  background-color: #0d0e15 !important;
+  background-color: var(--theme-bg, #0d0e15) !important;
   color: #f3f4f6 !important;
 }
 
@@ -227,24 +233,6 @@ html.dark textarea::placeholder {
 
 html.dark .clay-sheen::after {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
-}
-
-/* ==========================================================================
-   🎛️ BUTTON STYLE VARIANTS: [tint | clay | glass]
-   ========================================================================== */
-html[data-button-style="tint"] .clay-btn {
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-html[data-button-style="glass"] .clay-btn,
-html[data-button-style="glass"] button.rounded-full,
-html[data-button-style="glass"] button.rounded-2xl {
-  backdrop-filter: blur(12px) !important;
-  border-width: 1px !important;
-}
-
-html[data-button-style="clay"] .clay-btn {
-  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.12), inset 0 2px 2px rgba(255, 255, 255, 0.6) !important;
 }
 
 .clay-btn {
@@ -1073,111 +1061,434 @@ html.dark .uiverse-animated-btn {
 }
 
 /* ==========================================================================
-   THREE GLOBAL UIVERSE BUTTON STYLES (Exempting Homepage Hero Buttons & Modals)
+   🎛️ SIX INDEPENDENT SIGNATURE BUTTON STYLES & PHYSICAL TACTILE ENGINES
+   (Each style carries its own iconic signature palette, materials, and physics)
    ========================================================================== */
 
-/* 1. Style: 'neon' (From Uiverse.io by alexreyes091 - Cyber Multi-Shadow Layered) */
-html[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
-html[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
-  border-bottom: 2px solid #8b5cf6 !important;
-  border-right: 2px solid #8b5cf6 !important;
-  border-top: 2px solid rgba(255, 255, 255, 0.9) !important;
-  border-left: 2px solid rgba(255, 255, 255, 0.9) !important;
-  transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1) !important;
+/* --------------------------------------------------------------------------
+   1. Style: 'neon' (⚡ 霓虹微光 / Cyber Electric Cyan & Magenta Hard Shadow)
+   -------------------------------------------------------------------------- */
+html[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  border-bottom: 2px solid #f72585 !important;
+  border-right: 2px solid #f72585 !important;
+  border-top: 2px solid #00f2fe !important;
+  border-left: 2px solid #00f2fe !important;
+  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
 
-html[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
-html[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
-  border-top: 2px solid #8b5cf6 !important;
-  border-left: 2px solid #8b5cf6 !important;
-  border-bottom: 2px solid #ec4899 !important;
-  border-right: 2px solid #ec4899 !important;
-  box-shadow: rgba(240, 46, 170, 0.35) 3px 3px, rgba(240, 46, 170, 0.25) 6px 6px, rgba(240, 46, 170, 0.15) 9px 9px !important;
-  transform: translate(-2px, -2px) !important;
+html[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-top: 2px solid #00f2fe !important;
+  border-left: 2px solid #00f2fe !important;
+  border-bottom: 2px solid #f72585 !important;
+  border-right: 2px solid #f72585 !important;
+  box-shadow: #00f2fe 3px 3px,
+              #f72585 6px 6px,
+              #7209b7 9px 9px !important;
+  transform: translate(-3px, -3px) !important;
 }
 
-html.dark[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
-html.dark[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
-  border-bottom: 2px solid #a855f7 !important;
-  border-right: 2px solid #a855f7 !important;
-  border-top: 2px solid rgba(255, 255, 255, 0.15) !important;
-  border-left: 2px solid rgba(255, 255, 255, 0.15) !important;
+html[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: translate(1px, 1px) !important;
+  box-shadow: #00f2fe 1.5px 1.5px !important;
 }
 
-html.dark[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
-html.dark[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
-  border-top: 2px solid #a855f7 !important;
-  border-left: 2px solid #a855f7 !important;
-  border-bottom: 2px solid #f472b6 !important;
-  border-right: 2px solid #f472b6 !important;
-  box-shadow: rgba(217, 70, 239, 0.45) 3px 3px, rgba(168, 85, 247, 0.3) 6px 6px, rgba(147, 51, 234, 0.15) 9px 9px !important;
+html.dark[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html.dark[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  border-bottom: 2px solid #f43f5e !important;
+  border-right: 2px solid #f43f5e !important;
+  border-top: 2px solid #38bdf8 !important;
+  border-left: 2px solid #38bdf8 !important;
 }
 
-/* 2. Style: 'laser' (From Uiverse.io by marcelodolza - Conic Laser Outline & Depth) */
-html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
-html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
+html.dark[data-button-style="neon"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="neon"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-top: 2px solid #38bdf8 !important;
+  border-left: 2px solid #38bdf8 !important;
+  border-bottom: 2px solid #f43f5e !important;
+  border-right: 2px solid #f43f5e !important;
+  box-shadow: rgba(56, 189, 248, 0.65) 3px 3px,
+              rgba(244, 63, 94, 0.45) 6px 6px,
+              rgba(168, 85, 247, 0.25) 9px 9px !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. Style: 'laser' (✨ 极光微弹 / Cosmic Aurora Emerald-Indigo Prismatic Contour)
+   -------------------------------------------------------------------------- */
+html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
   position: relative !important;
-  box-shadow: 0 0.5px 0.5px 1px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 0.5px 0.5px 1px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(16, 185, 129, 0.08) !important;
+  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  transform: scale(1.04) translateY(-2px) !important;
+  border-color: rgba(99, 102, 241, 0.8) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.45),
+              0 8px 24px rgba(236, 72, 153, 0.35) !important;
+}
+
+html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: scale(0.97) translateY(1px) !important;
+  box-shadow: 0 0 1px 1px rgba(99, 102, 241, 0.35), 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.dark[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html.dark[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  border: 1.5px solid rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-color: rgba(99, 102, 241, 0.9) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6),
+              0 8px 26px rgba(236, 72, 153, 0.45) !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. Style: 'jelly' & 'blob' (🍬 果冻微弹 / Strawberry Peach Jelly Elasticity)
+   -------------------------------------------------------------------------- */
+html[data-button-style="jelly"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html[data-button-style="jelly"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *),
+html[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  position: relative !important;
+  border: 1.5px solid rgba(255, 107, 129, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(255, 107, 129, 0.18),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.9) !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
+}
+
+html[data-button-style="jelly"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html[data-button-style="jelly"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover,
+html[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  transform: scale(1.05, 1.02) translateY(-2.5px) !important;
+  border-color: rgba(255, 71, 87, 0.75) !important;
+  box-shadow: 0 8px 24px rgba(255, 107, 129, 0.38),
+              inset 0 2px 3px rgba(255, 255, 255, 0.95) !important;
+}
+
+html[data-button-style="jelly"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html[data-button-style="jelly"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active,
+html[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: scale(0.94, 1.05) translateY(2px) !important;
+  box-shadow: 0 2px 6px rgba(255, 107, 129, 0.25),
+              inset 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.dark[data-button-style="jelly"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html.dark[data-button-style="jelly"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *),
+html.dark[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html.dark[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  border: 1.5px solid rgba(255, 107, 129, 0.5) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), inset 0 1px 1.5px rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark[data-button-style="jelly"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="jelly"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-color: rgba(255, 107, 129, 0.9) !important;
+  box-shadow: 0 8px 28px rgba(255, 107, 129, 0.5),
+              inset 0 2px 3px rgba(255, 255, 255, 0.35) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Style: 'tint' (🎨 柔和微淡 / Quiet Luxury Slate & Warm Ivory Sheen)
+   -------------------------------------------------------------------------- */
+html[data-button-style="tint"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html[data-button-style="tint"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  position: relative !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px -1px rgba(100, 116, 139, 0.12),
+              inset 0 1px 1.5px rgba(255, 255, 255, 0.95) !important;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+html[data-button-style="tint"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html[data-button-style="tint"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 6px 18px -2px rgba(100, 116, 139, 0.2),
+              inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+html[data-button-style="tint"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html[data-button-style="tint"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: translateY(1px) scale(0.97) !important;
+  box-shadow: 0 1px 4px rgba(100, 116, 139, 0.15),
+              inset 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.dark[data-button-style="tint"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html.dark[data-button-style="tint"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  border: 1.5px solid #334155 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark[data-button-style="tint"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="tint"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-color: #64748b !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45),
+              inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. Style: 'clay' (🧸 3D粘土 / Terracotta Chunky Neumorphic 3D Bevel)
+   -------------------------------------------------------------------------- */
+html[data-button-style="clay"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html[data-button-style="clay"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  position: relative !important;
+  border: 2px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 4px 0 0 #c0392b,
+              0 8px 16px -2px rgba(225, 112, 85, 0.2),
+              inset 0 3px 4px rgba(255, 255, 255, 0.9),
+              inset 0 -2px 3px rgba(0, 0, 0, 0.08) !important;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease !important;
+}
+
+html[data-button-style="clay"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html[data-button-style="clay"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 6px 0 0 #c0392b,
+              0 12px 22px -2px rgba(225, 112, 85, 0.28),
+              inset 0 3px 5px rgba(255, 255, 255, 0.95),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-button-style="clay"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html[data-button-style="clay"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: translateY(3px) scale(0.97) !important;
+  box-shadow: 0 1px 0 0 #c0392b,
+              0 2px 6px rgba(0, 0, 0, 0.1),
+              inset 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+html.dark[data-button-style="clay"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html.dark[data-button-style="clay"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  border: 2px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 4px 0 0 #b33939,
+              0 8px 20px rgba(0, 0, 0, 0.5),
+              inset 0 2px 3px rgba(255, 255, 255, 0.22),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark[data-button-style="clay"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="clay"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 6px 0 0 #b33939,
+              0 12px 26px rgba(0, 0, 0, 0.65),
+              inset 0 3px 4px rgba(255, 255, 255, 0.3),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark[data-button-style="clay"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html.dark[data-button-style="clay"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: translateY(3px) scale(0.97) !important;
+  box-shadow: 0 1px 0 0 #b33939,
+              0 2px 8px rgba(0, 0, 0, 0.4),
+              inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. Style: 'glass' (🧊 晶透玻璃 / Pure Ice Crystal Specular Refraction)
+   -------------------------------------------------------------------------- */
+html[data-button-style="glass"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html[data-button-style="glass"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  position: relative !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.08),
+              0 0 1px rgba(56, 189, 248, 0.3),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.95),
+              inset 0 -1px 1.5px rgba(0, 0, 0, 0.05) !important;
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
 
-html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
-html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
-  transform: scale(1.04) translateY(-1px) !important;
-  box-shadow: 0 0 1px 2px rgba(255, 85, 105, 0.4), 0 8px 20px rgba(244, 63, 94, 0.25) !important;
+html[data-button-style="glass"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html[data-button-style="glass"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12),
+              0 0 18px rgba(56, 189, 248, 0.45),
+              inset 0 2px 3px rgba(255, 255, 255, 1) !important;
+  transform: translateY(-2px) scale(1.03) !important;
 }
 
-html[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):active,
-html[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):active {
-  transform: scale(0.97) !important;
+html[data-button-style="glass"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html[data-button-style="glass"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: translateY(1px) scale(0.97) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(0, 0, 0, 0.08) !important;
 }
 
-html.dark[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
-html.dark[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+html.dark[data-button-style="glass"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *),
+html.dark[data-button-style="glass"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *) {
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5),
+              0 0 1px rgba(56, 189, 248, 0.4),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.25),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.4) !important;
 }
 
-html.dark[data-button-style="laser"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
-html.dark[data-button-style="laser"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
-  box-shadow: 0 0 1px 2px rgba(251, 113, 133, 0.5), 0 8px 24px rgba(225, 29, 72, 0.35) !important;
+html.dark[data-button-style="glass"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):hover,
+html.dark[data-button-style="glass"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):hover {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.6),
+              0 0 20px rgba(56, 189, 248, 0.5),
+              inset 0 2px 3px rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-2px) scale(1.03) !important;
 }
 
-/* 3. Style: 'blob' (From Uiverse.io by adamgiebl - Fluid Colorful Blobs Glass) */
-html[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
-html[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
-  position: relative !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  background-image: radial-gradient(circle at 10% 20%, rgba(255, 147, 15, 0.18) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(0, 97, 255, 0.18) 0%, transparent 40%),
-                    radial-gradient(circle at 50% 50%, rgba(255, 27, 107, 0.15) 0%, transparent 50%) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
-  transition: all 0.35s ease !important;
+html.dark[data-button-style="glass"] button:not(.uiverse-animated-btn):not([disabled]):not([data-no-global-btn] *):active,
+html.dark[data-button-style="glass"] .clay-btn:not(.uiverse-animated-btn):not([data-no-global-btn] *):active {
+  transform: translateY(1px) scale(0.97) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), inset 0 1px 3px rgba(0, 0, 0, 0.5) !important;
 }
 
-html[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
-html[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
-  background-image: radial-gradient(circle at 10% 20%, rgba(0, 97, 255, 0.28) 0%, transparent 45%),
-                    radial-gradient(circle at 90% 80%, rgba(255, 147, 15, 0.28) 0%, transparent 45%),
-                    radial-gradient(circle at 50% 50%, rgba(191, 15, 255, 0.25) 0%, transparent 55%) !important;
-  transform: scale(1.04) translateY(-1px) !important;
-  box-shadow: 0 8px 24px rgba(191, 15, 255, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
+/* ==========================================================================
+   CONTEXT MENU TACTILE BUTTON LIVE HOVER & ACTIVE SIGNATURE STYLES
+   ========================================================================== */
+
+/* 1. NEON PREVIEW & ACTIVE */
+.ctx-btn-preview-neon {
+  border: 1.5px solid rgba(0, 242, 254, 0.35) !important;
+  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+.ctx-btn-preview-neon:hover {
+  border-top: 2px solid #00f2fe !important;
+  border-left: 2px solid #00f2fe !important;
+  border-bottom: 2px solid #f72585 !important;
+  border-right: 2px solid #f72585 !important;
+  box-shadow: #00f2fe 3px 3px,
+              #f72585 6px 6px,
+              #7209b7 9px 9px !important;
+  transform: translate(-3px, -3px) !important;
+}
+.ctx-btn-active-neon {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%) !important;
+  color: #38bdf8 !important;
+  border: 1.5px solid #00f2fe !important;
+  box-shadow: 0 0 14px rgba(0, 242, 254, 0.45) !important;
 }
 
-html.dark[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *),
-html.dark[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *) {
-  background-image: radial-gradient(circle at 10% 20%, rgba(255, 147, 15, 0.25) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(0, 97, 255, 0.25) 0%, transparent 40%),
-                    radial-gradient(circle at 50% 50%, rgba(255, 27, 107, 0.2) 0%, transparent 50%) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+/* 2. LASER PREVIEW & ACTIVE */
+.ctx-btn-preview-laser {
+  border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
+  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+.ctx-btn-preview-laser:hover {
+  transform: scale(1.03) translateY(-2px) !important;
+  border-color: rgba(99, 102, 241, 0.8) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.45),
+              0 8px 24px rgba(236, 72, 153, 0.35) !important;
+}
+.ctx-btn-active-laser {
+  background: linear-gradient(135deg, #059669 0%, #4f46e5 50%, #db2777 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 4px 18px rgba(79, 70, 229, 0.45) !important;
 }
 
-html.dark[data-button-style="blob"] button:not(.uiverse-animated-btn):not([disabled]):not(.modal-card-enter *):not([data-no-global-btn] *):hover,
-html.dark[data-button-style="blob"] .clay-btn:not(.uiverse-animated-btn):not(.modal-card-enter *):not([data-no-global-btn] *):hover {
-  background-image: radial-gradient(circle at 10% 20%, rgba(0, 97, 255, 0.38) 0%, transparent 45%),
-                    radial-gradient(circle at 90% 80%, rgba(255, 147, 15, 0.38) 0%, transparent 45%),
-                    radial-gradient(circle at 50% 50%, rgba(191, 15, 255, 0.35) 0%, transparent 55%) !important;
-  box-shadow: 0 8px 28px rgba(191, 15, 255, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.25) !important;
+/* 3. JELLY PREVIEW & ACTIVE */
+.ctx-btn-preview-jelly {
+  border: 1.5px solid rgba(255, 107, 129, 0.35) !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
+}
+.ctx-btn-preview-jelly:hover {
+  transform: scale(1.04, 1.02) translateY(-3px) !important;
+  border-color: rgba(255, 71, 87, 0.75) !important;
+  box-shadow: 0 8px 24px rgba(255, 107, 129, 0.4),
+              inset 0 2px 3px rgba(255, 255, 255, 0.95) !important;
+}
+.ctx-btn-active-jelly {
+  background: linear-gradient(135deg, #ff758c 0%, #ff4757 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.7) !important;
+}
+
+/* 4. TINT PREVIEW & ACTIVE */
+.ctx-btn-preview-tint {
+  border: 1.5px solid #cbd5e1 !important;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.ctx-btn-preview-tint:hover {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 6px 18px -2px rgba(100, 116, 139, 0.22),
+              inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+.ctx-btn-active-tint {
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid #64748b !important;
+  box-shadow: 0 4px 14px rgba(30, 41, 59, 0.3) !important;
+}
+html.dark .ctx-btn-active-tint {
+  background: linear-gradient(135deg, #27272a 0%, #3f3f46 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid #52525b !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 5. CLAY PREVIEW & ACTIVE */
+.ctx-btn-preview-clay {
+  border: 2px solid rgba(255, 255, 255, 0.95) !important;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease !important;
+}
+.ctx-btn-preview-clay:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 6px 0 0 #c0392b,
+              0 12px 22px -2px rgba(225, 112, 85, 0.25),
+              inset 0 3px 5px rgba(255, 255, 255, 0.95),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+.ctx-btn-active-clay {
+  background: linear-gradient(135deg, #e17055 0%, #d63031 100%) !important;
+  color: #ffffff !important;
+  border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 5px 0 0 #b33939, inset 0 2px 4px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* 6. GLASS PREVIEW & ACTIVE */
+.ctx-btn-preview-glass {
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+.ctx-btn-preview-glass:hover {
+  border-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12),
+              0 0 18px rgba(56, 189, 248, 0.45),
+              inset 0 2px 3px rgba(255, 255, 255, 1) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+}
+.ctx-btn-active-glass {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(14, 165, 233, 0.35) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  color: #0284c7 !important;
+  border: 2px solid rgba(56, 189, 248, 0.8) !important;
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.28), inset 0 2px 4px rgba(255, 255, 255, 0.8) !important;
+}
+html.dark .ctx-btn-active-glass {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.28) 0%, rgba(2, 132, 199, 0.4) 100%) !important;
+  color: #e0f2fe !important;
+  border: 2px solid rgba(56, 189, 248, 0.7) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.25) !important;
 }
 
 /* ==========================================================================

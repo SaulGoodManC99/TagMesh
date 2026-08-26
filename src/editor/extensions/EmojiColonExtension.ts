@@ -23,8 +23,8 @@ export const EmojiColonExtension = Extension.create<EmojiColonOptions>({
         items: ({ query }) => {
           const q = query.toLowerCase().trim();
           if (!q) {
-            // Default top 6 popular memes & emojis
-            return EMOJI_MEME_DATABASE.slice(0, 6);
+            // Default top 7 popular emotions & sparks
+            return EMOJI_MEME_DATABASE.slice(0, 7);
           }
 
           const matches = EMOJI_MEME_DATABASE.filter((item) => {
@@ -35,7 +35,7 @@ export const EmojiColonExtension = Extension.create<EmojiColonOptions>({
             return codeMatch || nameZhMatch || nameEnMatch || kwMatch;
           });
 
-          return matches.slice(0, 7);
+          return matches.slice(0, 8);
         },
         render: () => {
           let component: HTMLDivElement;
@@ -61,7 +61,7 @@ export const EmojiColonExtension = Extension.create<EmojiColonOptions>({
 
             container.innerHTML = `
               <div class="px-2.5 py-1 text-[10px] font-bubble font-bold text-neutral-400 uppercase tracking-wider border-b border-neutral-100 flex items-center justify-between">
-                <span>🐱 Discord 表情 / MEME</span>
+                <span>✨ 情绪表情</span>
                 <span>↑↓ 切换 • Enter 插入</span>
               </div>
               <div class="py-1 flex flex-col gap-0.5">

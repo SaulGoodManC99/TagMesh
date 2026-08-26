@@ -10,6 +10,7 @@ export interface DbNoteRow {
   version: number;
   is_pinned: number;
   is_deleted: number;
+  is_public?: number;
   created_at: number;
   updated_at: number;
   synced_at: number;
@@ -26,8 +27,7 @@ export function rowToNote(row: DbNoteRow): Note {
     tags = [];
   }
 
-  const isOfficial = Boolean(row.is_official || (row.author === 'admin'));
-  const author = (row.author || (isOfficial ? 'admin' : 'guest')) as 'admin' | 'guest';
+  const isPublic = row.is_public !== undefined ? Boolean(row.is_public) : true;
 
   return {
     id: row.id,
@@ -39,11 +39,12 @@ export function rowToNote(row: DbNoteRow): Note {
     version: row.version,
     isPinned: Boolean(row.is_pinned),
     isDeleted: Boolean(row.is_deleted),
+    isPublic,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     syncedAt: row.synced_at,
-    isOfficial,
-    author,
+    isOfficial: true,
+    author: 'admin',
     likes: Number(row.likes || 0),
   };
 }
@@ -57,11 +58,13 @@ export async function getNoteById(db: D1Database, id: string): Promise<Note | nu
   return row ? rowToNote(row) : null;
 }
 
-export async function listNotes(db: D1Database, limit = 50, offset = 0): Promise<Note[]> {
+export async function listNotes(db: D1Database, limit = 50, offset = 0, isPublicOnly = false): Promise<Note[]> {
+  const sql = isPublicOnly
+    ? 'SELECT * FROM notes WHERE is_deleted = 0 AND (is_public IS NULL OR is_public = 1) ORDER BY is_pinned DESC, updated_at DESC LIMIT ? OFFSET ?'
+    : 'SELECT * FROM notes WHERE is_deleted = 0 ORDER BY is_pinned DESC, updated_at DESC LIMIT ? OFFSET ?';
+
   const { results } = await db
-    .prepare(
-      'SELECT * FROM notes WHERE is_deleted = 0 ORDER BY is_pinned DESC, updated_at DESC LIMIT ? OFFSET ?'
-    )
+    .prepare(sql)
     .bind(limit, offset)
     .all<DbNoteRow>();
 
@@ -76,70 +79,145 @@ export async function syncNote(
   const existing = await getNoteById(db, note.id);
   const now = Date.now();
   const nextVersion = existing ? existing.version + 1 : 1;
+  const rawMarkdown = note.rawMarkdown ?? '';
+  const excerpt = note.excerpt ?? rawMarkdown.replace(/^[#>*`\-\d.]+\s*/gm, '').substring(0, 100);
   const tagsJson = JSON.stringify(note.tags || []);
-  const author = note.author || (note.isOfficial ? 'admin' : 'guest');
-  const isOfficial = note.isOfficial ? 1 : 0;
+  const wordCount = typeof note.wordCount === 'number' ? note.wordCount : 0;
+  const charCount = typeof note.charCount === 'number' ? note.charCount : rawMarkdown.length;
+  const isPublic = note.isPublic !== undefined ? (note.isPublic ? 1 : 0) : 1;
+  const updatedAt = note.updatedAt || now;
+  const createdAt = note.createdAt || now;
 
   if (existing) {
-    await db
-      .prepare(`
-        UPDATE notes
-        SET raw_markdown = ?,
-            excerpt = ?,
-            tags_json = ?,
-            word_count = ?,
-            char_count = ?,
-            version = ?,
-            is_pinned = ?,
-            is_deleted = ?,
-            updated_at = ?,
-            synced_at = ?,
-            author = ?,
-            is_official = ?
-        WHERE id = ?
-      `)
-      .bind(
-        note.rawMarkdown,
-        note.excerpt,
-        tagsJson,
-        note.wordCount,
-        note.charCount,
-        nextVersion,
-        note.isPinned ? 1 : 0,
-        note.isDeleted ? 1 : 0,
-        note.updatedAt,
-        now,
-        author,
-        isOfficial,
-        note.id
-      )
-      .run();
+    try {
+      await db
+        .prepare(`
+          UPDATE notes
+          SET raw_markdown = ?,
+              excerpt = ?,
+              tags_json = ?,
+              word_count = ?,
+              char_count = ?,
+              version = ?,
+              is_pinned = ?,
+              is_deleted = ?,
+              is_public = ?,
+              updated_at = ?,
+              synced_at = ?,
+              author = 'admin',
+              is_official = 1
+          WHERE id = ?
+        `)
+        .bind(
+          rawMarkdown,
+          excerpt,
+          tagsJson,
+          wordCount,
+          charCount,
+          nextVersion,
+          note.isPinned ? 1 : 0,
+          note.isDeleted ? 1 : 0,
+          isPublic,
+          updatedAt,
+          now,
+          note.id
+        )
+        .run();
+    } catch {
+      // If column is_public does not exist yet, add column
+      try {
+        await db.prepare('ALTER TABLE notes ADD COLUMN is_public INTEGER NOT NULL DEFAULT 1').run();
+      } catch {}
+      await db
+        .prepare(`
+          UPDATE notes
+          SET raw_markdown = ?,
+              excerpt = ?,
+              tags_json = ?,
+              word_count = ?,
+              char_count = ?,
+              version = ?,
+              is_pinned = ?,
+              is_deleted = ?,
+              is_public = ?,
+              updated_at = ?,
+              synced_at = ?,
+              author = 'admin',
+              is_official = 1
+          WHERE id = ?
+        `)
+        .bind(
+          rawMarkdown,
+          excerpt,
+          tagsJson,
+          wordCount,
+          charCount,
+          nextVersion,
+          note.isPinned ? 1 : 0,
+          note.isDeleted ? 1 : 0,
+          isPublic,
+          updatedAt,
+          now,
+          note.id
+        )
+        .run();
+    }
   } else {
-    await db
-      .prepare(`
-        INSERT INTO notes (
-          id, raw_markdown, excerpt, tags_json, word_count, char_count,
-          version, is_pinned, is_deleted, created_at, updated_at, synced_at,
-          author, is_official
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
-      .bind(
-        note.id,
-        note.rawMarkdown,
-        note.excerpt,
-        tagsJson,
-        note.wordCount,
-        note.charCount,
-        nextVersion,
-        note.isPinned ? 1 : 0,
-        note.isDeleted ? 1 : 0,
-        note.createdAt || now,
-        note.updatedAt || now,
-        now,
-        author,
-        isOfficial
-      )
-      .run();
+    try {
+      await db
+        .prepare(`
+          INSERT INTO notes (
+            id, raw_markdown, excerpt, tags_json, word_count, char_count,
+            version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at,
+            author, is_official
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', 1)
+        `)
+        .bind(
+          note.id,
+          rawMarkdown,
+          excerpt,
+          tagsJson,
+          wordCount,
+          charCount,
+          nextVersion,
+          note.isPinned ? 1 : 0,
+          note.isDeleted ? 1 : 0,
+          isPublic,
+          createdAt,
+          updatedAt,
+          now
+        )
+        .run();
+    } catch {
+      // If column is_public does not exist yet, add column
+      try {
+        await db.prepare('ALTER TABLE notes ADD COLUMN is_public INTEGER NOT NULL DEFAULT 1').run();
+      } catch {}
+      await db
+        .prepare(`
+          INSERT INTO notes (
+            id, raw_markdown, excerpt, tags_json, word_count, char_count,
+            version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at,
+            author, is_official
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', 1)
+        `)
+        .bind(
+          note.id,
+          rawMarkdown,
+          excerpt,
+          tagsJson,
+          wordCount,
+          charCount,
+          nextVersion,
+          note.isPinned ? 1 : 0,
+          note.isDeleted ? 1 : 0,
+          isPublic,
+          createdAt,
+          updatedAt,
+          now
+        )
+        .run();
+    }
   }
 
   // Update FTS5 Index safely
@@ -173,12 +251,13 @@ export async function searchNotesFts(
   db: D1Database,
   query: string,
   tag?: string,
-  limit = 30
+  limit = 30,
+  isPublicOnly = false
 ): Promise<Note[]> {
   const trimmed = query.trim();
 
   if (!trimmed && !tag) {
-    return await listNotes(db, limit);
+    return await listNotes(db, limit, 0, isPublicOnly);
   }
 
   if (trimmed) {
@@ -190,6 +269,10 @@ export async function searchNotesFts(
       WHERE notes_fts MATCH ? AND n.is_deleted = 0
     `;
     const params: (string | number)[] = [ftsTerm];
+
+    if (isPublicOnly) {
+      sql += ` AND (n.is_public IS NULL OR n.is_public = 1)`;
+    }
 
     if (tag && tag !== '#all') {
       sql += ` AND n.tags_json LIKE ?`;
@@ -203,17 +286,25 @@ export async function searchNotesFts(
       const { results } = await db.prepare(sql).bind(...params).all<DbNoteRow>();
       return (results || []).map(rowToNote);
     } catch {
-      const fallbackSql = `
+      let fallbackSql = `
         SELECT * FROM notes
         WHERE is_deleted = 0 AND raw_markdown LIKE ?
-        ORDER BY updated_at DESC LIMIT ?
       `;
+      if (isPublicOnly) {
+        fallbackSql += ` AND (is_public IS NULL OR is_public = 1)`;
+      }
+      fallbackSql += ` ORDER BY updated_at DESC LIMIT ?`;
       const { results } = await db.prepare(fallbackSql).bind(`%${trimmed}%`, limit).all<DbNoteRow>();
       return (results || []).map(rowToNote);
     }
   } else if (tag && tag !== '#all') {
+    let sql = 'SELECT * FROM notes WHERE is_deleted = 0';
+    if (isPublicOnly) {
+      sql += ' AND (is_public IS NULL OR is_public = 1)';
+    }
+    sql += ' AND tags_json LIKE ? ORDER BY updated_at DESC LIMIT ?';
     const { results } = await db
-      .prepare('SELECT * FROM notes WHERE is_deleted = 0 AND tags_json LIKE ? ORDER BY updated_at DESC LIMIT ?')
+      .prepare(sql)
       .bind(`%"${tag.toLowerCase()}"%`, limit)
       .all<DbNoteRow>();
 

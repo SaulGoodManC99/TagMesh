@@ -26,9 +26,8 @@ export const HashtagExtension = Extension.create<HashtagOptions>({
         char: '#',
         allowSpaces: false,
         startOfLine: false,
-        items: async ({ query, editor }) => {
-          const filterRole = (editor.extensionManager.extensions.find(e => e.name === 'hashtag')?.options as HashtagOptions)?.filterRole;
-          const allTags = await getAllTagCounts(filterRole);
+        items: async ({ query }) => {
+          const allTags = await getAllTagCounts('all');
           const q = query.toLowerCase();
           const filtered = allTags
             .filter(t => t.tag.replace(/^#/, '').toLowerCase().includes(q))

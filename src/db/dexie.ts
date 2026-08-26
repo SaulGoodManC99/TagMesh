@@ -16,6 +16,10 @@ export class TagMeshDatabase extends Dexie {
       notes: 'id, updatedAt, createdAt, isPinned, isDeleted, isDirty, *tags',
       meta: 'key',
     });
+    this.version(2).stores({
+      notes: 'id, updatedAt, createdAt, isPinned, isDeleted, isPublic, isDirty, *tags',
+      meta: 'key',
+    });
   }
 }
 
@@ -131,15 +135,14 @@ export async function pruneEmptyNotes(): Promise<void> {
 export async function createNewNote(
   initialMarkdown: string = '',
   tags: string[] = [],
-  options?: { author?: string; isOfficial?: boolean; persistIfEmpty?: boolean }
+  options?: { isPublic?: boolean; persistIfEmpty?: boolean }
 ): Promise<Note> {
   const now = Date.now();
-  const excerpt = extractExcerptFromMarkdown(initialMarkdown, options?.author === 'admin' ? '馆长笔记' : '灵感笔记');
+  const excerpt = extractExcerptFromMarkdown(initialMarkdown, '灵感笔记');
   const extractedTags = Array.from(new Set([...tags, ...extractTagsFromMarkdown(initialMarkdown)]));
   const { wordCount, charCount } = countWordsAndChars(initialMarkdown);
 
-  const isOfficial = options?.isOfficial !== undefined ? options.isOfficial : (options?.author === 'admin');
-  const author = options?.author || (isOfficial ? 'admin' : 'guest');
+  const isPublic = options?.isPublic !== undefined ? options.isPublic : true;
 
   const note: Note = {
     id: generateId(),
@@ -154,8 +157,9 @@ export async function createNewNote(
     createdAt: now,
     updatedAt: now,
     isDirty: false,
-    isOfficial,
-    author,
+    isPublic,
+    isOfficial: true,
+    author: 'admin',
   };
 
   // Only persist to Dexie if it actually contains text/tags, or if explicitly requested
@@ -166,7 +170,7 @@ export async function createNewNote(
 }
 
 /**
- * Ensures all existing notes have clear author and isOfficial separation
+ * Ensures all existing notes have valid visibility (isPublic) and author integrity
  */
 export async function ensureNotesAuthorSeparation(): Promise<void> {
   try {
@@ -180,21 +184,24 @@ export async function ensureNotesAuthorSeparation(): Promise<void> {
       let changed = false;
       const updates: Partial<Note> = {};
 
-      // If it's one of sample notes, official note, or admin-authored note
-      if (note.id.startsWith('sample_') || note.isOfficial === true || note.author === 'admin') {
-        if (note.author !== 'admin' || note.isOfficial !== true) {
-          updates.isOfficial = true;
-          updates.author = 'admin';
-          changed = true;
-        }
-      } else if (!note.author) {
-        // Default unassigned note to guest
-        updates.isOfficial = false;
-        updates.author = 'guest';
+      if (note.isPublic === undefined) {
+        // Detect if content has private hashtags
+        const tags = Array.isArray(note.tags) ? note.tags : [];
+        const isPrivateTag = tags.some((t) => {
+          const lower = t.toLowerCase();
+          return lower === '#draft' || lower === '#private' || lower === '#草稿' || lower === '#私密';
+        });
+        updates.isPublic = !isPrivateTag;
         changed = true;
       }
 
-      // Clean tags: filter out substring prefixes accidentally generated (e.g. #t or #ta when #tag exists)
+      if (note.author !== 'admin') {
+        updates.author = 'admin';
+        updates.isOfficial = true;
+        changed = true;
+      }
+
+      // Clean tags: filter out substring prefixes accidentally generated
       if (Array.isArray(note.tags) && note.tags.length > 1) {
         const cleanedTags = note.tags.filter((tag) => {
           const lower = tag.toLowerCase();
@@ -223,15 +230,17 @@ export async function ensureNotesAuthorSeparation(): Promise<void> {
 /**
  * Get active non-deleted notes sorted by pinned and updatedAt (filters out empty phantom notes)
  */
-export async function getActiveNotes(filterRole?: 'admin' | 'guest'): Promise<Note[]> {
+export async function getActiveNotes(filterVisibility?: 'all' | 'public' | 'private'): Promise<Note[]> {
   const all = await db.notes.toArray();
   return all
     .filter(n => {
       if (n.isDeleted) return false;
       if (isNoteEmpty(n)) return false; // Ignore empty notes from note list
-      if (filterRole) {
-        if (filterRole === 'admin') return n.author === 'admin' || n.isOfficial === true;
-        if (filterRole === 'guest') return n.author === 'guest' || (!n.isOfficial && n.author !== 'admin');
+      if (filterVisibility === 'public') {
+        return n.isPublic !== false;
+      }
+      if (filterVisibility === 'private') {
+        return n.isPublic === false;
       }
       return true;
     })
@@ -246,9 +255,8 @@ export async function getActiveNotes(filterRole?: 'admin' | 'guest'): Promise<No
 /**
  * Get the most recent active note or create a new one
  */
-export async function getOrCreateActiveNote(options?: { author?: string; isOfficial?: boolean }): Promise<Note> {
-  const filterRole = options?.author === 'admin' ? 'admin' : (options?.author === 'guest' ? 'guest' : undefined);
-  const activeNotes = await getActiveNotes(filterRole);
+export async function getOrCreateActiveNote(options?: { isPublic?: boolean }): Promise<Note> {
+  const activeNotes = await getActiveNotes('all');
   if (activeNotes.length > 0) {
     return activeNotes[0];
   }
@@ -258,8 +266,8 @@ export async function getOrCreateActiveNote(options?: { author?: string; isOffic
 /**
  * Search notes in local IndexedDB
  */
-export async function searchNotesLocal(query: string, tagFilter?: string, filterRole?: 'admin' | 'guest'): Promise<Note[]> {
-  const activeNotes = await getActiveNotes(filterRole);
+export async function searchNotesLocal(query: string, tagFilter?: string, filterVisibility?: 'all' | 'public' | 'private'): Promise<Note[]> {
+  const activeNotes = await getActiveNotes(filterVisibility);
   const q = query.trim().toLowerCase();
 
   return activeNotes.filter((note) => {
@@ -289,10 +297,10 @@ export async function searchNotesLocal(query: string, tagFilter?: string, filter
 }
 
 /**
- * Aggregate all tags and their note counts (with optional role isolation)
+ * Aggregate all tags and their note counts (with visibility filtering)
  */
-export async function getAllTagCounts(filterRole?: 'admin' | 'guest'): Promise<TagCount[]> {
-  const notes = await getActiveNotes(filterRole);
+export async function getAllTagCounts(filterVisibility?: 'all' | 'public' | 'private'): Promise<TagCount[]> {
+  const notes = await getActiveNotes(filterVisibility);
   const map = new Map<string, number>();
 
   notes.forEach((note) => {

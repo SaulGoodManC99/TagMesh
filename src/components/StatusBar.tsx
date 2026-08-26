@@ -36,7 +36,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onTagClick,
 }) => {
   const { t, locale } = useI18n();
-  const { theme } = useClayTheme();
+  const { theme, openThemeModal, randomTheme } = useClayTheme();
 
   const readingTimeMinutes = Math.max(1, Math.ceil((note?.wordCount || 0) / 200));
 
@@ -77,7 +77,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   return (
     <footer 
       style={{ backgroundColor: `${theme.headerBg}ee` }}
-      className="hidden md:flex fixed bottom-0 left-0 right-0 h-10 border-t border-amber-900/10 dark:border-white/10 backdrop-blur-xl px-4 sm:px-6 items-center justify-between z-30 select-none text-neutral-600 dark:text-neutral-300 text-xs font-cute transition-colors duration-500"
+      className="hidden md:flex relative h-10 w-full shrink-0 border-t border-amber-900/10 dark:border-white/10 backdrop-blur-xl px-4 sm:px-6 items-center justify-between z-30 select-none text-neutral-600 dark:text-neutral-300 text-xs font-cute transition-colors duration-500"
     >
       {/* Left side: Sync indicator & Word statistics */}
       <div className="flex items-center gap-3 sm:gap-4">
@@ -92,26 +92,21 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           <span>·</span>
           <span>{readingTimeMinutes} {t.editor.readingTime}</span>
         </div>
-
-        {/* Note's Tag Badges */}
+        {/* Note's Tag Badges (Static subtle pills) */}
         {note?.tags && note.tags.length > 0 && (
           <>
             <span className="w-px h-3.5 bg-amber-900/15 dark:bg-white/10 hidden md:block" />
             <div className="hidden md:flex items-center gap-1.5 overflow-hidden max-w-[280px]">
               {note.tags.slice(0, 3).map((tag) => (
-                <button
+                <span
                   key={tag}
-                  onClick={() => {
-                    playPop(620);
-                    onTagClick(tag);
-                  }}
-                  className="px-2.5 py-0.5 rounded-xl bg-pink-50/90 dark:bg-white/10 hover:bg-pink-100 dark:hover:bg-white/20 border border-pink-200 dark:border-white/15 text-pink-700 dark:text-pink-300 text-xs font-bubble font-bold truncate cursor-pointer transition"
+                  className="px-2 py-0.5 rounded-lg bg-pink-500/10 dark:bg-white/10 text-pink-700 dark:text-pink-300 text-[11px] font-mono font-medium truncate"
                 >
-                  {tag}
-                </button>
+                  #{tag.replace(/^#/, '')}
+                </span>
               ))}
               {note.tags.length > 3 && (
-                <span className="text-xs text-neutral-400">+{note.tags.length - 3}</span>
+                <span className="text-[11px] text-neutral-400 font-mono">+{note.tags.length - 3}</span>
               )}
             </div>
           </>
@@ -142,9 +137,11 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           className="flex items-center gap-1 px-3 py-1 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-amber-50 dark:hover:bg-white/20 border border-neutral-200/80 dark:border-white/10 text-neutral-700 dark:text-neutral-200 hover:text-amber-600 dark:hover:text-amber-400 transition cursor-pointer text-xs font-bubble font-bold shadow-xs active:scale-95"
           title="MCP Service"
         >
-          <Server className="w-3 h-3 text-amber-500" />
+          <Server className="w-3.5 h-3.5 text-amber-500" />
           <span className="hidden md:inline">{locale === 'zh' ? 'MCP密钥' : 'MCP'}</span>
         </button>
+
+
 
         {/* Language switch */}
         <button

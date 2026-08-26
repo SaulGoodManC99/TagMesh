@@ -130,6 +130,7 @@ telegramRouter.get('/config', async (c) => {
   const userIds = await getSetting(db, 'telegram_user_ids', '');
   const webhookUrl = await getSetting(db, 'telegram_webhook_url', '');
   const enabled = await getSetting(db, 'telegram_enabled', '1');
+  const defaultPublic = await getSetting(db, 'telegram_default_public', '1');
 
   let botInfo: any = null;
   if (token) {
@@ -151,6 +152,7 @@ telegramRouter.get('/config', async (c) => {
     userIds,
     webhookUrl,
     enabled: enabled === '1',
+    defaultPublic: defaultPublic === '1',
     botInfo,
   });
 });
@@ -170,6 +172,7 @@ telegramRouter.post('/config', async (c) => {
       userIds?: string;
       webhookUrl?: string;
       enabled?: boolean;
+      defaultPublic?: boolean;
     }>();
 
     if (body.botToken !== undefined && !body.botToken.includes('...')) {
@@ -186,6 +189,10 @@ telegramRouter.post('/config', async (c) => {
 
     if (body.enabled !== undefined) {
       await setSetting(db, 'telegram_enabled', body.enabled ? '1' : '0');
+    }
+
+    if (body.defaultPublic !== undefined) {
+      await setSetting(db, 'telegram_default_public', body.defaultPublic ? '1' : '0');
     }
 
     return c.json({ ok: true, message: 'Telegram 配置保存成功' });
@@ -367,24 +374,33 @@ telegramRouter.post('/webhook', async (c) => {
     }
 
     if (rawText.startsWith('/status')) {
-      const countRes = await db.prepare('SELECT COUNT(*) as total FROM notes WHERE is_deleted = 0').first<{ total: number }>();
+      const countRes = await db.prepare(`
+        SELECT 
+          COUNT(*) as total, 
+          SUM(CASE WHEN is_public = 1 OR is_public IS NULL THEN 1 ELSE 0 END) as public_count,
+          SUM(CASE WHEN is_public = 0 THEN 1 ELSE 0 END) as private_count
+        FROM notes 
+        WHERE is_deleted = 0
+      `).first<{ total: number; public_count: number; private_count: number }>();
       const totalNotes = countRes?.total ?? 0;
+      const publicNotes = countRes?.public_count ?? 0;
+      const privateNotes = countRes?.private_count ?? 0;
       const uptimeRes = await db.prepare("SELECT value FROM system_telemetry WHERE key = 'site_created_at'").first<{ value: string }>();
       const siteCreated = uptimeRes?.value ? new Date(Number(uptimeRes.value)).toLocaleDateString('zh-CN') : '2026-08';
 
-      const statusMsg = `📊 *TagMesh 知识库实时概览*\n\n📚 笔记总量：*${totalNotes}* 篇\n👑 授权馆长：\`${senderId}\`\n🚀 运行环境：Cloudflare Workers + D1\n🗓️ 开馆时间：${siteCreated}\n\n✨ 发送任意文字或图片即可极速入库！`;
+      const statusMsg = `📊 *TagMesh 知识库实时概览*\n\n📚 笔记总量：*${totalNotes}* 篇\n🌐 公开展厅：*${publicNotes}* 篇\n🔒 仅自己可见：*${privateNotes}* 篇\n👑 授权馆长：\`${senderId}\`\n🚀 运行环境：Cloudflare Workers + D1\n🗓️ 开馆时间：${siteCreated}\n\n✨ 发送任意文字或图片即可极速入库！`;
       await sendTelegramMessage(botToken, chatId, statusMsg, 'Markdown');
       return c.text('OK', 200);
     }
 
     if (rawText.startsWith('/recent') || rawText.startsWith('/last')) {
       const recentNotes = await db.prepare(`
-        SELECT id, raw_markdown, excerpt, tags_json, created_at 
+        SELECT id, raw_markdown, excerpt, tags_json, is_public, created_at 
         FROM notes 
         WHERE is_deleted = 0 
         ORDER BY created_at DESC 
         LIMIT 3
-      `).all<{ id: string; raw_markdown: string; excerpt: string; tags_json: string; created_at: number }>();
+      `).all<{ id: string; raw_markdown: string; excerpt: string; tags_json: string; is_public: number; created_at: number }>();
 
       if (!recentNotes.results || recentNotes.results.length === 0) {
         await sendTelegramMessage(botToken, chatId, '📭 当前知识库暂无笔记，发送一条试试吧！');
@@ -396,7 +412,8 @@ telegramRouter.post('/webhook', async (c) => {
         const date = new Date(n.created_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         const tags: string[] = JSON.parse(n.tags_json || '[]');
         const tagStr = tags.length > 0 ? ` [${tags.join(' ')}]` : '';
-        reply += `${idx + 1}. *${n.excerpt}*\n   📅 ${date}${tagStr}\n\n`;
+        const visBadge = n.is_public === 0 ? '🔒 [私密]' : '🌐 [公开]';
+        reply += `${idx + 1}. ${visBadge} *${n.excerpt}*\n   📅 ${date}${tagStr}\n\n`;
       });
 
       await sendTelegramMessage(botToken, chatId, reply, 'Markdown');
@@ -445,13 +462,35 @@ telegramRouter.post('/webhook', async (c) => {
     const { wordCount, charCount } = countWordsAndChars(rawText);
     const tagsJson = JSON.stringify(tags);
 
+    // Visibility resolution: Setting fallback + Tag override
+    const defaultPublicSetting = await getSetting(db, 'telegram_default_public', '1');
+    let isPublic = defaultPublicSetting === '1';
+    const lowerText = rawText.toLowerCase();
+    if (lowerText.includes('#公开') || lowerText.includes('#public')) {
+      isPublic = true;
+    } else if (lowerText.includes('#私密') || lowerText.includes('#private') || lowerText.includes('#草稿') || lowerText.includes('#draft')) {
+      isPublic = false;
+    }
+
     // Insert into D1
-    await db.prepare(`
-      INSERT INTO notes (
-        id, raw_markdown, excerpt, tags_json, word_count, char_count, 
-        version, is_pinned, is_deleted, created_at, updated_at, synced_at, author, is_official
-      ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, 'admin', 1)
-    `).bind(noteId, rawText, excerpt, tagsJson, wordCount, charCount, now, now, now).run();
+    try {
+      await db.prepare(`
+        INSERT INTO notes (
+          id, raw_markdown, excerpt, tags_json, word_count, char_count, 
+          version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at, author, is_official
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?, 'admin', 1)
+      `).bind(noteId, rawText, excerpt, tagsJson, wordCount, charCount, isPublic ? 1 : 0, now, now, now).run();
+    } catch {
+      try {
+        await db.prepare('ALTER TABLE notes ADD COLUMN is_public INTEGER NOT NULL DEFAULT 1').run();
+      } catch {}
+      await db.prepare(`
+        INSERT INTO notes (
+          id, raw_markdown, excerpt, tags_json, word_count, char_count, 
+          version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at, author, is_official
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?, 'admin', 1)
+      `).bind(noteId, rawText, excerpt, tagsJson, wordCount, charCount, isPublic ? 1 : 0, now, now, now).run();
+    }
 
     // Insert into FTS5
     try {
@@ -465,7 +504,8 @@ telegramRouter.post('/webhook', async (c) => {
 
     // Send confirmation receipt to Telegram
     const tagDisplay = tags.length > 0 ? tags.join(' ') : '无标签';
-    const receipt = `✨ *灵感笔记已入库 TagMesh！*\n\n📝 *摘要：* ${excerpt}\n🏷️ *标签：* ${tagDisplay}\n📊 *字数：* ${wordCount} 字 (${charCount} 字符)\n⏰ *时间：* ${new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
+    const visDisplay = isPublic ? '🌐 公开展厅' : '🔒 仅自己可见 (私密)';
+    const receipt = `✨ *灵感笔记已入库 TagMesh！*\n\n📝 *摘要：* ${excerpt}\n🏷️ *标签：* ${tagDisplay}\n👁️ *可见性：* ${visDisplay}\n📊 *字数：* ${wordCount} 字 (${charCount} 字符)\n⏰ *时间：* ${new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
 
     await sendTelegramMessage(botToken, chatId, receipt, 'Markdown').catch((e) => {
       console.warn('[Telegram Webhook] Failed to send receipt:', e);

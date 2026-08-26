@@ -181,70 +181,7 @@ export async function resetTelemetryRemote(options?: {
   }
 }
 
-/**
- * Danmaku Remote API
- */
-export interface RemoteDanmakuResponse {
-  success: boolean;
-  danmakus?: any[];
-  danmaku?: any;
-  stats?: {
-    totalSenders: number;
-    totalLaunches: number;
-    totalLikes: number;
-  };
-  likes?: number;
-  id?: string;
-  error?: string;
-}
 
-export async function fetchDanmakusRemote(): Promise<RemoteDanmakuResponse | null> {
-  try {
-    const res = await fetch(`${API_BASE}/danmaku`);
-    if (!res.ok) return null;
-    return await res.json() as RemoteDanmakuResponse;
-  } catch {
-    return null;
-  }
-}
-
-export async function publishDanmakuRemote(payload: any): Promise<RemoteDanmakuResponse | null> {
-  try {
-    const res = await fetch(`${API_BASE}/danmaku`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) return null;
-    return await res.json() as RemoteDanmakuResponse;
-  } catch {
-    return null;
-  }
-}
-
-export async function likeDanmakuRemote(id: string): Promise<RemoteDanmakuResponse | null> {
-  try {
-    const res = await fetch(`${API_BASE}/danmaku/${encodeURIComponent(id)}/like`, {
-      method: 'POST',
-    });
-    if (!res.ok) return null;
-    return await res.json() as RemoteDanmakuResponse;
-  } catch {
-    return null;
-  }
-}
-
-export async function deleteDanmakuRemote(id: string): Promise<RemoteDanmakuResponse | null> {
-  try {
-    const res = await fetch(`${API_BASE}/danmaku/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) return null;
-    return await res.json() as RemoteDanmakuResponse;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * ==========================================
@@ -392,6 +329,7 @@ export interface TelegramConfigResult {
   userIds: string;
   webhookUrl: string;
   enabled: boolean;
+  defaultPublic?: boolean;
   botInfo?: {
     id: number;
     is_bot: boolean;
@@ -440,13 +378,14 @@ export async function fetchTelegramConfigRemote(): Promise<TelegramConfigResult>
     userIds: '',
     webhookUrl: typeof window !== 'undefined' ? `${window.location.origin}/api/telegram/webhook` : '',
     enabled: true,
+    defaultPublic: true,
   };
 }
 
 /**
  * Save Telegram Bot configuration
  */
-export async function saveTelegramConfigRemote(config: { botToken?: string; userIds?: string; webhookUrl?: string; enabled?: boolean }): Promise<{ ok: boolean; message?: string; error?: string }> {
+export async function saveTelegramConfigRemote(config: { botToken?: string; userIds?: string; webhookUrl?: string; enabled?: boolean; defaultPublic?: boolean }): Promise<{ ok: boolean; message?: string; error?: string }> {
   try {
     const res = await fetch(`${API_BASE}/telegram/config`, {
       method: 'POST',
@@ -473,6 +412,7 @@ export async function saveTelegramConfigRemote(config: { botToken?: string; user
       userIds: config.userIds !== undefined ? config.userIds : prev.userIds || '',
       webhookUrl: config.webhookUrl !== undefined ? config.webhookUrl : prev.webhookUrl || '',
       enabled: config.enabled !== undefined ? config.enabled : true,
+      defaultPublic: config.defaultPublic !== undefined ? config.defaultPublic : (prev.defaultPublic !== undefined ? prev.defaultPublic : true),
     };
     localStorage.setItem('tagmesh_telegram_config_cache', JSON.stringify(updated));
     return { ok: true, message: '配置已保存' };

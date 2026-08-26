@@ -3,12 +3,13 @@ import { motion } from 'motion/react';
 import { 
   FileText, 
   Hash, 
-  ArrowUpRight,
+  PenTool,
   Pin,
   Quote
 } from 'lucide-react';
 import { Note } from '../types/note';
 import { useI18n } from '../hooks/useI18n';
+import { useAuth } from '../hooks/useAuth';
 import { format24HourDateTime } from './utils/dateFormatter';
 import { playPop, playChime, playSoftTick } from './utils/soundEffects';
 import { triggerParticleBurst } from './utils/confetti';
@@ -23,7 +24,8 @@ export interface ClayNoteCardProps {
   note: Note;
   index: number;
   isWide?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
+  onEdit?: (note: Note) => void;
   onTagClick: (tag: string) => void;
 }
 
@@ -31,9 +33,11 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   note,
   index,
   onClick,
+  onEdit,
   onTagClick,
 }) => {
   const { locale } = useI18n();
+  const { isAdmin } = useAuth();
   const { theme } = useClayTheme();
   const cardTheme = theme.noteCardThemes[index % theme.noteCardThemes.length];
 
@@ -96,9 +100,11 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
     }
   };
 
-  const handleCardClick = () => {
-    playPop();
-    onClick();
+  const handleDoubleCardClick = () => {
+    if (isAdmin && onEdit) {
+      playPop();
+      onEdit(note);
+    }
   };
 
   const formattedDate = format24HourDateTime(note.createdAt || Date.now(), locale);
@@ -115,13 +121,13 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
   return (
     <article
       ref={cardRef}
-      onClick={handleCardClick}
+      onDoubleClick={handleDoubleCardClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
         transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
       }}
-      className="relative p-5 sm:p-6 bg-white dark:bg-[#18181B] backdrop-blur-xl border border-neutral-200/80 dark:border-white/10 shadow-sm hover:shadow-xl rounded-[32px] clay-card-interactive clay-sheen cursor-pointer group flex flex-col justify-between select-none overflow-hidden w-full h-auto gpu-layer transition-all duration-300"
+      className="relative p-5 sm:p-6 bg-white/75 dark:bg-[#18181B]/75 backdrop-blur-2xl border border-white/70 dark:border-white/10 shadow-md hover:shadow-2xl rounded-[32px] clay-sheen group flex flex-col justify-between select-text overflow-hidden w-full h-auto gpu-layer transition-all duration-300"
     >
       {/* Sword Blade Light Slash Gleam on Hover */}
       <div className="clay-sword-gleam" />
@@ -136,21 +142,20 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
       {/* Top Meta Bar */}
       <div className="relative z-10">
-        {/* Single Row Clean Header: Emoji + Author Badge (+ Pinned) + Word Count */}
-        <div className="flex items-center justify-between gap-2 mb-3">
+        {/* Single Row Clean Header: Emoji + Author Badge (+ Private / Pinned) + Word Count */}
+        <div className="flex items-center justify-between gap-2 mb-3 select-none">
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap">
             <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-transform inline-flex items-center leading-none select-none">
               {cardTheme.emoji}
             </span>
-            {note.isOfficial || note.author === 'admin' ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs leading-none shrink-0">
-                <span className="leading-none text-xs">👑</span>
-                <span className="leading-none">{locale === 'zh' ? '馆长' : 'Curator'}</span>
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/80 dark:bg-white/10 text-emerald-800 dark:text-emerald-300 text-xs font-bubble font-bold border border-emerald-200/60 dark:border-white/10 shadow-3xs leading-none shrink-0 backdrop-blur-md">
-                <span className="leading-none text-xs">🌱</span>
-                <span className="leading-none">{locale === 'zh' ? '旅人' : 'Guest'}</span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-neutral-900 text-xs font-bubble font-extrabold shadow-3xs leading-none shrink-0">
+              <span className="leading-none text-xs">👑</span>
+              <span className="leading-none">{locale === 'zh' ? '馆长' : 'Curator'}</span>
+            </span>
+            {note.isPublic === false && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-neutral-800 text-white text-[11px] font-bubble font-bold shadow-3xs leading-none shrink-0">
+                <span className="leading-none">🔒</span>
+                <span className="leading-none">{locale === 'zh' ? '仅自己可见' : 'Private'}</span>
               </span>
             )}
             {note.isPinned && (
@@ -187,7 +192,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
         {/* Note First Image Cover Preview */}
         {firstImage && (
-          <div className="w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-white/60 dark:border-white/10 shadow-xs relative group-hover:scale-[1.01] transition-transform">
+          <div className="w-full h-40 sm:h-44 rounded-2xl overflow-hidden mb-3 border border-white/60 dark:border-white/10 shadow-xs relative group-hover:scale-[1.01] transition-transform select-none">
             <img
               src={firstImage}
               alt=""
@@ -208,7 +213,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
       {/* Dedicated Date & Word Count Floor Tag Bar */}
       <div className="relative z-10 mt-3 pt-2.5 border-t border-neutral-200/40 dark:border-white/10 flex flex-col gap-2">
-        <div className="flex items-center justify-between text-xs sm:text-sm font-cute text-neutral-500 dark:text-neutral-400">
+        <div className="flex items-center justify-between text-xs sm:text-sm font-cute text-neutral-500 dark:text-neutral-400 select-none">
           <span className="flex items-center gap-1.5 font-semibold">
             <span>📅</span>
             <span>{formattedDate}</span>
@@ -217,7 +222,7 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
 
         {/* Dynamic Hashtag Pills */}
         {(note.tags || []).length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-0.5">
+          <div className="flex flex-wrap gap-1.5 pt-0.5 select-none">
             {(note.tags || []).slice(0, 3).map((t) => (
               <motion.button
                 key={t}
@@ -249,8 +254,8 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
           </div>
         )}
 
-        {/* Bottom Reaction Bar (Only Pure ❤️ Like) & Open Link Icon */}
-        <div className="flex items-center justify-between text-xs pt-2">
+        {/* Bottom Reaction Bar (Like Button & Admin Edit CTA) */}
+        <div className="flex items-center justify-between text-xs pt-2 select-none">
           {/* Single Heart Like Button with Spring Pop */}
           <motion.button
             type="button"
@@ -265,9 +270,22 @@ export const ClayNoteCard: React.FC<ClayNoteCardProps> = ({
             <span className="text-xs font-bubble font-bold leading-none">{likes}</span>
           </motion.button>
 
-          <div className="w-7 h-7 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-md flex items-center justify-center text-neutral-600 dark:text-neutral-300 group-hover:bg-neutral-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-neutral-900 transition-colors shadow-3xs shrink-0 border border-white/60 dark:border-white/10">
-            <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </div>
+          {/* Admin Quick Edit Button */}
+          {isAdmin && onEdit && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                playPop();
+                onEdit(note);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-100/90 dark:bg-amber-950/60 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-200 text-xs font-bubble font-bold transition active:scale-95 cursor-pointer shadow-3xs border border-amber-300/60 dark:border-amber-700/60"
+              title={locale === 'zh' ? '在工作台中编辑' : 'Edit in workspace'}
+            >
+              <PenTool className="w-3 h-3 text-amber-700 dark:text-amber-400" />
+              <span>{locale === 'zh' ? '编辑' : 'Edit'}</span>
+            </button>
+          )}
         </div>
       </div>
     </article>

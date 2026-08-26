@@ -18,16 +18,18 @@ CREATE TABLE IF NOT EXISTS notes (
     version INTEGER NOT NULL DEFAULT 1,
     is_pinned INTEGER NOT NULL DEFAULT 0,
     is_deleted INTEGER NOT NULL DEFAULT 0,
+    is_public INTEGER NOT NULL DEFAULT 1, -- 1 if public in gallery, 0 if private
     created_at INTEGER NOT NULL,          -- Epoch ms
     updated_at INTEGER NOT NULL,          -- Epoch ms
     synced_at INTEGER NOT NULL,           -- Epoch ms
-    author TEXT NOT NULL DEFAULT 'guest', -- 'admin' or 'guest'
-    is_official INTEGER NOT NULL DEFAULT 0 -- 1 if official note, 0 otherwise
+    author TEXT NOT NULL DEFAULT 'admin', -- 'admin'
+    is_official INTEGER NOT NULL DEFAULT 1 -- 1 if official/admin note
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notes_is_deleted ON notes(is_deleted);
 CREATE INDEX IF NOT EXISTS idx_notes_is_pinned ON notes(is_pinned);
+CREATE INDEX IF NOT EXISTS idx_notes_is_public ON notes(is_public);
 
 -- 2. FTS5 Full-Text Search Virtual Table
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
@@ -43,18 +45,5 @@ CREATE TABLE IF NOT EXISTS system_telemetry (
     value TEXT NOT NULL,
     updated_at INTEGER NOT NULL
 );
-
--- 4. Persistent Danmaku Plaza Table
-CREATE TABLE IF NOT EXISTS danmakus (
-    id TEXT PRIMARY KEY,
-    sender TEXT NOT NULL,
-    avatar TEXT NOT NULL,
-    content TEXT NOT NULL,
-    theme_style TEXT NOT NULL DEFAULT 'rainbow',
-    likes INTEGER NOT NULL DEFAULT 1,
-    created_at INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_danmakus_created_at ON danmakus(created_at DESC);
 
 

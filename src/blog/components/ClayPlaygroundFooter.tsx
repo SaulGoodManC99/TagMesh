@@ -25,7 +25,6 @@ export interface ClayPlaygroundFooterProps {
   totalTags: number;
   totalWords: number;
   onOpenShortcuts?: () => void;
-  onOpenGacha?: () => void;
 }
 
 const STAMP_EMOJIS = ['🐾', '🌸', '✨', '🍡', '🍮', '💖', '🍭', '🧸'];
@@ -35,10 +34,9 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
   totalTags,
   totalWords,
   onOpenShortcuts,
-  onOpenGacha,
 }) => {
   const { locale } = useI18n();
-  const { theme } = useClayTheme();
+  const { theme, randomTheme } = useClayTheme();
   const { isAdmin, openAuthModal } = useAuth();
   const [stampCount, setStampCount] = useState(128);
   const [stamps, setStamps] = useState<{ id: number; x: number; y: number; emoji: string }[]>([]);
@@ -131,13 +129,10 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
             </span>
           </div>
 
-          {/* Card 2: Lucky Dip Gacha Trigger */}
+          {/* Card 2: Serendipitous Theme Roaming */}
           <div 
             onClick={() => {
-              if (onOpenGacha) {
-                playPop();
-                onOpenGacha();
-              }
+              randomTheme();
             }}
             className="p-3.5 sm:p-4 rounded-2xl bg-white/90 dark:bg-[#18181B]/85 border border-neutral-200/80 dark:border-white/10 shadow-3xs hover:shadow-md transition cursor-pointer clay-card overflow-hidden group flex items-center justify-between gap-3 backdrop-blur-xl"
           >
@@ -146,17 +141,17 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
                 🎲
               </div>
               <div className="min-w-0 flex-1">
-                <h4 className="font-bubble text-sm font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors truncate">
-                  {locale === 'zh' ? '乐园灵感扭蛋机 🎰' : 'Inspiration Gacha 🎰'}
+                <h4 className="font-bubble text-sm font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
+                  {locale === 'zh' ? '次元随心漫游 🎨' : 'Serendipity Roam 🎨'}
                 </h4>
                 <p className="text-[11px] font-cute text-neutral-500 dark:text-neutral-400 truncate">
-                  {locale === 'zh' ? '摇一颗命中注定的灵感卡片' : 'Spin a random serendipitous note'}
+                  {locale === 'zh' ? '随机遇见 8 种治愈视觉心境' : 'Explore 8 serene visual dimensions'}
                 </p>
               </div>
             </div>
 
             <span className="px-2 py-0.5 rounded-full bg-amber-100/90 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-900 text-[11px] font-bubble font-bold shrink-0">
-              {locale === 'zh' ? '随心漫游' : 'Lucky Dip'}
+              {locale === 'zh' ? '随机换肤' : 'Randomize'}
             </span>
           </div>
 

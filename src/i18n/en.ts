@@ -3,7 +3,7 @@ import { TranslationDictionary } from '../types/i18n';
 export const en: TranslationDictionary = {
   app: {
     title: 'TagMesh Notes',
-    tagline: 'No-title, no-folder, playful claymorphic inspiration notes system and thought mesh',
+    tagline: 'Capture daily thoughts, work tasks, and life moments',
   },
   commandPalette: {
     placeholder: 'Search notes, tags (#), or type to create...',
