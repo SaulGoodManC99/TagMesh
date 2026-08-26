@@ -25,10 +25,11 @@ import {
 } from 'lucide-react';
 import { Note } from './types/note';
 import { db, getActiveNotes, createNewNote, getOrCreateActiveNote, ensureNotesAuthorSeparation, isNoteEmpty } from './db/dexie';
-import { fetchRemoteNotes, deleteNoteRemote, syncNoteRemote } from './services/api';
+import { fetchRemoteNotes, deleteNoteRemote, syncNoteRemote, fetchSystemTelemetry } from './services/api';
 import { useZeroSync } from './hooks/useZeroSync';
 import { useI18n } from './hooks/useI18n';
 import { useSiteConfig } from './hooks/useSiteConfig';
+import { applyServerSiteConfig } from './blog/utils/siteConfig';
 import { TagMeshEditor } from './editor/TagMeshEditor';
 import { StatusBar } from './components/StatusBar';
 import { CommandPalette } from './components/CommandPalette';
@@ -130,6 +131,22 @@ export const App: React.FC = () => {
 
   // Initialize DB, load initial note, seed guest sample notes, and ensure author separation
   useEffect(() => {
+    // 1. Synchronize server global appearance and telemetry
+    fetchSystemTelemetry().then((tel) => {
+      if (tel) {
+        try {
+          localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(tel));
+          if (tel.systemStartTime) {
+            localStorage.setItem('tagmesh_cached_system_start_time', tel.systemStartTime.toString());
+          }
+        } catch {
+          // ignore
+        }
+        applyServerSiteConfig(tel.globalButtonStyle, tel.globalColorMode);
+        window.dispatchEvent(new CustomEvent('tagmesh_telemetry_updated', { detail: tel }));
+      }
+    });
+
     ensureNotesAuthorSeparation().then(async () => {
       const hasSeededGuest = typeof window !== 'undefined' && localStorage.getItem('tagmesh_has_seeded_guest_notes_v2') === 'true';
       if (!hasSeededGuest) {

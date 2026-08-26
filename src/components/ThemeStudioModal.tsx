@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
@@ -15,7 +15,9 @@ import {
   Layers, 
   Wind,
   RotateCcw,
-  Smile
+  Smile,
+  Crown,
+  Loader2
 } from 'lucide-react';
 import { useClayTheme, CLAY_THEMES, ClayTheme, AtmosphereIntensity } from '../blog/utils/clayThemes';
 import { useI18n } from '../hooks/useI18n';
@@ -23,6 +25,9 @@ import { useSiteConfig, ButtonStyle, ColorMode } from '../hooks/useSiteConfig';
 import { isSoundEnabled, toggleSound, playPop, playChime, playSoftTick } from '../blog/utils/soundEffects';
 import { triggerConfettiShower } from '../blog/utils/confetti';
 import { SPRING_MICRO } from '../blog/utils/motionSystem';
+import { useAuth } from '../hooks/useAuth';
+import { saveGlobalAppearanceRemote } from '../services/api';
+import { toast } from './ClayToast';
 
 export interface ThemeStudioModalProps {
   isOpen?: boolean;
@@ -46,8 +51,10 @@ export const ThemeStudioModal: React.FC<ThemeStudioModalProps> = ({
   } = useClayTheme();
 
   const { locale } = useI18n();
+  const { isAdmin } = useAuth();
   const { colorMode, setColorMode, buttonStyle, setButtonStyle } = useSiteConfig();
-  const [soundOn, setSoundOn] = React.useState(() => isSoundEnabled());
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
+  const [isSavingGlobal, setIsSavingGlobal] = useState(false);
 
   const isOpen = propIsOpen !== undefined ? propIsOpen : isThemeModalOpen;
   const handleClose = propOnClose || closeThemeModal;
@@ -65,11 +72,72 @@ export const ThemeStudioModal: React.FC<ThemeStudioModalProps> = ({
 
   const handleResetDefaults = () => {
     playPop();
+    try {
+      localStorage.removeItem('tagmesh_user_customized_v1');
+      const cached = localStorage.getItem('tagmesh_cached_telemetry');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.globalTheme && CLAY_THEMES.some(t => t.id === parsed.globalTheme)) {
+          setTheme(parsed.globalTheme);
+        } else {
+          setTheme('sakura');
+        }
+        if (parsed?.globalButtonStyle) setButtonStyle(parsed.globalButtonStyle);
+        if (parsed?.globalAtmosphere) setAtmosphereIntensity(parsed.globalAtmosphere);
+        if (parsed?.globalColorMode) setColorMode(parsed.globalColorMode);
+        triggerConfettiShower(15);
+        toast.info(
+          locale === 'zh' ? '已重置为全站官方推荐默认外观' : 'Reset to official default appearance',
+          locale === 'zh' ? '外观已重置' : 'Appearance Reset',
+          2000
+        );
+        return;
+      }
+    } catch {
+      // ignore
+    }
     setTheme('sakura');
     setAtmosphereIntensity('dynamic');
     setColorMode('auto');
     setButtonStyle('neon');
     triggerConfettiShower(15);
+  };
+
+  const handleSaveGlobalDefault = async () => {
+    setIsSavingGlobal(true);
+    playChime();
+    try {
+      const res = await saveGlobalAppearanceRemote({
+        themeId,
+        buttonStyle,
+        atmosphereIntensity,
+        colorMode,
+      });
+      if (res) {
+        triggerConfettiShower(35);
+        try {
+          localStorage.setItem('tagmesh_cached_telemetry', JSON.stringify(res));
+        } catch {
+          // ignore
+        }
+        toast.success(
+          locale === 'zh'
+            ? `👑 已成功固化为全站官方默认外观！所有新访客打开时将默认呈现「${theme.nameZh}」与「${buttonStyle}」风格。`
+            : `👑 Successfully saved as global default appearance for all visitors!`,
+          locale === 'zh' ? '全站外观已固化' : 'Global Default Saved',
+          3500
+        );
+      } else {
+        toast.error(
+          locale === 'zh' ? '固化失败，请确认管理员登录状态' : 'Failed to save global default',
+          locale === 'zh' ? '同步失败' : 'Sync Error'
+        );
+      }
+    } catch (err) {
+      toast.error(String(err));
+    } finally {
+      setIsSavingGlobal(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -423,6 +491,39 @@ export const ThemeStudioModal: React.FC<ThemeStudioModalProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Admin Curator Global Default Sync Bar */}
+        {isAdmin && (
+          <div className="p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-purple-500/10 border-2 border-amber-300/70 dark:border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-inner">
+            <div className="flex items-center gap-3 text-left w-full sm:w-auto">
+              <div className="w-9 h-9 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xs shrink-0">
+                <Crown className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bubble font-bold text-xs sm:text-sm text-neutral-900 dark:text-neutral-100">
+                  {locale === 'zh' ? '👑 主理人全站默认外观控制' : '👑 Curator Global Appearance'}
+                </p>
+                <p className="font-cute text-[11px] text-neutral-500 dark:text-neutral-400">
+                  {locale === 'zh' ? '将当前选择的主题、按钮与氛围固化为全站官方默认外观，所有访客打开时同频呈现' : 'Save active theme & button style as global default for all visitors'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={isSavingGlobal}
+              onClick={handleSaveGlobalDefault}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white font-bubble font-bold text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
+            >
+              {isSavingGlobal ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              <span>{locale === 'zh' ? '保存为全站默认外观' : 'Save as Global Default'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Footer info pill */}
         <div className="pt-3 border-t border-amber-900/10 dark:border-white/10 flex items-center justify-between text-xs font-cute text-neutral-400 dark:text-neutral-500">

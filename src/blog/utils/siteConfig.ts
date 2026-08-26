@@ -16,7 +16,20 @@ const DEFAULT_CONFIG: SiteConfig = {
 export function getStoredSiteConfig(): SiteConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_CONFIG;
+    if (!raw) {
+      // Check cached server telemetry for global button style & color mode
+      const cachedTelemetry = localStorage.getItem('tagmesh_cached_telemetry');
+      if (cachedTelemetry) {
+        const parsedTel = JSON.parse(cachedTelemetry);
+        if (parsedTel?.globalButtonStyle) {
+          return {
+            buttonStyle: parsedTel.globalButtonStyle as ButtonStyle,
+            colorMode: parsedTel.globalColorMode || 'auto',
+          };
+        }
+      }
+      return DEFAULT_CONFIG;
+    }
     const parsed = JSON.parse(raw);
     let resolvedStyle: ButtonStyle = 'neon';
     if (parsed.buttonStyle === 'blob' || parsed.buttonStyle === 'jelly') {
@@ -38,12 +51,32 @@ export function saveSiteConfig(newConfig: Partial<SiteConfig>): SiteConfig {
   const updated: SiteConfig = { ...current, ...newConfig };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem('tagmesh_user_customized_v1', 'true');
     applySiteConfigToDOM(updated);
     window.dispatchEvent(new CustomEvent('tagmesh_site_config_changed', { detail: updated }));
   } catch {
     // ignore
   }
   return updated;
+}
+
+export function applyServerSiteConfig(globalButtonStyle?: string, globalColorMode?: string): void {
+  try {
+    const hasUserCustom = localStorage.getItem('tagmesh_user_customized_v1') === 'true';
+    if (!hasUserCustom && globalButtonStyle) {
+      let resolvedStyle: ButtonStyle = 'neon';
+      if (['neon', 'laser', 'jelly', 'tint', 'clay', 'glass'].includes(globalButtonStyle)) {
+        resolvedStyle = globalButtonStyle as ButtonStyle;
+      }
+      const resolvedColor = ['auto', 'light', 'dark'].includes(globalColorMode || '') ? (globalColorMode as ColorMode) : 'auto';
+      const config: SiteConfig = { buttonStyle: resolvedStyle, colorMode: resolvedColor };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      applySiteConfigToDOM(config);
+      window.dispatchEvent(new CustomEvent('tagmesh_site_config_changed', { detail: config }));
+    }
+  } catch {
+    // ignore
+  }
 }
 
 /**

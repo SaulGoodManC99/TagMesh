@@ -783,6 +783,14 @@ export const ClayThemeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (saved && CLAY_THEMES.some((t) => t.id === saved)) {
         return saved as ClayTheme['id'];
       }
+      // Check cached server telemetry for global theme
+      const cached = localStorage.getItem('tagmesh_cached_telemetry');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.globalTheme && CLAY_THEMES.some((t) => t.id === parsed.globalTheme)) {
+          return parsed.globalTheme as ClayTheme['id'];
+        }
+      }
     } catch {
       // ignore
     }
@@ -794,6 +802,13 @@ export const ClayThemeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const saved = localStorage.getItem(ATMOSPHERE_STORAGE_KEY);
       if (saved === 'off' || saved === 'soft' || saved === 'dynamic') {
         return saved;
+      }
+      const cached = localStorage.getItem('tagmesh_cached_telemetry');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (['off', 'soft', 'dynamic'].includes(parsed?.globalAtmosphere)) {
+          return parsed.globalAtmosphere;
+        }
       }
     } catch {
       // ignore
@@ -809,12 +824,28 @@ export const ClayThemeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setIsDark(isDarkModeActive());
     };
 
+    const handleTelemetryEvent = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (!detail) return;
+      const hasUserCustom = localStorage.getItem('tagmesh_user_customized_v1') === 'true';
+      if (!hasUserCustom) {
+        if (detail.globalTheme && CLAY_THEMES.some((t) => t.id === detail.globalTheme)) {
+          setThemeId(detail.globalTheme);
+        }
+        if (detail.globalAtmosphere && ['off', 'soft', 'dynamic'].includes(detail.globalAtmosphere)) {
+          setAtmosphereIntensityState(detail.globalAtmosphere);
+        }
+      }
+    };
+
     window.addEventListener('tagmesh_site_config_changed', handleConfigChange);
+    window.addEventListener('tagmesh_telemetry_updated', handleTelemetryEvent);
     const mql = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     if (mql) mql.addEventListener('change', handleConfigChange);
 
     return () => {
       window.removeEventListener('tagmesh_site_config_changed', handleConfigChange);
+      window.removeEventListener('tagmesh_telemetry_updated', handleTelemetryEvent);
       if (mql) mql.removeEventListener('change', handleConfigChange);
     };
   }, []);
@@ -884,6 +915,7 @@ export const ClayThemeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setAtmosphereIntensityState(intensity);
     try {
       localStorage.setItem(ATMOSPHERE_STORAGE_KEY, intensity);
+      localStorage.setItem('tagmesh_user_customized_v1', 'true');
     } catch {
       // ignore
     }
@@ -901,6 +933,12 @@ export const ClayThemeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const target = CLAY_THEMES.find((t) => t.id === id) || CLAY_THEMES[0];
     playPop(650);
     setThemeId(id);
+    try {
+      localStorage.setItem(STORAGE_KEY, id);
+      localStorage.setItem('tagmesh_user_customized_v1', 'true');
+    } catch {
+      // ignore
+    }
     showThemeNotification(target);
   };
 

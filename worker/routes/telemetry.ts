@@ -12,6 +12,10 @@ interface TelemetryRecord {
   todayVisits: number;
   todayDate: string;
   stampCount: number;
+  globalTheme: string;
+  globalButtonStyle: string;
+  globalAtmosphere: string;
+  globalColorMode: string;
 }
 
 async function getD1Telemetry(db: D1Database): Promise<TelemetryRecord> {
@@ -22,6 +26,10 @@ async function getD1Telemetry(db: D1Database): Promise<TelemetryRecord> {
     todayVisits: 12,
     todayDate: defaultDate,
     stampCount: 68,
+    globalTheme: 'sakura',
+    globalButtonStyle: 'neon',
+    globalAtmosphere: 'dynamic',
+    globalColorMode: 'auto',
   };
 
   try {
@@ -33,6 +41,10 @@ async function getD1Telemetry(db: D1Database): Promise<TelemetryRecord> {
       await setD1TelemetryKey(db, 'today_visits', String(fallback.todayVisits));
       await setD1TelemetryKey(db, 'today_date', fallback.todayDate);
       await setD1TelemetryKey(db, 'stamp_count', String(fallback.stampCount));
+      await setD1TelemetryKey(db, 'global_theme', fallback.globalTheme);
+      await setD1TelemetryKey(db, 'global_button_style', fallback.globalButtonStyle);
+      await setD1TelemetryKey(db, 'global_atmosphere', fallback.globalAtmosphere);
+      await setD1TelemetryKey(db, 'global_color_mode', fallback.globalColorMode);
       return fallback;
     }
 
@@ -46,6 +58,10 @@ async function getD1Telemetry(db: D1Database): Promise<TelemetryRecord> {
     let todayVisits = map.has('today_visits') ? parseInt(map.get('today_visits')!, 10) : fallback.todayVisits;
     let todayDate = map.has('today_date') ? map.get('today_date')! : defaultDate;
     let stampCount = map.has('stamp_count') ? parseInt(map.get('stamp_count')!, 10) : fallback.stampCount;
+    let globalTheme = map.has('global_theme') ? map.get('global_theme')! : fallback.globalTheme;
+    let globalButtonStyle = map.has('global_button_style') ? map.get('global_button_style')! : fallback.globalButtonStyle;
+    let globalAtmosphere = map.has('global_atmosphere') ? map.get('global_atmosphere')! : fallback.globalAtmosphere;
+    let globalColorMode = map.has('global_color_mode') ? map.get('global_color_mode')! : fallback.globalColorMode;
 
     if (isNaN(systemStartTime) || systemStartTime <= 0) systemStartTime = fallback.systemStartTime;
     if (isNaN(totalVisits) || totalVisits < 0) totalVisits = fallback.totalVisits;
@@ -70,6 +86,10 @@ async function getD1Telemetry(db: D1Database): Promise<TelemetryRecord> {
       todayVisits,
       todayDate,
       stampCount,
+      globalTheme,
+      globalButtonStyle,
+      globalAtmosphere,
+      globalColorMode,
     };
   } catch (err) {
     console.warn('[D1 Telemetry Non-fatal]', err);
@@ -100,6 +120,10 @@ telemetryRouter.get('/', async (c) => {
     totalVisits: Math.max(0, data.totalVisits),
     todayVisits: Math.max(0, data.todayVisits),
     stampCount: Math.max(0, data.stampCount),
+    globalTheme: data.globalTheme,
+    globalButtonStyle: data.globalButtonStyle,
+    globalAtmosphere: data.globalAtmosphere,
+    globalColorMode: data.globalColorMode,
   });
 });
 
@@ -136,6 +160,55 @@ telemetryRouter.post('/stamp', async (c) => {
     success: true,
     stampCount: newStamps,
   });
+});
+
+/**
+ * POST /api/telemetry/appearance
+ * Admin saves the current theme and button style as the global default for all visitors
+ */
+telemetryRouter.post('/appearance', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization') || '';
+    const adminPassword = c.env.ADMIN_PASSWORD;
+
+    if (adminPassword) {
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (!token || token !== adminPassword) {
+        return c.json({ success: false, error: 'Unauthorized admin operation' }, 401);
+      }
+    }
+
+    const body = await c.req.json<{
+      themeId?: string;
+      buttonStyle?: string;
+      atmosphereIntensity?: string;
+      colorMode?: string;
+    }>();
+
+    if (body.themeId) {
+      await setD1TelemetryKey(c.env.DB, 'global_theme', body.themeId);
+    }
+    if (body.buttonStyle) {
+      await setD1TelemetryKey(c.env.DB, 'global_button_style', body.buttonStyle);
+    }
+    if (body.atmosphereIntensity) {
+      await setD1TelemetryKey(c.env.DB, 'global_atmosphere', body.atmosphereIntensity);
+    }
+    if (body.colorMode) {
+      await setD1TelemetryKey(c.env.DB, 'global_color_mode', body.colorMode);
+    }
+
+    const updated = await getD1Telemetry(c.env.DB);
+    return c.json({
+      success: true,
+      globalTheme: updated.globalTheme,
+      globalButtonStyle: updated.globalButtonStyle,
+      globalAtmosphere: updated.globalAtmosphere,
+      globalColorMode: updated.globalColorMode,
+    });
+  } catch (err: unknown) {
+    return c.json({ success: false, error: String(err) }, 500);
+  }
 });
 
 /**

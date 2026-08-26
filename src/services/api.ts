@@ -103,7 +103,7 @@ export async function searchNotesRemote(query: string, tag?: string): Promise<No
 }
 
 /**
- * Fetch centralized system telemetry (system start time, visits, stamps)
+ * Fetch centralized system telemetry (system start time, visits, stamps, global appearance)
  */
 export interface SystemTelemetryData {
   systemStartTime: number;
@@ -111,6 +111,10 @@ export interface SystemTelemetryData {
   totalVisits: number;
   todayVisits: number;
   stampCount: number;
+  globalTheme?: string;
+  globalButtonStyle?: string;
+  globalAtmosphere?: string;
+  globalColorMode?: string;
 }
 
 export async function fetchSystemTelemetry(): Promise<SystemTelemetryData | null> {
@@ -120,6 +124,34 @@ export async function fetchSystemTelemetry(): Promise<SystemTelemetryData | null
     const data = await res.json() as { success: boolean } & SystemTelemetryData;
     return data;
   } catch {
+    return null;
+  }
+}
+
+/**
+ * Save curator global appearance settings (theme, button style, atmosphere, color mode) to Cloudflare D1
+ */
+export async function saveGlobalAppearanceRemote(config: {
+  themeId?: string;
+  buttonStyle?: string;
+  atmosphereIntensity?: string;
+  colorMode?: string;
+}): Promise<SystemTelemetryData | null> {
+  try {
+    const token = localStorage.getItem('tagmesh_admin_token_v1') || '';
+    const res = await fetch(`${API_BASE}/telemetry/appearance`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(config),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { success: boolean } & SystemTelemetryData;
+    return data;
+  } catch (err) {
+    console.warn('[Appearance] saveGlobalAppearanceRemote failed:', err);
     return null;
   }
 }
