@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS notes (
     updated_at INTEGER NOT NULL,          -- Epoch ms
     synced_at INTEGER NOT NULL,           -- Epoch ms
     author TEXT NOT NULL DEFAULT 'admin', -- 'admin'
-    is_official INTEGER NOT NULL DEFAULT 1 -- 1 if official/admin note
+    is_official INTEGER NOT NULL DEFAULT 1, -- 1 if official/admin note
+    likes INTEGER NOT NULL DEFAULT 0      -- Interactive like count
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at DESC);
@@ -45,5 +46,13 @@ CREATE TABLE IF NOT EXISTS system_telemetry (
     value TEXT NOT NULL,
     updated_at INTEGER NOT NULL
 );
+
+-- 4. System Settings Table (Telegram & Third-party Integrations)
+CREATE TABLE IF NOT EXISTS system_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
 
 

@@ -1,18 +1,17 @@
 import { Hono } from 'hono';
 import { Env } from '../env';
+import { requireAdminAuth } from '../middleware/auth';
 
 export const telegramRouter = new Hono<{ Bindings: Env }>();
 
-// Helper to extract hashtags from markdown (supports interspersed tags, CJK text, hyphens)
+// 提取 Markdown 中的标签
 function extractTagsFromMarkdown(markdown: string): string[] {
   if (!markdown) return [];
 
-  // Strip code blocks and inline code
   const cleanText = markdown
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/`[^`\n]+`/g, ' ');
 
-  // Matches # followed by tag characters (CJK/English/Digits/Hyphen/Underscore)
   const regex = /(?<![#&a-zA-Z0-9_])#([a-zA-Z0-9_\u4e00-\u9fa5\u3040-\u30ff\uac00-\ud7af-]+)/g;
   const tags = new Set<string>();
   let match;
@@ -25,7 +24,7 @@ function extractTagsFromMarkdown(markdown: string): string[] {
   return Array.from(tags);
 }
 
-// Helper to count words and characters
+// 统计字数与字符数
 function countWordsAndChars(text: string): { wordCount: number; charCount: number } {
   if (!text) return { wordCount: 0, charCount: 0 };
   const clean = text.replace(/```[\s\S]*?```/g, '').replace(/[#*`_~[\]()>-]/g, ' ');
@@ -36,7 +35,7 @@ function countWordsAndChars(text: string): { wordCount: number; charCount: numbe
   return { wordCount, charCount };
 }
 
-// Helper to extract excerpt
+// 提取摘要
 function extractExcerptFromMarkdown(markdown: string, fallback: string = 'Telegram 灵感笔记'): string {
   if (!markdown) return fallback;
   const lines = markdown.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
@@ -47,7 +46,7 @@ function extractExcerptFromMarkdown(markdown: string, fallback: string = 'Telegr
   return fallback;
 }
 
-// Helper to send Telegram message
+// 发送 Telegram 消息
 async function sendTelegramMessage(botToken: string, chatId: string | number, text: string, parseMode?: string): Promise<any> {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
   const body: any = {
@@ -65,32 +64,16 @@ async function sendTelegramMessage(botToken: string, chatId: string | number, te
   return await res.json();
 }
 
-// Helper to get Telegram Bot Info
+// 获取 Telegram Bot 信息
 async function getTelegramMe(botToken: string): Promise<any> {
   const url = `https://api.telegram.org/bot${botToken}/getMe`;
   const res = await fetch(url);
   return await res.json();
 }
 
-// Ensure system_settings table exists
-async function ensureSettingsTable(db: D1Database): Promise<void> {
-  try {
-    await db.prepare(`
-      CREATE TABLE IF NOT EXISTS system_settings (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL,
-        updated_at INTEGER NOT NULL
-      )
-    `).run();
-  } catch (err) {
-    console.warn('[Telegram] ensureSettingsTable warning:', err);
-  }
-}
-
-// Helper to read setting from DB
+// 从 DB 读取配置
 async function getSetting(db: D1Database, key: string, fallback: string = ''): Promise<string> {
   try {
-    await ensureSettingsTable(db);
     const row = await db.prepare('SELECT value FROM system_settings WHERE key = ?').bind(key).first<{ value: string }>();
     return row?.value ?? fallback;
   } catch {
@@ -98,9 +81,8 @@ async function getSetting(db: D1Database, key: string, fallback: string = ''): P
   }
 }
 
-// Helper to write setting to DB
+// 向 DB 写入配置
 async function setSetting(db: D1Database, key: string, value: string): Promise<void> {
-  await ensureSettingsTable(db);
   const now = Date.now();
   await db.prepare(`
     INSERT INTO system_settings (key, value, updated_at) 
@@ -109,7 +91,7 @@ async function setSetting(db: D1Database, key: string, value: string): Promise<v
   `).bind(key, value, now).run();
 }
 
-// Mask bot token for secure frontend display (e.g. 7123456789:AAH...wxyz)
+// 脱敏 Bot Token (例如 7123456789:AAH...wxyz)
 function maskToken(token: string): string {
   if (!token || token.length < 12) return token ? '********' : '';
   const prefix = token.slice(0, 10);
@@ -118,52 +100,57 @@ function maskToken(token: string): string {
 }
 
 // ------------------------------------------------------------------------------------------------
-// 1. GET /api/telegram/config - Get current configuration status
+// 1. GET /api/telegram/config - 获取 Telegram 配置状态（强制要求馆长管理员鉴权）
 // ------------------------------------------------------------------------------------------------
-telegramRouter.get('/config', async (c) => {
+telegramRouter.get('/config', requireAdminAuth, async (c) => {
   const db = c.env.DB;
   if (!db) {
-    return c.json({ ok: false, error: 'Database not available' }, 500);
+    return c.json({ ok: false, error: '数据库未就绪' }, 500);
   }
 
-  const token = await getSetting(db, 'telegram_bot_token', '');
-  const userIds = await getSetting(db, 'telegram_user_ids', '');
-  const webhookUrl = await getSetting(db, 'telegram_webhook_url', '');
-  const enabled = await getSetting(db, 'telegram_enabled', '1');
-  const defaultPublic = await getSetting(db, 'telegram_default_public', '1');
+  try {
+    const token = await getSetting(db, 'telegram_bot_token', '');
+    const userIds = await getSetting(db, 'telegram_user_ids', '');
+    const webhookUrl = await getSetting(db, 'telegram_webhook_url', '');
+    const enabled = await getSetting(db, 'telegram_enabled', '1');
+    const defaultPublic = await getSetting(db, 'telegram_default_public', '1');
 
-  let botInfo: any = null;
-  if (token) {
-    try {
-      const meRes = await getTelegramMe(token);
-      if (meRes.ok) {
-        botInfo = meRes.result;
+    let botInfo: any = null;
+    if (token) {
+      try {
+        const meRes = await getTelegramMe(token);
+        if (meRes.ok) {
+          botInfo = meRes.result;
+        }
+      } catch (meErr) {
+        console.warn('[Telegram Me Check Non-fatal]', meErr);
       }
-    } catch {
-      // ignore
     }
-  }
 
-  return c.json({
-    ok: true,
-    configured: Boolean(token && userIds),
-    botTokenMasked: maskToken(token),
-    hasToken: Boolean(token),
-    userIds,
-    webhookUrl,
-    enabled: enabled === '1',
-    defaultPublic: defaultPublic === '1',
-    botInfo,
-  });
+    return c.json({
+      ok: true,
+      configured: Boolean(token && userIds),
+      botTokenMasked: maskToken(token),
+      hasToken: Boolean(token),
+      userIds,
+      webhookUrl,
+      enabled: enabled === '1',
+      defaultPublic: defaultPublic === '1',
+      botInfo,
+    });
+  } catch (err: unknown) {
+    console.error('[Telegram Config Get Error]', err);
+    return c.json({ ok: false, error: '获取 Telegram 配置失败' }, 500);
+  }
 });
 
 // ------------------------------------------------------------------------------------------------
-// 2. POST /api/telegram/config - Save configuration
+// 2. POST /api/telegram/config - 保存 Telegram 配置（强制要求馆长管理员鉴权）
 // ------------------------------------------------------------------------------------------------
-telegramRouter.post('/config', async (c) => {
+telegramRouter.post('/config', requireAdminAuth, async (c) => {
   const db = c.env.DB;
   if (!db) {
-    return c.json({ ok: false, error: 'Database not available' }, 500);
+    return c.json({ ok: false, error: '数据库未就绪' }, 500);
   }
 
   try {
@@ -196,18 +183,19 @@ telegramRouter.post('/config', async (c) => {
     }
 
     return c.json({ ok: true, message: 'Telegram 配置保存成功' });
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message || '保存配置失败' }, 500);
+  } catch (err: unknown) {
+    console.error('[Telegram Config Save Error]', err);
+    return c.json({ ok: false, error: '保存配置失败，请稍后重试' }, 500);
   }
 });
 
 // ------------------------------------------------------------------------------------------------
-// 3. POST /api/telegram/set-webhook - Register Webhook to Telegram API
+// 3. POST /api/telegram/set-webhook - 注册 Telegram Webhook（强制要求馆长管理员鉴权）
 // ------------------------------------------------------------------------------------------------
-telegramRouter.post('/set-webhook', async (c) => {
+telegramRouter.post('/set-webhook', requireAdminAuth, async (c) => {
   const db = c.env.DB;
   if (!db) {
-    return c.json({ ok: false, error: 'Database not available' }, 500);
+    return c.json({ ok: false, error: '数据库未就绪' }, 500);
   }
 
   try {
@@ -219,7 +207,6 @@ telegramRouter.post('/set-webhook', async (c) => {
 
     let url = body.webhookUrl || (await getSetting(db, 'telegram_webhook_url', ''));
     if (!url) {
-      // Auto deduce from request origin
       const origin = new URL(c.req.url).origin;
       url = `${origin}/api/telegram/webhook`;
     }
@@ -234,42 +221,44 @@ telegramRouter.post('/set-webhook', async (c) => {
     } else {
       return c.json({ ok: false, error: tgData.description || 'Telegram Webhook 注册失败', result: tgData }, 400);
     }
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message || '设置 Webhook 异常' }, 500);
+  } catch (err: unknown) {
+    console.error('[Telegram Set Webhook Error]', err);
+    return c.json({ ok: false, error: '设置 Webhook 异常，请检查网络或 Token' }, 500);
   }
 });
 
 // ------------------------------------------------------------------------------------------------
-// 4. POST /api/telegram/delete-webhook - Delete Webhook from Telegram
+// 4. POST /api/telegram/delete-webhook - 解除 Telegram Webhook（强制要求馆长管理员鉴权）
 // ------------------------------------------------------------------------------------------------
-telegramRouter.post('/delete-webhook', async (c) => {
+telegramRouter.post('/delete-webhook', requireAdminAuth, async (c) => {
   const db = c.env.DB;
   if (!db) {
-    return c.json({ ok: false, error: 'Database not available' }, 500);
+    return c.json({ ok: false, error: '数据库未就绪' }, 500);
   }
 
   try {
     const token = await getSetting(db, 'telegram_bot_token', '');
     if (!token) {
-      return c.json({ ok: false, error: '未找到 Bot Token' }, 400);
+      return c.json({ ok: false, error: '未配置 Bot Token' }, 400);
     }
 
     const tgRes = await fetch(`https://api.telegram.org/bot${token}/deleteWebhook`);
     const tgData: any = await tgRes.json();
 
-    return c.json({ ok: true, message: 'Webhook 已解除绑定', result: tgData });
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message || '解除 Webhook 异常' }, 500);
+    return c.json({ ok: true, message: 'Webhook 已成功解除绑定', result: tgData });
+  } catch (err: unknown) {
+    console.error('[Telegram Delete Webhook Error]', err);
+    return c.json({ ok: false, error: '解除 Webhook 异常' }, 500);
   }
 });
 
 // ------------------------------------------------------------------------------------------------
-// 5. POST /api/telegram/test - Send Test Message
+// 5. POST /api/telegram/test - 发送测试消息（强制要求馆长管理员鉴权）
 // ------------------------------------------------------------------------------------------------
-telegramRouter.post('/test', async (c) => {
+telegramRouter.post('/test', requireAdminAuth, async (c) => {
   const db = c.env.DB;
   if (!db) {
-    return c.json({ ok: false, error: 'Database not available' }, 500);
+    return c.json({ ok: false, error: '数据库未就绪' }, 500);
   }
 
   try {
@@ -296,18 +285,19 @@ telegramRouter.post('/test', async (c) => {
     } else {
       return c.json({ ok: false, error: res.description || '发送测试消息失败，请检查 Token 或用户 ID 是否正确。', result: res }, 400);
     }
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message || '发送测试消息异常' }, 500);
+  } catch (err: unknown) {
+    console.error('[Telegram Test Error]', err);
+    return c.json({ ok: false, error: '发送测试消息异常，请检查配置' }, 500);
   }
 });
 
 // ------------------------------------------------------------------------------------------------
-// 6. POST /api/telegram/webhook - Main Webhook Handler
+// 6. POST /api/telegram/webhook - 主 Webhook 回调处理接口
 // ------------------------------------------------------------------------------------------------
 telegramRouter.post('/webhook', async (c) => {
   const db = c.env.DB;
   if (!db) {
-    return c.text('OK', 200); // Always reply 200 to Telegram
+    return c.text('OK', 200); // 始终向 Telegram 返回 200 避免重复重试
   }
 
   try {
@@ -331,17 +321,16 @@ telegramRouter.post('/webhook', async (c) => {
 
     const authorizedUserIds = userIdsStr.split(/[,;\s]+/).map((s) => s.trim()).filter(Boolean);
 
-    // Security Check: Sender ID must match authorized list
+    // 发送者安全校验：非白名单 ID 拒绝入库
     if (authorizedUserIds.length > 0 && !authorizedUserIds.includes(senderId)) {
-      const rejectMsg = `⛔ *未授权访问*\n\n您的 Telegram 用户 ID 为：\`${senderId}\`。\n请登录 TagMesh 管理员后台，在权限中心绑定此 ID 即可开启自动同步。`;
+      const rejectMsg = `⛔ *未授权访问*\n\n您的 Telegram 用户 ID 为：\`${senderId}\`。\n请登录 TagMesh 馆长后台，在设置中心绑定此 ID 即可开启自动同步。`;
       await sendTelegramMessage(botToken, chatId, rejectMsg, 'Markdown').catch(() => {});
       return c.text('OK', 200);
     }
 
-    // Extract message content
     let rawText = (message.text || message.caption || '').trim();
 
-    // Handle Photo Message (If photo sent without caption or with caption)
+    // 处理图片附件
     if (message.photo && Array.isArray(message.photo) && message.photo.length > 0) {
       const largestPhoto = message.photo[message.photo.length - 1];
       try {
@@ -361,7 +350,7 @@ telegramRouter.post('/webhook', async (c) => {
       return c.text('OK', 200);
     }
 
-    // Command Handlers
+    // 指令解析
     if (rawText.startsWith('/start') || rawText.startsWith('/help')) {
       const helpText = `🎈 *欢迎使用 TagMesh 闪念助手！*\n\n我是你的第二大脑云端同步机器人。\n\n📝 *直接记录：*\n直接向我发送任何想法、随笔或图片，我将立即为你保存至 TagMesh 知识库。\n\n🏷️ *自动标签：*\n在正文中随手写 \`#标签\`（例如 \`#读书笔记\` \`#架构\`），系统将自动解析为多维网状索引。\n\n⚡ *常用指令：*\n• \`/status\` - 查看全库统计与运行状态\n• \`/recent\` - 查看最近保存的 3 篇笔记\n• \`/tags\` - 查看热门知识库标签\n• \`/ping\` - 检查连接状态`;
       await sendTelegramMessage(botToken, chatId, helpText, 'Markdown');
@@ -452,9 +441,7 @@ telegramRouter.post('/webhook', async (c) => {
       return c.text('OK', 200);
     }
 
-    // --------------------------------------------------------------------------------------------
-    // Standard Message: Auto-Create Note in D1
-    // --------------------------------------------------------------------------------------------
+    // 写入 D1 数据库
     const now = Date.now();
     const noteId = `tg_${now.toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
     const tags = extractTagsFromMarkdown(rawText);
@@ -462,7 +449,6 @@ telegramRouter.post('/webhook', async (c) => {
     const { wordCount, charCount } = countWordsAndChars(rawText);
     const tagsJson = JSON.stringify(tags);
 
-    // Visibility resolution: Setting fallback + Tag override
     const defaultPublicSetting = await getSetting(db, 'telegram_default_public', '1');
     let isPublic = defaultPublicSetting === '1';
     const lowerText = rawText.toLowerCase();
@@ -472,27 +458,14 @@ telegramRouter.post('/webhook', async (c) => {
       isPublic = false;
     }
 
-    // Insert into D1
-    try {
-      await db.prepare(`
-        INSERT INTO notes (
-          id, raw_markdown, excerpt, tags_json, word_count, char_count, 
-          version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at, author, is_official
-        ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?, 'admin', 1)
-      `).bind(noteId, rawText, excerpt, tagsJson, wordCount, charCount, isPublic ? 1 : 0, now, now, now).run();
-    } catch {
-      try {
-        await db.prepare('ALTER TABLE notes ADD COLUMN is_public INTEGER NOT NULL DEFAULT 1').run();
-      } catch {}
-      await db.prepare(`
-        INSERT INTO notes (
-          id, raw_markdown, excerpt, tags_json, word_count, char_count, 
-          version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at, author, is_official
-        ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?, 'admin', 1)
-      `).bind(noteId, rawText, excerpt, tagsJson, wordCount, charCount, isPublic ? 1 : 0, now, now, now).run();
-    }
+    await db.prepare(`
+      INSERT INTO notes (
+        id, raw_markdown, excerpt, tags_json, word_count, char_count, 
+        version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at, author, is_official, likes
+      ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?, 'admin', 1, 0)
+    `).bind(noteId, rawText, excerpt, tagsJson, wordCount, charCount, isPublic ? 1 : 0, now, now, now).run();
 
-    // Insert into FTS5
+    // 写入 FTS5 索引
     try {
       await db.prepare(`
         INSERT INTO notes_fts (id, raw_markdown, tags_json)
@@ -502,7 +475,6 @@ telegramRouter.post('/webhook', async (c) => {
       console.warn('[Telegram Webhook] FTS index insert failed:', ftsErr);
     }
 
-    // Send confirmation receipt to Telegram
     const tagDisplay = tags.length > 0 ? tags.join(' ') : '无标签';
     const visDisplay = isPublic ? '🌐 公开展厅' : '🔒 仅自己可见 (私密)';
     const receipt = `✨ *灵感笔记已入库 TagMesh！*\n\n📝 *摘要：* ${excerpt}\n🏷️ *标签：* ${tagDisplay}\n👁️ *可见性：* ${visDisplay}\n📊 *字数：* ${wordCount} 字 (${charCount} 字符)\n⏰ *时间：* ${new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
@@ -512,7 +484,7 @@ telegramRouter.post('/webhook', async (c) => {
     });
 
     return c.text('OK', 200);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Telegram Webhook Error]', err);
     return c.text('OK', 200);
   }

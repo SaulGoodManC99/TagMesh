@@ -49,17 +49,19 @@ import {
   testTelegramBotRemote,
   TelegramConfigResult,
   R2BackupItem,
-  R2StatusResult
+  R2StatusResult,
+  getAuthToken
 } from '../services/api';
 import { db } from '../db/dexie';
 import { toast } from './ClayToast';
 
 export const ClayAdminAuthModal: React.FC = () => {
-  const { role, isAdmin, loginAsAdmin, logoutToGuest, updateAdminPassword, isAuthModalOpen, closeAuthModal } = useAuth();
+  const { role, isAdmin, loginAsAdmin, logoutToGuest, isAuthModalOpen, closeAuthModal, authError } = useAuth();
   const { locale } = useI18n();
 
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Admin Top Navigation Tab
   const [adminTab, setAdminTab] = useState<'settings' | 'telegram' | 'r2' | 'mcp'>('settings');
@@ -74,11 +76,6 @@ export const ClayAdminAuthModal: React.FC = () => {
     tools: string[];
     error?: string;
   } | null>(null);
-
-  // Tab for changing password
-  const [pwdTabActive, setPwdTabActive] = useState(false);
-  const [oldPwd, setOldPwd] = useState('');
-  const [newPwd, setNewPwd] = useState('');
 
   // R2 Backup & Storage State
   const [r2Status, setR2Status] = useState<R2StatusResult | null>(null);
@@ -115,12 +112,13 @@ export const ClayAdminAuthModal: React.FC = () => {
     setMcpTestResult(null);
     playSoftTick();
     const startTime = performance.now();
+    const currentToken = getAuthToken() || 'YOUR_ADMIN_PASSWORD_OR_MCP_TOKEN';
     try {
       const res = await fetch('/mcp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer tagmesh_mcp_secret_bearer_token',
+          'Authorization': `Bearer ${currentToken}`,
         },
         body: JSON.stringify({
           jsonrpc: '2.0',
@@ -162,9 +160,9 @@ export const ClayAdminAuthModal: React.FC = () => {
   };
 
   const getMcpSnippet = (client: typeof mcpClientType): string => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.workers.dev';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://tagmesh.top';
     const mcpUrl = `${origin}/mcp`;
-    const token = 'tagmesh_mcp_secret_bearer_token';
+    const token = getAuthToken() || '<YOUR_ADMIN_PASSWORD_OR_MCP_TOKEN>';
 
     if (client === 'claude') {
       return JSON.stringify({
@@ -432,43 +430,27 @@ curl -X POST "${mcpUrl}" \\
 
   if (!isAuthModalOpen) return null;
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setIsLoggingIn(true);
 
-    const success = loginAsAdmin(password);
-    if (success) {
-      playChime();
-      triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
-      setPassword('');
-      closeAuthModal();
-      triggerAdminToast(locale === 'zh' ? '👑 欢迎回来，馆长！' : '👑 Welcome back, Curator!');
-    } else {
-      playPop(300);
-      setErrorMsg(locale === 'zh' ? '口令错误！默认馆长口令为：admin888' : 'Incorrect password! Default is: admin888');
-    }
-  };
-
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    if (newPwd.length < 4) {
-      setErrorMsg(locale === 'zh' ? '新口令长度至少需4个字符' : 'Password must be at least 4 chars');
-      return;
-    }
-
-    const success = updateAdminPassword(oldPwd, newPwd);
-    if (success) {
-      playChime();
-      triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 30);
-      setOldPwd('');
-      setNewPwd('');
-      setPwdTabActive(false);
-      triggerAdminToast(locale === 'zh' ? '✨ 馆长口令已成功更新！请妥善保存。' : '✨ Admin password updated successfully!');
-    } else {
-      playPop(300);
-      setErrorMsg(locale === 'zh' ? '原口令校验失败，无法更改' : 'Failed to verify old password');
+    try {
+      const success = await loginAsAdmin(password);
+      if (success) {
+        playChime();
+        triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, 35);
+        setPassword('');
+        closeAuthModal();
+        triggerAdminToast(locale === 'zh' ? '👑 欢迎回来，馆长！' : '👑 Welcome back, Curator!');
+      } else {
+        playPop(300);
+        setErrorMsg(authError || (locale === 'zh' ? '口令错误，请重新输入' : 'Incorrect password!'));
+      }
+    } catch {
+      setErrorMsg(locale === 'zh' ? '登录失败，请检查网络或服务端配置' : 'Login failed');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -688,64 +670,15 @@ curl -X POST "${mcpUrl}" \\
                       </div>
                     </div>
 
-                    {/* 2. Change Password Form / Trigger */}
-                    <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs">
-                      {pwdTabActive ? (
-                        <form onSubmit={handleChangePassword} className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bubble font-bold text-neutral-800 dark:text-neutral-100 text-sm">
-                              {locale === 'zh' ? '修改馆长口令' : 'Update Admin Password'}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setPwdTabActive(false)}
-                              className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
-                            >
-                              ✕ {locale === 'zh' ? '取消' : 'Cancel'}
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <input
-                              type="password"
-                              value={oldPwd}
-                              onChange={(e) => setOldPwd(e.target.value)}
-                              placeholder={locale === 'zh' ? '原馆长口令' : 'Old Password'}
-                              className="w-full p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-xs sm:text-sm font-mono text-neutral-800 dark:text-neutral-100 focus:outline-none placeholder:text-neutral-400"
-                              required
-                            />
-                            <input
-                              type="password"
-                              value={newPwd}
-                              onChange={(e) => setNewPwd(e.target.value)}
-                              placeholder={locale === 'zh' ? '新馆长口令 (至少4位)' : 'New Password (min 4 chars)'}
-                              className="w-full p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-xs sm:text-sm font-mono text-neutral-800 dark:text-neutral-100 focus:outline-none placeholder:text-neutral-400"
-                              required
-                            />
-                          </div>
-                          <div className="flex justify-end gap-2 pt-1">
-                            <button
-                              type="submit"
-                              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bubble font-bold text-xs sm:text-sm shadow-xs cursor-pointer active:scale-95"
-                            >
-                              {locale === 'zh' ? '确认保存新口令' : 'Save Password'}
-                            </button>
-                          </div>
-                        </form>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs sm:text-sm font-cute text-neutral-500 dark:text-neutral-400">
-                            <KeyRound className="w-4 h-4 text-amber-500" />
-                            <span>{locale === 'zh' ? '馆长口令防护已启用' : 'Master password protection active'}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setPwdTabActive(true)}
-                            className="text-xs sm:text-sm font-bubble font-bold text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
-                          >
-                            <span>{locale === 'zh' ? '修改口令 ➜' : 'Change Password ➜'}</span>
-                          </button>
-                        </div>
-                      )}
+                    {/* 2. Admin Secret Status */}
+                    <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-white/10 shadow-3xs flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-cute text-neutral-600 dark:text-neutral-300">
+                        <KeyRound className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span>{locale === 'zh' ? '馆长口令已由 Cloudflare 服务端 Secret 统一托管' : 'Admin password is encrypted & managed by Cloudflare Secret'}</span>
+                      </div>
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60">
+                        HMAC-SHA256
+                      </span>
                     </div>
 
                   </div>
@@ -1159,7 +1092,7 @@ curl -X POST "${mcpUrl}" \\
                           <span>🔑 {locale === 'zh' ? 'Bearer Auth Token' : 'Bearer Auth Token'}</span>
                           <button
                             type="button"
-                            onClick={() => handleCopyText('tagmesh_mcp_secret_bearer_token', 'MCP Bearer Token')}
+                            onClick={() => handleCopyText(getAuthToken() || '<ADMIN_PASSWORD_OR_MCP_TOKEN>', 'MCP Bearer Token')}
                             className="text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-0.5 cursor-pointer font-bubble"
                           >
                             <Copy className="w-3 h-3" />
@@ -1167,7 +1100,7 @@ curl -X POST "${mcpUrl}" \\
                           </button>
                         </div>
                         <div className="font-mono text-xs text-neutral-900 dark:text-neutral-100 truncate font-semibold">
-                          tagmesh_mcp_secret_bearer_token
+                          {getAuthToken() ? `${getAuthToken()?.slice(0, 16)}...` : '<ADMIN_PASSWORD_OR_MCP_TOKEN>'}
                         </div>
                       </div>
                     </div>
@@ -1305,13 +1238,13 @@ curl -X POST "${mcpUrl}" \\
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={locale === 'zh' ? '默认馆长口令: admin888' : 'Default password: admin888'}
+                    placeholder={locale === 'zh' ? '请输入管理员口令 (ADMIN_PASSWORD)' : 'Enter admin password'}
                     className="w-full bg-transparent text-sm sm:text-base font-mono text-neutral-900 dark:text-neutral-100 focus:outline-none placeholder:text-neutral-400"
                     autoFocus
                   />
                 </div>
                 <span className="text-xs text-neutral-400 dark:text-neutral-500 font-cute mt-1.5 block">
-                  {locale === 'zh' ? '💡 初始默认馆长口令：admin888' : '💡 Default password is: admin888'}
+                  {locale === 'zh' ? '💡 请输入 Cloudflare 环境变量中配置的 ADMIN_PASSWORD' : '💡 Enter the ADMIN_PASSWORD configured in Cloudflare environment'}
                 </span>
               </div>
 

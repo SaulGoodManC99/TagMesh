@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { Env } from '../env';
+import { requireAdminAuth } from '../middleware/auth';
 
 export const telemetryRouter = new Hono<{ Bindings: Env }>();
 
@@ -164,20 +165,10 @@ telemetryRouter.post('/stamp', async (c) => {
 
 /**
  * POST /api/telemetry/appearance
- * Admin saves the current theme and button style as the global default for all visitors
+ * 馆长保存全站默认外观（强制要求馆长管理员鉴权）
  */
-telemetryRouter.post('/appearance', async (c) => {
+telemetryRouter.post('/appearance', requireAdminAuth, async (c) => {
   try {
-    const authHeader = c.req.header('Authorization') || '';
-    const adminPassword = c.env.ADMIN_PASSWORD;
-
-    if (adminPassword) {
-      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-      if (!token || token !== adminPassword) {
-        return c.json({ success: false, error: 'Unauthorized admin operation' }, 401);
-      }
-    }
-
     const body = await c.req.json<{
       themeId?: string;
       buttonStyle?: string;
@@ -207,15 +198,16 @@ telemetryRouter.post('/appearance', async (c) => {
       globalColorMode: updated.globalColorMode,
     });
   } catch (err: unknown) {
-    return c.json({ success: false, error: String(err) }, 500);
+    console.error('[Telemetry Appearance Error]', err);
+    return c.json({ success: false, error: '保存全站外观失败，请稍后重试' }, 500);
   }
 });
 
 /**
  * POST /api/telemetry/reset
- * Admin resets system telemetry in D1
+ * 馆长重置系统统计数据（强制要求馆长管理员鉴权）
  */
-telemetryRouter.post('/reset', async (c) => {
+telemetryRouter.post('/reset', requireAdminAuth, async (c) => {
   try {
     const body = await c.req.json<{
       resetUptime?: boolean;
@@ -255,6 +247,7 @@ telemetryRouter.post('/reset', async (c) => {
       stampCount,
     });
   } catch (err: unknown) {
-    return c.json({ success: false, error: String(err) }, 500);
+    console.error('[Telemetry Reset Error]', err);
+    return c.json({ success: false, error: '重置系统统计失败' }, 500);
   }
 });

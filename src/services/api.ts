@@ -1,6 +1,93 @@
 import { Note, SyncResponse } from '../types/note';
 
 const API_BASE = '/api';
+const AUTH_TOKEN_KEY = 'tagmesh_auth_token_v1';
+
+/**
+ * 获取当前持久化的管理员鉴权 Token
+ */
+export function getAuthToken(): string | null {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 设置或清除管理员鉴权 Token
+ */
+export function setAuthToken(token: string | null): void {
+  try {
+    if (token) {
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * 构造包含 Authorization: Bearer <token> 的请求头字典
+ */
+export function getAuthHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+  const token = getAuthToken();
+  if (token) {
+    return {
+      ...customHeaders,
+      Authorization: `Bearer ${token}`,
+    };
+  }
+  return { ...customHeaders };
+}
+
+/**
+ * 馆长管理员登录 API：校验口令并获取服务端签发的 HMAC 会话 Token
+ */
+export async function loginAdminRemote(password: string): Promise<{ success: boolean; token?: string; error?: string; expiresAt?: number }> {
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+
+    const data = (await res.json()) as { success: boolean; token?: string; error?: string; expiresAt?: number };
+    if (data.success && data.token) {
+      setAuthToken(data.token);
+    }
+    return data;
+  } catch (err) {
+    console.error('[API Auth Login Error]', err);
+    return { success: false, error: '网络连接异常，无法连接鉴权服务器' };
+  }
+}
+
+/**
+ * 校验当前 Token 是否依然具备馆长管理员权限
+ */
+export async function verifyAuthRemote(): Promise<{ success: boolean; isAdmin: boolean }> {
+  const token = getAuthToken();
+  if (!token) return { success: false, isAdmin: false };
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+      setAuthToken(null);
+      return { success: false, isAdmin: false };
+    }
+    const data = (await res.json()) as { success: boolean; isAdmin: boolean };
+    return data;
+  } catch {
+    return { success: false, isAdmin: false };
+  }
+}
 
 /**
  * Sync note with Cloudflare Workers / D1 and R2
@@ -9,9 +96,9 @@ export async function syncNoteRemote(note: Note): Promise<SyncResponse> {
   try {
     const res = await fetch(`${API_BASE}/notes/sync`, {
       method: 'POST',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json',
-      },
+      }),
       body: JSON.stringify({
         note,
         clientVersion: note.version,
@@ -26,7 +113,7 @@ export async function syncNoteRemote(note: Note): Promise<SyncResponse> {
       };
     }
 
-    const data = await res.json() as { note: Note; success: boolean };
+    const data = (await res.json()) as { note: Note; success: boolean };
     return {
       success: true,
       note: data.note,
@@ -45,9 +132,11 @@ export async function syncNoteRemote(note: Note): Promise<SyncResponse> {
  */
 export async function fetchRemoteNotes(limit = 100, offset = 0): Promise<Note[]> {
   try {
-    const res = await fetch(`${API_BASE}/notes?limit=${limit}&offset=${offset}`);
+    const res = await fetch(`${API_BASE}/notes?limit=${limit}&offset=${offset}`, {
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) return [];
-    const data = await res.json() as { notes: Note[] };
+    const data = (await res.json()) as { notes: Note[] };
     return Array.isArray(data.notes) ? data.notes : [];
   } catch (err) {
     console.warn('[SyncEngine] fetchRemoteNotes failed:', err);
@@ -62,6 +151,7 @@ export async function deleteNoteRemote(noteId: string): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/notes/${noteId}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     return res.ok;
   } catch (err) {
@@ -86,7 +176,6 @@ export async function likeNoteRemote(noteId: string): Promise<{ success: boolean
   }
 }
 
-
 /**
  * Search notes in remote D1 with FTS5
  */
@@ -95,10 +184,12 @@ export async function searchNotesRemote(query: string, tag?: string): Promise<No
   if (query) params.append('q', query);
   if (tag) params.append('tag', tag);
 
-  const res = await fetch(`${API_BASE}/notes/search?${params.toString()}`);
+  const res = await fetch(`${API_BASE}/notes/search?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) return [];
 
-  const data = await res.json() as { notes: Note[] };
+  const data = (await res.json()) as { notes: Note[] };
   return data.notes || [];
 }
 
@@ -121,7 +212,7 @@ export async function fetchSystemTelemetry(): Promise<SystemTelemetryData | null
   try {
     const res = await fetch(`${API_BASE}/telemetry`);
     if (!res.ok) return null;
-    const data = await res.json() as { success: boolean } & SystemTelemetryData;
+    const data = (await res.json()) as { success: boolean } & SystemTelemetryData;
     return data;
   } catch {
     return null;
@@ -138,17 +229,15 @@ export async function saveGlobalAppearanceRemote(config: {
   colorMode?: string;
 }): Promise<SystemTelemetryData | null> {
   try {
-    const token = localStorage.getItem('tagmesh_admin_token_v1') || '';
     const res = await fetch(`${API_BASE}/telemetry/appearance`, {
       method: 'POST',
-      headers: {
+      headers: getAuthHeaders({
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
+      }),
       body: JSON.stringify(config),
     });
     if (!res.ok) return null;
-    const data = await res.json() as { success: boolean } & SystemTelemetryData;
+    const data = (await res.json()) as { success: boolean } & SystemTelemetryData;
     return data;
   } catch (err) {
     console.warn('[Appearance] saveGlobalAppearanceRemote failed:', err);
@@ -167,7 +256,7 @@ export async function recordVisitSession(sessionId: string): Promise<{ totalVisi
       body: JSON.stringify({ sessionId }),
     });
     if (!res.ok) return null;
-    const data = await res.json() as { success: boolean; totalVisits: number; todayVisits: number };
+    const data = (await res.json()) as { success: boolean; totalVisits: number; todayVisits: number };
     return data;
   } catch {
     return null;
@@ -183,7 +272,7 @@ export async function submitGlobalStamp(): Promise<{ stampCount: number } | null
       method: 'POST',
     });
     if (!res.ok) return null;
-    const data = await res.json() as { success: boolean; stampCount: number };
+    const data = (await res.json()) as { success: boolean; stampCount: number };
     return data;
   } catch {
     return null;
@@ -201,19 +290,17 @@ export async function resetTelemetryRemote(options?: {
   try {
     const res = await fetch(`${API_BASE}/telemetry/reset`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(options || { resetUptime: true, resetVisits: true, resetStamps: true }),
     });
     if (!res.ok) return null;
-    const data = await res.json() as { success: boolean } & SystemTelemetryData;
+    const data = (await res.json()) as { success: boolean } & SystemTelemetryData;
     return data;
   } catch (err) {
     console.warn('[Telemetry] resetTelemetryRemote error:', err);
     return null;
   }
 }
-
-
 
 /**
  * ==========================================
@@ -248,16 +335,18 @@ export interface R2StatusResult {
  */
 export async function checkR2StatusRemote(): Promise<R2StatusResult> {
   try {
-    const res = await fetch(`${API_BASE}/upload/status`);
+    const res = await fetch(`${API_BASE}/upload/status`, {
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) return { connected: false, message: `HTTP ${res.status}` };
-    return await res.json() as R2StatusResult;
+    return (await res.json()) as R2StatusResult;
   } catch (err: unknown) {
     return { connected: false, message: err instanceof Error ? err.message : 'Network offline' };
   }
 }
 
 /**
- * Upload Image or Screenshot to Cloudflare R2
+ * Upload Image or Screenshot to Cloudflare R2 (Requires Admin Token)
  */
 export async function uploadImageToR2(file: File): Promise<R2UploadResult> {
   try {
@@ -266,18 +355,19 @@ export async function uploadImageToR2(file: File): Promise<R2UploadResult> {
 
     const res = await fetch(`${API_BASE}/upload`, {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData,
     });
 
     if (!res.ok) {
-      const errJson = await res.json().catch(() => ({ error: `Upload failed HTTP ${res.status}` })) as { error?: string };
+      const errJson = (await res.json().catch(() => ({ error: `Upload failed HTTP ${res.status}` }))) as { error?: string };
       return {
         success: false,
         error: errJson.error || `Upload failed (${res.status})`,
       };
     }
 
-    const data = await res.json() as { success: boolean; url: string; key: string; size: number };
+    const data = (await res.json()) as { success: boolean; url: string; key: string; size: number };
     return {
       success: true,
       url: data.url,
@@ -300,16 +390,16 @@ export async function createR2SnapshotBackup(notes: Note[], triggerBy: string = 
   try {
     const res = await fetch(`${API_BASE}/upload/backup`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ notes, triggerBy }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'Backup request failed' })) as { error?: string };
+      const err = (await res.json().catch(() => ({ error: 'Backup request failed' }))) as { error?: string };
       return { success: false, error: err.error || `HTTP ${res.status}` };
     }
 
-    const data = await res.json() as { success: boolean; key: string; totalNotes: number };
+    const data = (await res.json()) as { success: boolean; key: string; totalNotes: number };
     return { success: true, key: data.key, totalNotes: data.totalNotes };
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to create backup' };
@@ -321,9 +411,11 @@ export async function createR2SnapshotBackup(notes: Note[], triggerBy: string = 
  */
 export async function fetchR2BackupsList(): Promise<{ success: boolean; backups: R2BackupItem[]; error?: string }> {
   try {
-    const res = await fetch(`${API_BASE}/upload/backups`);
+    const res = await fetch(`${API_BASE}/upload/backups`, {
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) return { success: false, backups: [] };
-    const data = await res.json() as { success: boolean; backups: R2BackupItem[]; error?: string };
+    const data = (await res.json()) as { success: boolean; backups: R2BackupItem[]; error?: string };
     return { success: Boolean(data.success), backups: data.backups || [] };
   } catch (err: unknown) {
     return { success: false, backups: [], error: err instanceof Error ? err.message : 'Failed to list backups' };
@@ -337,16 +429,16 @@ export async function restoreR2Snapshot(key: string): Promise<{ success: boolean
   try {
     const res = await fetch(`${API_BASE}/upload/restore`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ key }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'Restore request failed' })) as { error?: string };
+      const err = (await res.json().catch(() => ({ error: 'Restore request failed' }))) as { error?: string };
       return { success: false, error: err.error || `HTTP ${res.status}` };
     }
 
-    const data = await res.json() as { success: boolean; snapshot: { notes: Note[] } };
+    const data = (await res.json()) as { success: boolean; snapshot: { notes: Note[] } };
     return { success: true, notes: data.snapshot?.notes || [] };
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : 'Restore failed' };
@@ -379,13 +471,15 @@ function maskTokenHelper(token: string): string {
 }
 
 /**
- * Fetch Telegram Bot configuration
+ * Fetch Telegram Bot configuration (Requires Admin Token)
  */
 export async function fetchTelegramConfigRemote(): Promise<TelegramConfigResult> {
   try {
-    const res = await fetch(`${API_BASE}/telegram/config`);
+    const res = await fetch(`${API_BASE}/telegram/config`, {
+      headers: getAuthHeaders(),
+    });
     if (res.ok) {
-      const data = await res.json() as TelegramConfigResult;
+      const data = (await res.json()) as TelegramConfigResult;
       try {
         localStorage.setItem('tagmesh_telegram_config_cache', JSON.stringify(data));
       } catch {}
@@ -415,17 +509,23 @@ export async function fetchTelegramConfigRemote(): Promise<TelegramConfigResult>
 }
 
 /**
- * Save Telegram Bot configuration
+ * Save Telegram Bot configuration (Requires Admin Token)
  */
-export async function saveTelegramConfigRemote(config: { botToken?: string; userIds?: string; webhookUrl?: string; enabled?: boolean; defaultPublic?: boolean }): Promise<{ ok: boolean; message?: string; error?: string }> {
+export async function saveTelegramConfigRemote(config: {
+  botToken?: string;
+  userIds?: string;
+  webhookUrl?: string;
+  enabled?: boolean;
+  defaultPublic?: boolean;
+}): Promise<{ ok: boolean; message?: string; error?: string }> {
   try {
     const res = await fetch(`${API_BASE}/telegram/config`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(config),
     });
     if (res.ok) {
-      return await res.json() as { ok: boolean; message?: string; error?: string };
+      return (await res.json()) as { ok: boolean; message?: string; error?: string };
     }
   } catch {
     // Local fallback
@@ -444,7 +544,7 @@ export async function saveTelegramConfigRemote(config: { botToken?: string; user
       userIds: config.userIds !== undefined ? config.userIds : prev.userIds || '',
       webhookUrl: config.webhookUrl !== undefined ? config.webhookUrl : prev.webhookUrl || '',
       enabled: config.enabled !== undefined ? config.enabled : true,
-      defaultPublic: config.defaultPublic !== undefined ? config.defaultPublic : (prev.defaultPublic !== undefined ? prev.defaultPublic : true),
+      defaultPublic: config.defaultPublic !== undefined ? config.defaultPublic : prev.defaultPublic !== undefined ? prev.defaultPublic : true,
     };
     localStorage.setItem('tagmesh_telegram_config_cache', JSON.stringify(updated));
     return { ok: true, message: '配置已保存' };
@@ -454,44 +554,46 @@ export async function saveTelegramConfigRemote(config: { botToken?: string; user
 }
 
 /**
- * Set Webhook on Telegram API
+ * Set Webhook on Telegram API (Requires Admin Token)
  */
 export async function setTelegramWebhookRemote(webhookUrl?: string): Promise<{ ok: boolean; message?: string; webhookUrl?: string; error?: string }> {
   try {
     const res = await fetch(`${API_BASE}/telegram/set-webhook`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ webhookUrl }),
     });
-    return await res.json() as { ok: boolean; message?: string; webhookUrl?: string; error?: string };
+    return (await res.json()) as { ok: boolean; message?: string; webhookUrl?: string; error?: string };
   } catch (err: unknown) {
     return { ok: false, error: err instanceof Error ? err.message : 'Set webhook failed' };
   }
 }
 
 /**
- * Delete Webhook from Telegram API
+ * Delete Webhook from Telegram API (Requires Admin Token)
  */
 export async function deleteTelegramWebhookRemote(): Promise<{ ok: boolean; message?: string; error?: string }> {
   try {
     const res = await fetch(`${API_BASE}/telegram/delete-webhook`, {
       method: 'POST',
+      headers: getAuthHeaders(),
     });
-    return await res.json() as { ok: boolean; message?: string; error?: string };
+    return (await res.json()) as { ok: boolean; message?: string; error?: string };
   } catch (err: unknown) {
     return { ok: false, error: err instanceof Error ? err.message : 'Delete webhook failed' };
   }
 }
 
 /**
- * Send Test Message via Telegram Bot
+ * Send Test Message via Telegram Bot (Requires Admin Token)
  */
 export async function testTelegramBotRemote(): Promise<{ ok: boolean; message?: string; error?: string }> {
   try {
     const res = await fetch(`${API_BASE}/telegram/test`, {
       method: 'POST',
+      headers: getAuthHeaders(),
     });
-    return await res.json() as { ok: boolean; message?: string; error?: string };
+    return (await res.json()) as { ok: boolean; message?: string; error?: string };
   } catch (err: unknown) {
     return { ok: false, error: err instanceof Error ? err.message : 'Test failed' };
   }

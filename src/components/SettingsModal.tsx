@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Server, Copy, Check, X, ShieldAlert, ShieldCheck, Lock } from 'lucide-react';
 import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../hooks/useAuth';
+import { getAuthToken } from '../services/api';
 import { playPop } from '../blog/utils/soundEffects';
 
 export interface SettingsModalProps {
@@ -16,7 +17,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const { t, locale } = useI18n();
   const { isAdmin, isGuest, openAuthModal } = useAuth();
   const [copied, setCopied] = useState(false);
-  const mcpToken = 'tagmesh_mcp_secret_bearer_token';
+  const mcpToken = getAuthToken() || 'YOUR_ADMIN_PASSWORD_OR_MCP_TOKEN';
   const mcpEndpoint = typeof window !== 'undefined' ? `${window.location.origin}/mcp/call` : 'http://localhost:8787/mcp/call';
 
   const handleCopy = () => {

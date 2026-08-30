@@ -2,11 +2,13 @@ import { Hono, Context } from 'hono';
 import { Env } from '../env';
 import { McpToolCallRequest, McpToolCallResponse } from '../../src/types/mcp';
 import { searchNotesFts, getNoteById, syncNote, listNotes } from '../db/queries';
+import { verifyAdminToken } from '../middleware/auth';
 
 export const mcpRouter = new Hono<{ Bindings: Env }>();
 
 /**
  * Bearer Token Auth Middleware (Applies to POST / RPC calls, allows GET / OPTIONS for service discovery)
+ * 严格校验 Bearer Token (支持 MCP_AUTH_TOKEN 或 ADMIN_PASSWORD，杜绝硬编码默认值兜底)
  */
 mcpRouter.use('*', async (c, next) => {
   if (c.req.method === 'GET' || c.req.method === 'OPTIONS') {
@@ -14,26 +16,14 @@ mcpRouter.use('*', async (c, next) => {
   }
 
   const authHeader = c.req.header('Authorization');
-  const expectedToken = c.env.MCP_AUTH_TOKEN || 'tagmesh_mcp_secret_bearer_token';
+  const { isValid, reason } = await verifyAdminToken(authHeader, c.env);
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!isValid) {
     return c.json(
       {
         jsonrpc: '2.0',
         id: null,
-        error: { code: -32000, message: 'Unauthorized: Missing Bearer token in Authorization header' },
-      },
-      401
-    );
-  }
-
-  const token = authHeader.replace(/^Bearer\s+/, '').trim();
-  if (token !== expectedToken) {
-    return c.json(
-      {
-        jsonrpc: '2.0',
-        id: null,
-        error: { code: -32000, message: 'Unauthorized: Invalid Bearer token' },
+        error: { code: -32000, message: `Unauthorized: ${reason || 'Invalid or missing Bearer token'}` },
       },
       401
     );

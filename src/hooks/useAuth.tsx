@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { loginAdminRemote, verifyAuthRemote, setAuthToken, getAuthToken } from '../services/api';
 
 export type UserRole = 'admin' | 'guest';
 
@@ -6,77 +7,83 @@ interface AuthContextType {
   role: UserRole;
   isAdmin: boolean;
   isGuest: boolean;
-  loginAsAdmin: (password: string) => boolean;
+  loginAsAdmin: (password: string) => Promise<boolean>;
   logoutToGuest: () => void;
-  updateAdminPassword: (oldPwd: string, newPwd: string) => boolean;
   isAuthModalOpen: boolean;
   openAuthModal: () => void;
   closeAuthModal: () => void;
+  authError: string | null;
+  clearAuthError: () => void;
+  isVerifying: boolean;
 }
-
-const DEFAULT_ADMIN_PASSWORD = 'admin888';
-const STORAGE_ADMIN_SESSION_KEY = 'tagmesh_admin_session_active';
-const STORAGE_ADMIN_PWD_KEY = 'tagmesh_custom_admin_password';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Default to 'guest' role unless admin session exists
   const [role, setRole] = useState<UserRole>(() => {
-    try {
-      const active = sessionStorage.getItem(STORAGE_ADMIN_SESSION_KEY);
-      return active === 'true' ? 'admin' : 'guest';
-    } catch {
-      return 'guest';
-    }
+    // 检查本地是否存在已有 Token
+    return getAuthToken() ? 'admin' : 'guest';
   });
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const getStoredPassword = (): string => {
-    try {
-      return localStorage.getItem(STORAGE_ADMIN_PWD_KEY) || DEFAULT_ADMIN_PASSWORD;
-    } catch {
-      return DEFAULT_ADMIN_PASSWORD;
+  // 页面初始化时向后端验证 Token 真实有效性（防止本地被伪造或过期）
+  useEffect(() => {
+    const existingToken = getAuthToken();
+    if (existingToken) {
+      setIsVerifying(true);
+      verifyAuthRemote()
+        .then((res) => {
+          if (res.success && res.isAdmin) {
+            setRole('admin');
+          } else {
+            setRole('guest');
+            setAuthToken(null);
+          }
+        })
+        .catch(() => {
+          // 离线时保持现有状态
+        })
+        .finally(() => {
+          setIsVerifying(false);
+        });
     }
-  };
+  }, []);
 
-  const loginAsAdmin = (password: string): boolean => {
-    const validPwd = getStoredPassword();
-    if (password === validPwd) {
+  /**
+   * 馆长登录：通过服务端 /api/auth/login 校验密码并获取动态 HMAC Token
+   */
+  const loginAsAdmin = async (password: string): Promise<boolean> => {
+    setAuthError(null);
+    const cleanPwd = password.trim();
+
+    if (!cleanPwd) {
+      setAuthError('请输入馆长口令');
+      return false;
+    }
+
+    const res = await loginAdminRemote(cleanPwd);
+    if (res.success && res.token) {
       setRole('admin');
-      try {
-        sessionStorage.setItem(STORAGE_ADMIN_SESSION_KEY, 'true');
-      } catch {
-        // ignore
-      }
       setIsAuthModalOpen(false);
+      setAuthError(null);
       return true;
+    } else {
+      setAuthError(res.error || '口令错误，请重试');
+      return false;
     }
-    return false;
   };
 
+  /**
+   * 退出馆长模式，回归游客权限
+   */
   const logoutToGuest = () => {
     setRole('guest');
-    try {
-      sessionStorage.removeItem(STORAGE_ADMIN_SESSION_KEY);
-    } catch {
-      // ignore
-    }
+    setAuthToken(null);
     setIsAuthModalOpen(false);
-  };
-
-  const updateAdminPassword = (oldPwd: string, newPwd: string): boolean => {
-    const validPwd = getStoredPassword();
-    if (oldPwd === validPwd && newPwd.trim().length >= 4) {
-      try {
-        localStorage.setItem(STORAGE_ADMIN_PWD_KEY, newPwd.trim());
-        return true;
-      } catch {
-        return false;
-      }
-    }
-    return false;
+    setAuthError(null);
   };
 
   return (
@@ -87,10 +94,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isGuest: role === 'guest',
         loginAsAdmin,
         logoutToGuest,
-        updateAdminPassword,
         isAuthModalOpen,
         openAuthModal: () => setIsAuthModalOpen(true),
-        closeAuthModal: () => setIsAuthModalOpen(false),
+        closeAuthModal: () => {
+          setIsAuthModalOpen(false);
+          setAuthError(null);
+        },
+        authError,
+        clearAuthError: () => setAuthError(null),
+        isVerifying,
       }}
     >
       {children}

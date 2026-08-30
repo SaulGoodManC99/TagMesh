@@ -89,135 +89,65 @@ export async function syncNote(
   const createdAt = note.createdAt || now;
 
   if (existing) {
-    try {
-      await db
-        .prepare(`
-          UPDATE notes
-          SET raw_markdown = ?,
-              excerpt = ?,
-              tags_json = ?,
-              word_count = ?,
-              char_count = ?,
-              version = ?,
-              is_pinned = ?,
-              is_deleted = ?,
-              is_public = ?,
-              updated_at = ?,
-              synced_at = ?,
-              author = 'admin',
-              is_official = 1
-          WHERE id = ?
-        `)
-        .bind(
-          rawMarkdown,
-          excerpt,
-          tagsJson,
-          wordCount,
-          charCount,
-          nextVersion,
-          note.isPinned ? 1 : 0,
-          note.isDeleted ? 1 : 0,
-          isPublic,
-          updatedAt,
-          now,
-          note.id
-        )
-        .run();
-    } catch {
-      // If column is_public does not exist yet, add column
-      try {
-        await db.prepare('ALTER TABLE notes ADD COLUMN is_public INTEGER NOT NULL DEFAULT 1').run();
-      } catch {}
-      await db
-        .prepare(`
-          UPDATE notes
-          SET raw_markdown = ?,
-              excerpt = ?,
-              tags_json = ?,
-              word_count = ?,
-              char_count = ?,
-              version = ?,
-              is_pinned = ?,
-              is_deleted = ?,
-              is_public = ?,
-              updated_at = ?,
-              synced_at = ?,
-              author = 'admin',
-              is_official = 1
-          WHERE id = ?
-        `)
-        .bind(
-          rawMarkdown,
-          excerpt,
-          tagsJson,
-          wordCount,
-          charCount,
-          nextVersion,
-          note.isPinned ? 1 : 0,
-          note.isDeleted ? 1 : 0,
-          isPublic,
-          updatedAt,
-          now,
-          note.id
-        )
-        .run();
-    }
+    await db
+      .prepare(`
+        UPDATE notes
+        SET raw_markdown = ?,
+            excerpt = ?,
+            tags_json = ?,
+            word_count = ?,
+            char_count = ?,
+            version = ?,
+            is_pinned = ?,
+            is_deleted = ?,
+            is_public = ?,
+            updated_at = ?,
+            synced_at = ?,
+            author = 'admin',
+            is_official = 1
+        WHERE id = ?
+      `)
+      .bind(
+        rawMarkdown,
+        excerpt,
+        tagsJson,
+        wordCount,
+        charCount,
+        nextVersion,
+        note.isPinned ? 1 : 0,
+        note.isDeleted ? 1 : 0,
+        isPublic,
+        updatedAt,
+        now,
+        note.id
+      )
+      .run();
   } else {
-    try {
-      await db
-        .prepare(`
-          INSERT INTO notes (
-            id, raw_markdown, excerpt, tags_json, word_count, char_count,
-            version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at,
-            author, is_official
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', 1)
-        `)
-        .bind(
-          note.id,
-          rawMarkdown,
-          excerpt,
-          tagsJson,
-          wordCount,
-          charCount,
-          nextVersion,
-          note.isPinned ? 1 : 0,
-          note.isDeleted ? 1 : 0,
-          isPublic,
-          createdAt,
-          updatedAt,
-          now
-        )
-        .run();
-    } catch {
-      // If column is_public does not exist yet, add column
-      try {
-        await db.prepare('ALTER TABLE notes ADD COLUMN is_public INTEGER NOT NULL DEFAULT 1').run();
-      } catch {}
-      await db
-        .prepare(`
-          INSERT INTO notes (
-            id, raw_markdown, excerpt, tags_json, word_count, char_count,
-            version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at,
-            author, is_official
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', 1)
-        `)
-        .bind(
-          note.id,
-          rawMarkdown,
-          excerpt,
-          tagsJson,
-          wordCount,
-          charCount,
-          nextVersion,
-          note.isPinned ? 1 : 0,
-          note.isDeleted ? 1 : 0,
-          isPublic,
-          createdAt,
-          updatedAt,
-          now
-        )
-        .run();
-    }
+    await db
+      .prepare(`
+        INSERT INTO notes (
+          id, raw_markdown, excerpt, tags_json, word_count, char_count,
+          version, is_pinned, is_deleted, is_public, created_at, updated_at, synced_at,
+          author, is_official, likes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', 1, ?)
+      `)
+      .bind(
+        note.id,
+        rawMarkdown,
+        excerpt,
+        tagsJson,
+        wordCount,
+        charCount,
+        nextVersion,
+        note.isPinned ? 1 : 0,
+        note.isDeleted ? 1 : 0,
+        isPublic,
+        createdAt,
+        updatedAt,
+        now,
+        note.likes || 0
+      )
+      .run();
   }
 
   // Update FTS5 Index safely
