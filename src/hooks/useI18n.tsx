@@ -64,6 +64,20 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (ogDesc) {
         ogDesc.setAttribute('content', pageDesc);
       }
+
+      const ogBanner = isZh ? 'https://tagmesh.top/icons/og-banner-zh.png' : 'https://tagmesh.top/icons/og-banner-en.png';
+      const ogImg = document.querySelector('meta[property="og:image"]');
+      if (ogImg) {
+        ogImg.setAttribute('content', ogBanner);
+      }
+      const ogImgSecure = document.querySelector('meta[property="og:image:secure_url"]');
+      if (ogImgSecure) {
+        ogImgSecure.setAttribute('content', ogBanner);
+      }
+      const twitterImg = document.querySelector('meta[name="twitter:image"]');
+      if (twitterImg) {
+        twitterImg.setAttribute('content', ogBanner);
+      }
     }
   }, [locale]);
 
