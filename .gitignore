@@ -4,3 +4,8 @@ dist
 .DS_Store
 *.local
 tsconfig.tsbuildinfo
+.dev.vars
+.env
+.env.*
+*.secret
+

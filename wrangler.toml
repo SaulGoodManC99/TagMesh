@@ -21,4 +21,3 @@ bucket_name = "tagmesh-bucket"
 
 [vars]
 ENVIRONMENT = "production"
-MCP_AUTH_TOKEN = "tagmesh_mcp_secret_bearer_token"
