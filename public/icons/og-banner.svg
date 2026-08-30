@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff1f3" />
+      <stop offset="50%" stop-color="#fff7ed" />
+      <stop offset="100%" stop-color="#fef3c7" />
+    </linearGradient>
+
+    <!-- 3D Card Drop Shadow -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#881337" flood-opacity="0.12" />
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.06" />
+    </filter>
+
+    <!-- Logo Drop Shadow -->
+    <filter id="logoShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#f43f5e" flood-opacity="0.35" />
+    </filter>
+
+    <!-- Logo Badge Gradient -->
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb7185" />
+      <stop offset="45%" stop-color="#f43f5e" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+
+    <!-- Top highlight -->
+    <linearGradient id="clayTopSheen" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Spark Star Gradient -->
+    <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="40%" stop-color="#fef08a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+
+    <filter id="sparkGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#fef08a" flood-opacity="0.9" />
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+
+  <!-- Ambient Light Blobs -->
+  <circle cx="100" cy="80" r="260" fill="#f43f5e" opacity="0.08" />
+  <circle cx="1100" cy="500" r="280" fill="#f59e0b" opacity="0.10" />
+  <circle cx="900" cy="100" r="200" fill="#06b6d4" opacity="0.06" />
+
+  <!-- Main Frosted Glass / Clay White Card -->
+  <g filter="url(#cardShadow)">
+    <rect x="60" y="50" width="1080" height="530" rx="40" fill="#ffffff" fill-opacity="0.92" stroke="#ffffff" stroke-width="4" />
+  </g>
+
+  <!-- LEFT: 3D Clay Logo Badge -->
+  <g transform="translate(120, 155)">
+    <!-- 3D Badge -->
+    <g filter="url(#logoShadow)">
+      <rect x="0" y="0" width="280" height="280" rx="76" fill="url(#badgeGrad)" stroke="#ffffff" stroke-width="9" stroke-opacity="0.95" />
+      <rect x="0" y="0" width="280" height="280" rx="76" fill="url(#clayTopSheen)" />
+    </g>
+    <!-- Lattice Hashtag -->
+    <g stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" opacity="0.96">
+      <line x1="90" y1="125" x2="225" y2="125" stroke-width="20" />
+      <line x1="90" y1="195" x2="225" y2="195" stroke-width="20" />
+      <line x1="125" y1="90" x2="125" y2="225" stroke-width="20" />
+      <line x1="195" y1="90" x2="195" y2="225" stroke-width="20" />
+    </g>
+    <!-- Nodes -->
+    <circle cx="125" cy="125" r="15" fill="#ffffff" />
+    <circle cx="195" cy="125" r="15" fill="#ffffff" />
+    <circle cx="125" cy="195" r="15" fill="#ffffff" />
+    <circle cx="195" cy="195" r="15" fill="#ffffff" />
+    <!-- Center core -->
+    <circle cx="160" cy="160" r="20" fill="#ffffff" />
+    <circle cx="160" cy="160" r="9" fill="#f43f5e" />
+    <!-- Spark Star -->
+    <g filter="url(#sparkGlow)" transform="translate(235, 65)">
+      <path d="M0 -22 C1 -8 8 -1 22 0 C8 1 1 8 0 22 C-1 8 -8 1 -22 0 C-8 -1 -1 -8 0 -22 Z" fill="url(#starGrad)" />
+      <circle cx="0" cy="0" r="4" fill="#ffffff" />
+    </g>
+  </g>
+
+  <!-- RIGHT: Structured Typography & Metadata -->
+  <g transform="translate(460, 110)">
+    <!-- Pill Badge -->
+    <rect x="0" y="0" width="280" height="38" rx="19" fill="#ffe4e6" stroke="#fecdd3" stroke-width="1.5" />
+    <text x="14" y="25" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif" font-size="15" font-weight="700" fill="#e11d48">🌱 随心记录 · 灵感备忘</text>
+
+    <!-- Main Title -->
+    <text x="0" y="105" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif" font-size="56" font-weight="900" fill="#18181b" letter-spacing="-1">TagMesh</text>
+
+    <!-- Slogan Subtitle -->
+    <text x="0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif" font-size="24" font-weight="800" fill="#f43f5e">随心笔记 · 闪念速记与多维标签管理</text>
+
+    <!-- Description Lines -->
+    <text x="0" y="215" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif" font-size="18" font-weight="500" fill="#52525b">随手记录日常闪念、工作待办、晨间日记与读书随笔</text>
+    <text x="0" y="250" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif" font-size="18" font-weight="500" fill="#71717a">通过 #标签 轻松分类，告别文件夹焦虑，支持本地优先安全存储</text>
+
+    <!-- Bottom Feature Pills -->
+    <g transform="translate(0, 310)">
+      <!-- Pill 1: #闪念速记 -->
+      <rect x="0" y="0" width="115" height="38" rx="14" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" />
+      <text x="57" y="24" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#e11d48">#闪念速记</text>
+
+      <!-- Pill 2: #工作待办 -->
+      <rect x="127" y="0" width="115" height="38" rx="14" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5" />
+      <text x="184" y="24" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#4f46e5">#工作待办</text>
+
+      <!-- Pill 3: #晨间日记 -->
+      <rect x="254" y="0" width="115" height="38" rx="14" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5" />
+      <text x="311" y="24" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#059669">#晨间日记</text>
+
+      <!-- Pill 4: tagmesh.top Domain -->
+      <rect x="381" y="0" width="170" height="38" rx="14" fill="#fef3c7" stroke="#fde68a" stroke-width="1.5" />
+      <text x="466" y="24" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#b45309">🌐 tagmesh.top</text>
+    </g>
+  </g>
+</svg>
