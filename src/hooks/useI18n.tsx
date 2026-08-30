@@ -48,8 +48,8 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ? 'TagMesh | 随心笔记 · 灵感备忘与多维标签管理' 
         : 'TagMesh | Flow Notes · Fleeting Thoughts & Multi-Dimensional Tag Mesh';
       const pageDesc = isZh
-        ? 'TagMesh 是一款极简轻盈的随心笔记与灵感备忘工具。随手记录日常闪念、工作待办、会议纪要与读书随笔，通过 #标签 轻松分类，告别文件夹焦虑，支持本地优先安全存储与云端同步。'
-        : 'TagMesh is a lightweight, local-first flow notes and fleeting thoughts manager. Capture daily tasks, reading insights, and sparks with #hashtags without folder fatigue.';
+        ? 'TagMesh 是一款极简轻盈的随心笔记与灵感备忘工具。随手记录日常闪念与工作待办，通过 #标签 轻松分类，支持本地优先安全存储与云端同步。'
+        : 'TagMesh is a lightweight flow notes and fleeting thoughts manager. Capture daily tasks with #hashtags, local-first privacy, and cloud sync.';
 
       document.title = pageTitle;
       const metaDesc = document.querySelector('meta[name="description"]');
@@ -60,12 +60,22 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (ogTitle) {
         ogTitle.setAttribute('content', pageTitle);
       }
+      const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twitterTitle) {
+        twitterTitle.setAttribute('content', pageTitle);
+      }
       const ogDesc = document.querySelector('meta[property="og:description"]');
       if (ogDesc) {
         ogDesc.setAttribute('content', pageDesc);
       }
+      const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+      if (twitterDesc) {
+        twitterDesc.setAttribute('content', pageDesc);
+      }
 
       const ogBanner = isZh ? 'https://tagmesh.top/icons/og-banner-zh.png' : 'https://tagmesh.top/icons/og-banner-en.png';
+      const altText = pageTitle;
+
       const ogImg = document.querySelector('meta[property="og:image"]');
       if (ogImg) {
         ogImg.setAttribute('content', ogBanner);
@@ -74,9 +84,17 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (ogImgSecure) {
         ogImgSecure.setAttribute('content', ogBanner);
       }
+      const ogAlt = document.querySelector('meta[property="og:image:alt"]');
+      if (ogAlt) {
+        ogAlt.setAttribute('content', altText);
+      }
       const twitterImg = document.querySelector('meta[name="twitter:image"]');
       if (twitterImg) {
         twitterImg.setAttribute('content', ogBanner);
+      }
+      const twitterAlt = document.querySelector('meta[name="twitter:image:alt"]');
+      if (twitterAlt) {
+        twitterAlt.setAttribute('content', altText);
       }
     }
   }, [locale]);

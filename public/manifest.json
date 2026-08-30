@@ -1,7 +1,7 @@
 {
   "name": "TagMesh | 随心笔记 · 灵感备忘与多维标签管理",
   "short_name": "TagMesh",
-  "description": "随手记录日常闪念、工作待办、会议纪要与读书随笔，通过 #标签 轻松分类，告别文件夹焦虑，支持本地优先安全存储与云端同步。",
+  "description": "随手记录日常闪念与工作待办，通过 #标签 轻松分类，支持本地优先安全存储与云端同步。",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
