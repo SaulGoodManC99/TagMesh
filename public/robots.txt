@@ -5,4 +5,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://tagmesh-markdown.sirestickysister.workers.dev/sitemap.xml
+Sitemap: https://tagmesh.top/sitemap.xml

@@ -238,7 +238,7 @@ export const ClayPlaygroundFooter: React.FC<ClayPlaygroundFooterProps> = ({
         <div className="text-center space-y-0.5 pt-0.5">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <p className="font-bubble font-extrabold text-xs sm:text-sm text-neutral-800 dark:text-neutral-100">
-              TagMesh • 纯标签驱动的 3D 黏土趣味知识笔记系统
+              {locale === 'zh' ? 'TagMesh • 随心笔记 · 灵感备忘与多维标签管理' : 'TagMesh • Flow Notes · Fleeting Thoughts & Tag Mesh'}
             </p>
             <span className="px-2 py-0.2 rounded-full bg-rose-500 text-white font-bubble text-[11px] font-bold shadow-3xs">
               {APP_VERSION}

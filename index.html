@@ -2,7 +2,6 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23fb7185'/><stop offset='50%25' stop-color='%23f43f5e'/><stop offset='100%25' stop-color='%23f59e0b'/></linearGradient></defs><rect x='2' y='2' width='32' height='32' rx='10' fill='url(%23g)' stroke='%23ffffff' stroke-width='2'/><path d='M10 18h16M18 10v16M13 13l10 10M23 13L13 23' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' opacity='0.95'/><circle cx='18' cy='18' r='3.5' fill='%23ffffff'/><circle cx='26' cy='10' r='2' fill='%23fef08a'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
     <!-- Primary SEO Metadata -->
@@ -11,17 +10,39 @@
     <meta name="keywords" content="TagMesh, 随心笔记, 灵感备忘, 闪念速记, 工作待办, 会议纪要, 读书随笔, 标签分类, Markdown笔记, 本地优先, 个人知识库, 晨间日记, 卡片笔记" />
     <meta name="author" content="SaulGoodManC99" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <link rel="canonical" href="https://tagmesh-markdown.sirestickysister.workers.dev/" />
+    
+    <!-- Canonical & Multilingual Alternates for International SEO -->
+    <link rel="canonical" href="https://tagmesh.top/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://tagmesh.top/" />
+    <link rel="alternate" hreflang="zh" href="https://tagmesh.top/" />
+    <link rel="alternate" hreflang="en" href="https://tagmesh.top/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://tagmesh.top/" />
+
     <meta name="theme-color" content="#f4f5f7" />
     <meta name="color-scheme" content="light dark" />
+
+    <!-- Standard Physical Favicons & App Icons for Search Engines (Google/Bing/Baidu) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
 
     <!-- Open Graph / Facebook / WeChat Social Card -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="TagMesh 随心笔记" />
-    <meta property="og:url" content="https://tagmesh-markdown.sirestickysister.workers.dev/" />
+    <meta property="og:url" content="https://tagmesh.top/" />
     <meta property="og:title" content="TagMesh | 随心笔记 · 灵感备忘与多维标签管理" />
     <meta property="og:description" content="随手记下工作待办、读书感悟、生活碎片与突发奇想，通过 #标签 轻松分类，随时随地优雅回顾。" />
-    <meta property="og:image" content="https://tagmesh-markdown.sirestickysister.workers.dev/icons/og-banner.png" />
+    <meta property="og:image" content="https://tagmesh.top/icons/og-banner.png" />
+    <meta property="og:image:secure_url" content="https://tagmesh.top/icons/og-banner.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TagMesh 随心笔记" />
     <meta property="og:locale" content="zh_CN" />
     <meta property="og:locale:alternate" content="en_US" />
 
@@ -29,7 +50,8 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="TagMesh | 随心笔记 · 灵感备忘与多维标签管理" />
     <meta name="twitter:description" content="Capture daily thoughts, work tasks, and life moments with lightweight tags and local-first storage." />
-    <meta name="twitter:image" content="https://tagmesh-markdown.sirestickysister.workers.dev/icons/og-banner.png" />
+    <meta name="twitter:image" content="https://tagmesh.top/icons/og-banner.png" />
+    <meta name="twitter:image:alt" content="TagMesh Flow Notes" />
 
     <!-- Mobile & PWA Web App Meta -->
     <link rel="manifest" href="/manifest.json" />
@@ -46,7 +68,9 @@
         "@type": "WebApplication",
         "name": "TagMesh",
         "alternateName": "TagMesh 随心笔记",
-        "url": "https://tagmesh-markdown.sirestickysister.workers.dev/",
+        "url": "https://tagmesh.top/",
+        "image": "https://tagmesh.top/icons/og-banner.png",
+        "thumbnailUrl": "https://tagmesh.top/icons/icon-192.png",
         "applicationCategory": "ProductivityApplication",
         "operatingSystem": "Web, iOS, Android, macOS, Windows, Linux",
         "description": "随手记下工作待办、读书感悟、生活碎片与突发奇想，通过 #标签 轻松分类，随时随地优雅回顾。",
